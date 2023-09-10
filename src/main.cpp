@@ -1,28 +1,37 @@
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
-/*    Author:       ryan                                                      */
+/*    Author:       Ryan McGee                                                */
 /*    Created:      9/10/2023, 12:37:29 PM                                    */
 /*    Description:  V5 project                                                */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 #include "vex.h"
 
+#include "competition/autonomous.h"
+#include "competition/opcontrol.h"
+#include "robot-config.h"
+
 using namespace vex;
 
-// A global instance of vex::brain used for printing to the V5 brain screen
-vex::brain       Brain;
+vex::competition comp;
 
-// define your global instances of motors and other devices here
-
-
+/**
+ * Program entrypoint. Defines the competition autonomous and opcontrol entrypoints,
+ * and init functions. 
+ * 
+ * Do not modify this file!
+*/
 int main() {
 
-    Brain.Screen.printAt( 10, 50, "Hello V5" );
+    comp.autonomous(autonomous);
+    comp.drivercontrol(opcontrol);
+
+    robot_init();
    
     while(1) {
         
         // Allow other tasks to run
-        this_thread::sleep_for(10);
+        this_thread::sleep_for(1000);
     }
 }
