@@ -1,4 +1,5 @@
 #include "robot-config.h"
+#include "core.h"
 
 vex::brain brain;
 vex::controller con;
@@ -24,5 +25,6 @@ vex::controller con;
 */
 void robot_init()
 {
-
+    CommandController cc;
+    cc.add(new DelayCommand(100));
 }
