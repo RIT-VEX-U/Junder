@@ -42,26 +42,47 @@ public:
   double timeout_seconds = default_timeout;
 };
 
-class Predicate
+namespace Conditions
 {
-public:
-  virtual bool test() = 0;
-};
 
-class FunctionPredicate : public Predicate
-{
-  FunctionPredicate(std::function<bool()> pred) : pred(pred) {}
+  /**
+   * A Condition is a function that returns true or false
+   * is_even is a predicate that would return true if a number is even
+   * For our purposes, a Condition is a choice to be made at runtime
+   * drive_sys.reached_point(10, 30) is a predicate
+   * time.has_elapsed(10, vex::seconds) is a predicate
+   * extend this class for different choices you wish to make
+   */
+  class Condition
+  {
+  public:
+    virtual bool test() = 0;
+  };
 
-private:
-  std::function<bool()> pred;
-};
+  /// @brief Function is a quick and dirty Condition to wrap some expression that should be evaluated at runtime
+  class Function : public Condition
+  {
+  public:
+    Function(std::function<bool()> cond) : cond(cond) {}
+    bool test() override;
 
+  private:
+    std::function<bool()> cond;
+  };
+
+  class GlobalTimePassed : public Condition
+  {
+    GlobalTimePassed(double time_s);
+  };
+
+}
 /// @brief InOrder runs its commands sequentially then continues.
 /// How to handle timeout in this case. Automatically set it to sum of commands timouts?
 class InOrder : public AutoCommand
 {
 public:
   InOrder(std::queue<AutoCommand *> cmds);
+  InOrder(std::initializer_list<AutoCommand *> cmds);
   bool run() override;
   void on_timeout() override;
 
@@ -107,14 +128,14 @@ private:
 class Branch : public AutoCommand
 {
 public:
-  Branch(AutoCommand *false_choice, AutoCommand *true_choice, Predicate *pred);
+  Branch(AutoCommand *false_choice, AutoCommand *true_choice, Conditions::Condition *cond);
   bool run() override;
   void on_timeout() override;
 
 private:
   AutoCommand *false_choice;
   AutoCommand *true_choice;
-  Predicate *pred;
+  Conditions::Condition *cond;
   bool choice = false;
   bool chosen = false;
   vex::timer tmr;

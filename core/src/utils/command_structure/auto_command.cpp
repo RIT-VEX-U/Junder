@@ -1,9 +1,19 @@
 #include "../core/include/utils/command_structure/auto_command.h"
 
+bool Conditions::Function::test(){
+    return cond();
+}
+
+
+
 InOrder::InOrder(std::queue<AutoCommand *> cmds) : cmds(cmds)
 {
     timeout_seconds = -1.0; // never timeout unless with_timeout is explicitly called
 }
+InOrder::InOrder(std::initializer_list<AutoCommand *> cmds): cmds(cmds){
+    timeout_seconds = -1.0;
+}
+
 bool InOrder::run()
 {
     // outer loop finished
@@ -130,12 +140,12 @@ void Parallel::on_timeout()
     }
 }
 
-Branch::Branch(AutoCommand *false_choice, AutoCommand *true_choice, Predicate *pred) : false_choice(false_choice), true_choice(true_choice), pred(pred), choice(false), chosen(false), tmr() {}
+Branch::Branch(AutoCommand *false_choice, AutoCommand *true_choice, Conditions::Condition *pred) : false_choice(false_choice), true_choice(true_choice), pred(pred), choice(false), chosen(false), tmr() {}
 bool Branch::run()
 {
     if (!chosen)
     {
-        choice = pred->test();
+        choice = cond->test();
         chosen = true;
     }
 
