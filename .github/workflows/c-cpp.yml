@@ -35,4 +35,14 @@ jobs:
       run: |
         sudo chmod +x toolchain_linux64/gcc/bin/*
     - run: PATH=${PATH}:toolchain_linux64/gcc/bin make VEX_SDK_PATH=${{ env.VERSION }}
+    - name: Send Slack Notification
+      #if: ${{ failure() }}
+      id: slack
+      uses: slackapi/slack-github-action@v1.24.0
+      with:
+        channel-id: 'github-updates'
+        slack-message: "Test Message"
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
         
