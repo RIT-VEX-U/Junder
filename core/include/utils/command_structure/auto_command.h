@@ -49,6 +49,7 @@ public:
  * drive_sys.reached_point(10, 30) is a predicate
  * time.has_elapsed(10, vex::seconds) is a predicate
  * extend this class for different choices you wish to make
+
  */
 class Condition
 {

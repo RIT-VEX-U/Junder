@@ -69,7 +69,7 @@ FirstFinish::FirstFinish(std::vector<AutoCommand *> cmds) : cmds(cmds), tmr()
 {
     timeout_seconds = -1.0; // dont timeout `unless explicitly told to
 }
-FirstFinish::FirstFinish(std::initializer_list<AutoCommand *> cmds) : FirstFinish(cmds) {}
+FirstFinish::FirstFinish(std::initializer_list<AutoCommand *> cmds) : cmds(cmds), tmr() {}
 
 bool FirstFinish::run()
 {
@@ -118,7 +118,7 @@ Parallel::Parallel(std::vector<AutoCommand *> cmds) : cmds(cmds), finished(cmds.
 {
     timeout_seconds = -1;
 }
-Parallel::Parallel(std::initializer_list<AutoCommand *> cmds) : Parallel(cmds) {}
+Parallel::Parallel(std::initializer_list<AutoCommand *> cmds) : cmds(cmds), finished(cmds.size(), false) {}
 
 bool Parallel::run()
 {
