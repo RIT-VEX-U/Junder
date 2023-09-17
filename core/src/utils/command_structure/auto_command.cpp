@@ -149,7 +149,7 @@ void Parallel::on_timeout()
     }
 }
 
-Branch::Branch(Condition *pred, AutoCommand *false_choice, AutoCommand *true_choice) : false_choice(false_choice), true_choice(true_choice), cond(cond), choice(false), chosen(false), tmr() {}
+Branch::Branch(Condition *cond, AutoCommand *false_choice, AutoCommand *true_choice) : false_choice(false_choice), true_choice(true_choice), cond(cond), choice(false), chosen(false), tmr() {}
 bool Branch::run()
 {
     if (!chosen)

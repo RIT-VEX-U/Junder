@@ -135,7 +135,6 @@ class Branch : public AutoCommand
 {
 public:
   Branch(Condition *cond, AutoCommand *false_choice, AutoCommand *true_choice);
-  Branch(Condition *cond, std::initializer_list<AutoCommand> *false_choice);
   bool run() override;
   void on_timeout() override;
 
