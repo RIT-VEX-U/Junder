@@ -1,8 +1,8 @@
 #pragma once
 #include "vex.h"
 
-extern vex::brain;
-extern vex::controller;
+extern vex::brain brain;
+extern vex::controller con;
 
 // ================ INPUTS ================
 // Digital sensors
