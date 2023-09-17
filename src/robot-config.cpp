@@ -24,5 +24,5 @@ vex::controller con;
 */
 void robot_init()
 {
-
+    asdf
 }
