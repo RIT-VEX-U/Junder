@@ -35,13 +35,16 @@ jobs:
       run: |
         sudo chmod +x toolchain_linux64/gcc/bin/*
     - run: PATH=${PATH}:toolchain_linux64/gcc/bin make VEX_SDK_PATH=${{ env.VERSION }}
+    - name: Expose git commit data
+      #if: ${{ failure() }}
+      uses: rlespinasse/git-commit-data-action@v1
     - name: Send Slack Notification
       #if: ${{ failure() }}
       id: slack
       uses: slackapi/slack-github-action@v1.24.0
       with:
         channel-id: 'github-updates'
-        slack-message: "Test Message"
+        slack-message: ":x:    _*Oopsie Woopsie! Build Failed in[${{ github.repository }}](${{ github.server_url }}/${ github.repository })*_\n> Branch: [${{ github.ref_name }}](${{ github.server_url }}/${ github.repository }/tree/${{ github.ref_name }})\n> Commit Ref: [${{ env.GIT_COMMIT_SHORT_SHA }}](${{ github.server_url }}/${ github.repository }/commit/${{ env.GIT_COMMIT_SHA }})\n> Commit Message: ${{ env.GIT_COMMIT_MESSAGE_SUBJECT_SANITIZED }}> Author: ${{ env.GIT_COMMIT_COMMITTER }} (${{ env.GIT_COMMIT_COMMITTER_EMAIL }})\n\nPlease fix as soon as possible!"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
