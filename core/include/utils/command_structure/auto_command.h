@@ -42,40 +42,43 @@ public:
   double timeout_seconds = default_timeout;
 };
 
-namespace Conditions
+/**
+ * A Condition is a function that returns true or false
+ * is_even is a predicate that would return true if a number is even
+ * For our purposes, a Condition is a choice to be made at runtime
+ * drive_sys.reached_point(10, 30) is a predicate
+ * time.has_elapsed(10, vex::seconds) is a predicate
+ * extend this class for different choices you wish to make
+ */
+class Condition
 {
+public:
+  virtual bool test() = 0;
+};
 
-  /**
-   * A Condition is a function that returns true or false
-   * is_even is a predicate that would return true if a number is even
-   * For our purposes, a Condition is a choice to be made at runtime
-   * drive_sys.reached_point(10, 30) is a predicate
-   * time.has_elapsed(10, vex::seconds) is a predicate
-   * extend this class for different choices you wish to make
-   */
-  class Condition
-  {
-  public:
-    virtual bool test() = 0;
-  };
+/// @brief Function is a quick and dirty Condition to wrap some expression that should be evaluated at runtime
+class Function : public Condition
+{
+public:
+  Function(std::function<bool()> cond) : cond(cond) {}
+  bool test() override;
 
-  /// @brief Function is a quick and dirty Condition to wrap some expression that should be evaluated at runtime
-  class Function : public Condition
-  {
-  public:
-    Function(std::function<bool()> cond) : cond(cond) {}
-    bool test() override;
+private:
+  std::function<bool()> cond;
+};
 
-  private:
-    std::function<bool()> cond;
-  };
+/// @brief IfTimePassed tests based on time since the command controller was constructed. Returns true if elapsed time > time_s
+class IfTimePassed : public Condition
+{
+public:
+  IfTimePassed(double time_s);
+  bool test() override;
 
-  class GlobalTimePassed : public Condition
-  {
-    GlobalTimePassed(double time_s);
-  };
+private:
+  double time_s;
+  vex::timer tmr;
+};
 
-}
 /// @brief InOrder runs its commands sequentially then continues.
 /// How to handle timeout in this case. Automatically set it to sum of commands timouts?
 class InOrder : public AutoCommand
@@ -98,6 +101,7 @@ class FirstFinish : public AutoCommand
 {
 public:
   FirstFinish(std::vector<AutoCommand *> cmds);
+  FirstFinish(std::initializer_list<AutoCommand *> cmds);
   bool run() override;
   void on_timeout() override;
 
@@ -113,6 +117,7 @@ class Parallel : public AutoCommand
 {
 public:
   Parallel(std::vector<AutoCommand *> cmds);
+  Parallel(std::initializer_list<AutoCommand *> cmds);
   bool run() override;
   void on_timeout() override;
 
@@ -128,14 +133,15 @@ private:
 class Branch : public AutoCommand
 {
 public:
-  Branch(AutoCommand *false_choice, AutoCommand *true_choice, Conditions::Condition *cond);
+  Branch(Condition *cond, AutoCommand *false_choice, AutoCommand *true_choice);
+  Branch(Condition *cond, std::initializer_list<AutoCommand> *false_choice);
   bool run() override;
   void on_timeout() override;
 
 private:
   AutoCommand *false_choice;
   AutoCommand *true_choice;
-  Conditions::Condition *cond;
+  Condition *cond;
   bool choice = false;
   bool chosen = false;
   vex::timer tmr;

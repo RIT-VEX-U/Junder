@@ -1,16 +1,21 @@
 #include "../core/include/utils/command_structure/auto_command.h"
 
-bool Conditions::Function::test(){
+bool Function::test()
+{
     return cond();
 }
-
-
+IfTimePassed::IfTimePassed(double time_s) : time_s(time_s), tmr() {}
+bool IfTimePassed::test()
+{
+    return (static_cast<double>(tmr.time()) / 1000.0) > time_s;
+}
 
 InOrder::InOrder(std::queue<AutoCommand *> cmds) : cmds(cmds)
 {
     timeout_seconds = -1.0; // never timeout unless with_timeout is explicitly called
 }
-InOrder::InOrder(std::initializer_list<AutoCommand *> cmds): cmds(cmds){
+InOrder::InOrder(std::initializer_list<AutoCommand *> cmds) : cmds(cmds)
+{
     timeout_seconds = -1.0;
 }
 
@@ -64,6 +69,8 @@ FirstFinish::FirstFinish(std::vector<AutoCommand *> cmds) : cmds(cmds), tmr()
 {
     timeout_seconds = -1.0; // dont timeout `unless explicitly told to
 }
+FirstFinish::FirstFinish(std::initializer_list<AutoCommand *> cmds) : FirstFinish(cmds) {}
+
 bool FirstFinish::run()
 {
     for (size_t i = 0; i < cmds.size(); i++)
@@ -111,6 +118,8 @@ Parallel::Parallel(std::vector<AutoCommand *> cmds) : cmds(cmds), finished(cmds.
 {
     timeout_seconds = -1;
 }
+Parallel::Parallel(std::initializer_list<AutoCommand *> cmds) : Parallel(cmds) {}
+
 bool Parallel::run()
 {
     bool all_finished = true;
@@ -140,7 +149,7 @@ void Parallel::on_timeout()
     }
 }
 
-Branch::Branch(AutoCommand *false_choice, AutoCommand *true_choice, Conditions::Condition *pred) : false_choice(false_choice), true_choice(true_choice), pred(pred), choice(false), chosen(false), tmr() {}
+Branch::Branch(Condition *pred, AutoCommand *false_choice, AutoCommand *true_choice) : false_choice(false_choice), true_choice(true_choice), cond(cond), choice(false), chosen(false), tmr() {}
 bool Branch::run()
 {
     if (!chosen)
