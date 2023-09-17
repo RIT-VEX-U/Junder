@@ -44,7 +44,7 @@ jobs:
       uses: slackapi/slack-github-action@v1.24.0
       with:
         channel-id: 'github-updates'
-        slack-message: ":x:    _*Oopsie Woopsie! Build Failed in <${{ github.server_url }}/${{ github.repository }}|${{ github.repository }}>*_\n\n> Branch: <${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}|${{ github.ref_name }}>\n> Commit Ref: <${{ github.server_url }}/${{ github.repository }}/commit/${{ env.GIT_COMMIT_SHA }}|${{ env.GIT_COMMIT_SHORT_SHA }}>\n> Commit Message: ${{ env.GIT_COMMIT_MESSAGE_SUBJECT_SANITIZED }}\n> Author: ${{ env.GIT_COMMIT_COMMITTER }} (${{ env.GIT_COMMIT_COMMITTER_NAME }})\n\nPlease fix as soon as possible!"
+        slack-message: ":x:    _*Oopsie Woopsie! Build Failed in <${{ github.server_url }}/${{ github.repository }}|${{ github.repository }}>*_\n\n> Branch: <${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}|${{ github.ref_name }}>\n> Commit Ref: <${{ github.server_url }}/${{ github.repository }}/commit/${{ env.GIT_COMMIT_SHA }}|${{ env.GIT_COMMIT_SHORT_SHA }}>\n> Commit Message: ${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}\n> Author: ${{ env.GIT_COMMIT_COMMITTER }} \n\nPlease fix as soon as possible!"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
