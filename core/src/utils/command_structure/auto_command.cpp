@@ -1,6 +1,6 @@
 #include "../core/include/utils/command_structure/auto_command.h"
 
-bool Function::test()
+bool FunctionCondition::test()
 {
     return cond();
 }

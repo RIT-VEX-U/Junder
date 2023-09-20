@@ -35,4 +35,3 @@
 
 // Base package
 #include "../core/include/robot_specs.h"
-#include "../core/include/splash.h"

@@ -1,8 +1,10 @@
 #pragma once
 #include "vex.h"
+#include "core.h"
 
 extern vex::brain brain;
 extern vex::controller con;
+extern vex::inertial imu;
 
 // ================ INPUTS ================
 // Digital sensors
@@ -13,9 +15,10 @@ extern vex::controller con;
 // ================ OUTPUTS ================
 // Motors
 
-
 // ================ SUBSYSTEMS ================
-
+extern robot_specs_t robot_cfg;
+extern OdometryTank odom;
+extern TankDrive drive_sys;
 
 // ================ UTILS ================
 

@@ -57,11 +57,11 @@ public:
   virtual bool test() = 0;
 };
 
-/// @brief Function is a quick and dirty Condition to wrap some expression that should be evaluated at runtime
-class Function : public Condition
+/// @brief FunctionCondition is a quick and dirty Condition to wrap some expression that should be evaluated at runtime
+class FunctionCondition : public Condition
 {
 public:
-  Function(std::function<bool()> cond) : cond(cond) {}
+  FunctionCondition(std::function<bool()> cond) : cond(cond) {}
   bool test() override;
 
 private:
