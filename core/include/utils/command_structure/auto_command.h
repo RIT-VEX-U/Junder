@@ -61,11 +61,12 @@ public:
 class FunctionCondition : public Condition
 {
 public:
-  FunctionCondition(std::function<bool()> cond) : cond(cond) {}
+  FunctionCondition(std::function<bool()> cond, std::function<void(void)> timeout = [](){}) : cond(cond), timeout(timeout) {}
   bool test() override;
 
 private:
   std::function<bool()> cond;
+  std::function<void(void)> timeout;
 };
 
 /// @brief IfTimePassed tests based on time since the command controller was constructed. Returns true if elapsed time > time_s
@@ -96,36 +97,20 @@ private:
   vex::timer tmr;
 };
 
-/// @brief FirstFinish runs multiple commands in parallel and exits when the first subcommand does
-/// When one command finishes, on_timeout will be called on the rest in this command group and it continue
-class FirstFinish : public AutoCommand
-{
-public:
-  FirstFinish(std::vector<AutoCommand *> cmds);
-  FirstFinish(std::initializer_list<AutoCommand *> cmds);
-  bool run() override;
-  void on_timeout() override;
 
-private:
-  std::vector<AutoCommand *> cmds;
-  int finished_idx = -1;
-  vex::timer tmr;
-};
 
 /// @brief  Parallel runs multiple commands in parallel and waits for all to finish before continuing.
 /// if none finish before this command's timeout, it will call on_timeout on all children continue
 class Parallel : public AutoCommand
 {
 public:
-  Parallel(std::vector<AutoCommand *> cmds);
   Parallel(std::initializer_list<AutoCommand *> cmds);
   bool run() override;
   void on_timeout() override;
 
 private:
   std::vector<AutoCommand *> cmds;
-  std::vector<bool> finished;
-  vex::timer tmr;
+  std::vector<vex::task*> runners;
 };
 
 /// @brief Branch chooses from multiple options at runtime. the function decider returns an index into the choices vector
@@ -145,4 +130,40 @@ private:
   bool choice = false;
   bool chosen = false;
   vex::timer tmr;
+};
+
+/// @brief Awaitable provides a way to start a command and set it loose.
+/// Use with caution, often Parallel is what you're looking for
+/// If you do use this, calling await (to wait for command to run its course), or
+/// stop() to explicitly give up on the command is recommended to avoid
+class Awaitable
+{
+  // dont look at these, they are for Awaitable to use
+  class AwaitableRunner : public AutoCommand
+  {
+    AwaitableRunner(AutoCommand *cmd);
+    bool run() override;
+    void on_timeout() override;
+  };
+
+  class AwaitableWaiter : public AutoCommand
+  {
+    AwaitableWaiter(AutoCommand *cmd);
+    bool run() override;
+    void on_timeout() override;
+  };
+  class AwaitableStopper : public AutoCommand
+  {
+    AwaitableStopper(AutoCommand *cmd);
+    bool run() override;
+    void on_timeout() override;
+  };
+
+public:
+  Awaitable(AutoCommand *cmd) {}
+  AutoCommand *start() {}
+  /// @brief pauses for
+  /// @return command that does this
+  AutoCommand *await() {}
+  AutoCommand *stop() {}
 };

@@ -18,19 +18,52 @@ vex::competition comp;
 
 /**
  * Program entrypoint. Defines the competition autonomous and opcontrol entrypoints,
- * and init functions. 
- * 
+ * and init functions.
+ *
  * Do not modify this file!
-*/
-int main() {
+ */
+
+class Tester
+{
+public:
+    Tester()
+    {
+        printf("Ctor\n");
+    }
+    ~Tester()
+    {
+        printf("Dtor\n");
+    }
+};
+int runner(void *cmd)
+{
+    Tester t{};
+    while (1)
+    {
+        printf("schmoovin\n");
+
+        vex::wait(400, vex::msec);
+    }
+}
+int main()
+{
+
+    vex::task t(runner, nullptr);
+    vex::wait(4, vex::seconds);
+    t.stop();
+    printf("Stopped\n");
+
+    vex::wait(4, vex::seconds);
+    return 0;
 
     comp.autonomous(autonomous);
     comp.drivercontrol(opcontrol);
 
     robot_init();
-   
-    while(1) {
-        
+
+    while (1)
+    {
+
         // Allow other tasks to run
         this_thread::sleep_for(1000);
     }

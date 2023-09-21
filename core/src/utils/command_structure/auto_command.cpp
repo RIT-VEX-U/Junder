@@ -65,86 +65,78 @@ void InOrder::on_timeout()
     }
 }
 
-FirstFinish::FirstFinish(std::vector<AutoCommand *> cmds) : cmds(cmds), tmr()
+struct runner_info
 {
-    timeout_seconds = -1.0; // dont timeout `unless explicitly told to
-}
-FirstFinish::FirstFinish(std::initializer_list<AutoCommand *> cmds) : cmds(cmds), tmr() {}
-
-bool FirstFinish::run()
+    int index;
+    std::vector<vex::task *> *runners;
+    AutoCommand *cmd;
+};
+static int parallel_runner(void *arg)
 {
-    for (size_t i = 0; i < cmds.size(); i++)
+    runner_info *ri = (runner_info *)arg;
+    while (1)
     {
-        bool finished = cmds[i]->run();
-        bool doTimeout = cmds[i]->timeout_seconds > 0.0;
-
-        double seconds = static_cast<double>(tmr.time()) / 1000.0;
-        bool timed_out = seconds > cmds[i]->timeout_seconds;
-        if ((doTimeout && timed_out) || finished)
+        bool finished = ri->cmd->run();
+        if (finished)
         {
-            finished_idx = i;
             break;
         }
+        vexDelay(20);
     }
-    if (finished_idx != -1)
-    {
-        for (int i = 0; i < cmds.size(); i++)
-        {
-            if (i == finished_idx)
-            {
-                continue;
-            }
-            cmds[i]->on_timeout();
-        }
-        return true;
-    }
-    return false;
-}
-void FirstFinish::on_timeout()
-{
-    for (int i = 0; i < cmds.size(); i++)
-    {
-        if (i == finished_idx)
-        {
-            continue;
-        }
 
-        cmds[i]->on_timeout();
+    if ((*ri->runners)[ri->index] != nullptr)
+    {
+        delete (*ri->runners)[ri->index];
+        (*ri->runners)[ri->index] = nullptr;
     }
+    return 0;
 }
 
 // wait for all to finish
-Parallel::Parallel(std::vector<AutoCommand *> cmds) : cmds(cmds), finished(cmds.size(), false)
-{
-    timeout_seconds = -1;
-}
-Parallel::Parallel(std::initializer_list<AutoCommand *> cmds) : cmds(cmds), finished(cmds.size(), false) {}
+Parallel::Parallel(std::initializer_list<AutoCommand *> cmds) : cmds(cmds), runners(0) {}
 
 bool Parallel::run()
 {
+    if (runners.size() == 0)
+    {
+        // not initialized yet
+        for (int i = 0; i < cmds.size(); i++)
+        {
+            runner_info *ri = new runner_info{
+                .index = i,
+                .runners = &runners,
+                .cmd = cmds[i],
+            };
+            runners.push_back(new vex::task(parallel_runner, cmds[i]));
+        }
+    }
+
     bool all_finished = true;
 
     for (int i = 0; i < cmds.size(); i++)
     {
-        if (finished[i] == true)
-        {
-            continue;
-        }
-        finished[i] = cmds[i]->run();
-        if (!finished[i])
+        if (runners[i] != nullptr)
         {
             all_finished = false;
+            if (cmds[i]!=nullptr){
+                delete cmds[i];
+            }
         }
     }
     return all_finished;
 }
 void Parallel::on_timeout()
 {
-    for (int i = 0; i < finished.size(); i++)
+    for (int i = 0; i < runners.size(); i++)
     {
-        if (!finished[i])
+
+        if (runners[i] != nullptr)
         {
+            runners[i]->stop();
             cmds[i]->on_timeout();
+            delete runners[i];
+            delete cmds[i];
+            cmds[i] = nullptr;
         }
     }
 }
