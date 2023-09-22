@@ -4,12 +4,16 @@
  *    Interface for module-specifc commands
  */
 
+
+// DoWhile(action, condition)
+// WaitUntilCondition()
 #pragma once
 
 #include "vex.h"
 #include <functional>
 #include <vector>
 #include <queue>
+#include <atomic>
 
 class AutoCommand
 {
@@ -27,6 +31,10 @@ public:
   virtual void on_timeout() {}
   AutoCommand *withTimeout(double t_seconds)
   {
+    if (this->timeout_seconds < 0){
+      // should never be timed out
+      return this;
+    }
     this->timeout_seconds = t_seconds;
     return this;
   }
@@ -61,7 +69,10 @@ public:
 class FunctionCondition : public Condition
 {
 public:
-  FunctionCondition(std::function<bool()> cond, std::function<void(void)> timeout = [](){}) : cond(cond), timeout(timeout) {}
+  FunctionCondition(
+      std::function<bool()> cond, std::function<void(void)> timeout = []() {}) : cond(cond), timeout(timeout)
+  {
+  }
   bool test() override;
 
 private:
@@ -97,8 +108,6 @@ private:
   vex::timer tmr;
 };
 
-
-
 /// @brief  Parallel runs multiple commands in parallel and waits for all to finish before continuing.
 /// if none finish before this command's timeout, it will call on_timeout on all children continue
 class Parallel : public AutoCommand
@@ -110,7 +119,7 @@ public:
 
 private:
   std::vector<AutoCommand *> cmds;
-  std::vector<vex::task*> runners;
+  std::vector<vex::task *> runners;
 };
 
 /// @brief Branch chooses from multiple options at runtime. the function decider returns an index into the choices vector
@@ -120,6 +129,7 @@ class Branch : public AutoCommand
 {
 public:
   Branch(Condition *cond, AutoCommand *false_choice, AutoCommand *true_choice);
+  ~Branch();
   bool run() override;
   void on_timeout() override;
 
@@ -132,38 +142,50 @@ private:
   vex::timer tmr;
 };
 
+/// @brief Async runs a command asynchronously
+/// will simply let it go and never look back
+/// THIS HAS A VERY NICHE USE CASE. THINK ABOUT IF YOU REALLY NEED IT
+class Async : public AutoCommand
+{
+public:
+  Async(AutoCommand *cmd) : cmd(cmd) {}
+  bool run() override;
+
+private:
+  AutoCommand *cmd;
+};
+
 /// @brief Awaitable provides a way to start a command and set it loose.
 /// Use with caution, often Parallel is what you're looking for
 /// If you do use this, calling await (to wait for command to run its course), or
 /// stop() to explicitly give up on the command is recommended to avoid
+/// IF YOU ARE USING THIS, CONSIDER USING PARALLEL?
+/// Think about it at least
 class Awaitable
 {
-  // dont look at these, they are for Awaitable to use
-  class AwaitableRunner : public AutoCommand
-  {
-    AwaitableRunner(AutoCommand *cmd);
-    bool run() override;
-    void on_timeout() override;
-  };
-
-  class AwaitableWaiter : public AutoCommand
-  {
-    AwaitableWaiter(AutoCommand *cmd);
-    bool run() override;
-    void on_timeout() override;
-  };
-  class AwaitableStopper : public AutoCommand
-  {
-    AwaitableStopper(AutoCommand *cmd);
-    bool run() override;
-    void on_timeout() override;
-  };
-
 public:
-  Awaitable(AutoCommand *cmd) {}
-  AutoCommand *start() {}
-  /// @brief pauses for
-  /// @return command that does this
-  AutoCommand *await() {}
-  AutoCommand *stop() {}
+  /// @brief Creates a new awaitable. 
+  /// use this.start() in the command controller to set it loose 
+  /// use this.await() in the command controller to wait upon it to finish
+  /// THIS AN ONLY BE USED ONCE
+  /// @param cmd 
+  Awaitable(AutoCommand *cmd);
+  /// @brief begins the awaiting command
+  /// @return the command that does this
+  AutoCommand *start();
+  /// @brief waits for the command to finish
+  /// or if specified, waits for that many seconds before moving on
+  /// @return the command that does this
+  AutoCommand *await(double timeout = -1.0);
+
+private:
+  AutoCommand *cmd = nullptr;
+  vex::task *runner = nullptr;
+  std::atomic<bool> is_done;
+
+  // dont look at these, they are for Awaitable to use
+  void beginner();
+  bool checker();
+  void ender();
+
 };

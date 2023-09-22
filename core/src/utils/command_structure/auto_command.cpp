@@ -65,7 +65,7 @@ void InOrder::on_timeout()
     }
 }
 
-struct runner_info
+struct parallel_runner_info
 {
     int index;
     std::vector<vex::task *> *runners;
@@ -73,13 +73,22 @@ struct runner_info
 };
 static int parallel_runner(void *arg)
 {
-    runner_info *ri = (runner_info *)arg;
+    parallel_runner_info *ri = (parallel_runner_info *)arg;
+    vex::timer tmr;
     while (1)
     {
         bool finished = ri->cmd->run();
         if (finished)
         {
             break;
+        }
+        double t = (double)(tmr.time()) / 1000.0;
+        bool timed_out = t > ri->cmd->timeout_seconds;
+        bool should_timeout = ri->cmd->timeout_seconds > 0;
+
+        if (timed_out && should_timeout)
+        {
+            ri->cmd->on_timeout();
         }
         vexDelay(20);
     }
@@ -102,7 +111,7 @@ bool Parallel::run()
         // not initialized yet
         for (int i = 0; i < cmds.size(); i++)
         {
-            runner_info *ri = new runner_info{
+            parallel_runner_info *ri = new parallel_runner_info{
                 .index = i,
                 .runners = &runners,
                 .cmd = cmds[i],
@@ -118,7 +127,8 @@ bool Parallel::run()
         if (runners[i] != nullptr)
         {
             all_finished = false;
-            if (cmds[i]!=nullptr){
+            if (cmds[i] != nullptr)
+            {
                 delete cmds[i];
             }
         }
@@ -135,6 +145,7 @@ void Parallel::on_timeout()
             runners[i]->stop();
             cmds[i]->on_timeout();
             delete runners[i];
+            runners[i] = nullptr;
             delete cmds[i];
             cmds[i] = nullptr;
         }
@@ -142,6 +153,12 @@ void Parallel::on_timeout()
 }
 
 Branch::Branch(Condition *cond, AutoCommand *false_choice, AutoCommand *true_choice) : false_choice(false_choice), true_choice(true_choice), cond(cond), choice(false), chosen(false), tmr() {}
+
+Branch::~Branch()
+{
+    delete false_choice;
+    delete true_choice;
+};
 bool Branch::run()
 {
     if (!chosen)
@@ -184,4 +201,157 @@ void Branch::on_timeout()
     {
         true_choice->on_timeout();
     }
+}
+
+static int async_runner(void *arg)
+{
+    AutoCommand *cmd = (AutoCommand *)arg;
+    vex::timer tmr;
+    while (1)
+    {
+        bool finished = cmd->run();
+        if (finished)
+        {
+            break;
+        }
+        double t = (double)(tmr.time()) / 1000.0;
+        bool timed_out = t > cmd->timeout_seconds;
+        if (timed_out)
+        {
+            cmd->on_timeout();
+        }
+        vexDelay(20);
+    }
+
+    return 0;
+}
+bool Async::run()
+{
+    vex::task *t = new vex::task(async_runner, nullptr);
+    // lmao get memory leaked
+    return true;
+}
+
+
+Awaitable::Awaitable(AutoCommand *cmd):cmd(cmd), runner(nullptr), is_done(false){}
+
+class AwaitableRunner : public AutoCommand
+{
+public:
+    AwaitableRunner(std::function<void(void)> begin) : begin(begin)
+    {
+        timeout_seconds = -1;
+    }
+    bool run() override
+    {
+        begin();
+        return true;
+    };
+
+private:
+    std::function<void(void)> begin;
+};
+
+AutoCommand *Awaitable::start()
+{
+    return new AwaitableRunner([this]()
+                               { return beginner(); });
+}
+
+
+
+class AwaitableWaiter : public AutoCommand
+{
+public:
+    AwaitableWaiter(std::function<bool(void)> is_done, double timeout) : check(is_done), timeout(timeout), tmr() {}
+    bool run() override
+    {
+        // finished naturally
+        if (check()){
+            return true;
+        }
+        double seconds = ((double)tmr.time())/1000.0;
+        if (seconds > timeout && timeout !=-1){
+            // await timeout exceeded
+            return true;
+        }
+        return false;
+    }
+    void on_timeout() override {}
+
+private:
+    std::function<bool(void)> check;
+    double timeout;
+    vex::timer tmr;
+};
+
+AutoCommand *Awaitable::await(double timeout)
+{
+    return new AwaitableWaiter([this]()
+                               { return Awaitable::checker(); }, timeout);
+}
+
+/// @brief unused rn
+class AwaitableStopper : public AutoCommand
+{
+    AwaitableStopper(std::function<void()> stopper) : stopper(stopper) {}
+    bool run() override
+    {
+        stopper();
+        return true;
+    }
+
+private:
+    std::function<void()> stopper;
+};
+
+struct awaitable_runner_info
+{
+    AutoCommand *cmd;
+    std::atomic<bool> *finished;
+};
+static int awaitable_runner(void *arg)
+{
+    awaitable_runner_info *ri = (awaitable_runner_info *)arg;
+    vex::timer tmr;
+    while (1)
+    {
+        bool finished = ri->cmd->run();
+        if (finished)
+        {
+            break;
+        }
+        double t = (double)(tmr.time()) / 1000.0;
+        bool should_timeout = ri->cmd->timeout_seconds > 0;
+        bool timed_out = t > ri->cmd->timeout_seconds;
+        if (timed_out && should_timeout)
+        {
+            ri->cmd->on_timeout();
+        }
+        vexDelay(20);
+    }
+
+    *ri->finished = true;
+    return 0;
+
+}
+
+/// @brief starts the thread goin
+void Awaitable::beginner()
+{
+    awaitable_runner_info *ri = new awaitable_runner_info{
+        .cmd = cmd,
+        .finished = &is_done,
+    };
+    runner = new vex::task(awaitable_runner, (void *)ri);
+}
+/// @brief returns true if the function we are awaiting upon has finished
+/// TODO add a timeout 
+/// @return true if the command we are awaiting upon has finished
+bool Awaitable::checker()
+{
+    return is_done;
+}
+void Awaitable::ender()
+{
 }
