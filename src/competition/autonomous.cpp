@@ -22,8 +22,11 @@ private:
 class RaiseLiftCommand : public AutoCommand
 {
 public:
-    RaiseLiftCommand(double inches){}
+    RaiseLiftCommand(double inches) {}
 };
+
+// static vex::motor_group left_motors{};
+// Flywheel flywheel(left_motors, 1.0);
 
 void autonomous()
 {
@@ -32,36 +35,22 @@ void autonomous()
         vex::wait(0.02, vex::sec);
     }
 
-    Awaitable lift1{new RaiseLiftCommand(12.0)};
+    PID::pid_config_t pct = PID::pid_config_t{
+        .p = .01,
+    };
+
+    PID p = PID(pct);
 
     CommandController cc{
-        lift1.start(),
-        new DriveToPointCommand(drive_sys, *robot_cfg.turn_feedback, point_t{12.0, 0.0}, vex::forward),
-        lift1.await(4),
-        // new TurnDegreesCommand(drive_sys, *robot_cfg.turn_feedback, 90, 1.0),
-        // new Branch{
-        // new FunctionCondition([]()
-        //   { return true; }),
-        // new TurnDegreesCommand(drive_sys, *robot_cfg.turn_feedback, -90, 1.0),
-        // new InOrder{
-        // new DelayCommand(1000),
-        // new TurnDegreesCommand(drive_sys, *robot_cfg.turn_feedback, 90, 1.0),
-        // },
-        // },
-
-        new Parallel{
-            new InOrder{
-                new DelayCommand(500),
-                new FunctionCommand([]()
-                                    { printf("500 ms delay\n"); return true; }),
-            },
-            new InOrder{
-                new DelayCommand(1000),
-                new FunctionCommand([]()
-                                    { printf("1000 ms delay\n"); return true; }),
-            }
-
-        },
+        drive_sys.TurnDegreesCmd(90),
+        drive_sys.DriveForwardCmd(10, vex::forward),
+        drive_sys.TurnDegreesCmd(90),
+        drive_sys.DriveForwardCmd(10),
+        drive_sys.TurnDegreesCmd(90),
+        drive_sys.DriveForwardCmd(10),
+        drive_sys.TurnDegreesCmd(90),
+        drive_sys.DriveForwardCmd(10),
+        drive_sys.TurnDegreesCmd(90),
     };
 
     cc.run();

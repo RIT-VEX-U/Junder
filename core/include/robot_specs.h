@@ -16,10 +16,9 @@ typedef struct
   double odom_gear_ratio; ///< the ratio of the odometry wheel to the encoder reading odometry data
   double dist_between_wheels; ///< the distance between centers of the central drive wheels 
 
-  double drive_correction_cutoff; ///< the distance at which to stop trying to turn towards the target. If we are less than this value, we can continue driving forward to minimize our distance but will not try to spin around to point directly at the target
-
-  Feedback *drive_feedback; ///< the default feedback for autonomous driving
-  Feedback *turn_feedback; ///< the defualt feedback for autonomous turning
+  double drive_correction_cutoff; ///< the distance at which to stop trying to turn towards the target. If we are less than this value, we can continue driving forward to minimize our distance but will not try to spin around to point directly at the target&
+  Feedback &drive_feedback; ///< the default feedback for autonomous driving
+  Feedback &turn_feedback; ///< the defualt feedback for autonomous turning
   PID::pid_config_t correction_pid; ///< the pid controller to keep the robot driving in as straight a line as possible
 
 } robot_specs_t;

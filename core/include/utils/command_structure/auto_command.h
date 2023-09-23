@@ -4,7 +4,6 @@
  *    Interface for module-specifc commands
  */
 
-
 // DoWhile(action, condition)
 // WaitUntilCondition()
 #pragma once
@@ -31,7 +30,8 @@ public:
   virtual void on_timeout() {}
   AutoCommand *withTimeout(double t_seconds)
   {
-    if (this->timeout_seconds < 0){
+    if (this->timeout_seconds < 0)
+    {
       // should never be timed out
       return this;
     }
@@ -90,6 +90,20 @@ public:
 private:
   double time_s;
   vex::timer tmr;
+};
+
+/// @brief Waits until the condition is true
+class WaitUntilCondition : public AutoCommand
+{
+public:
+  WaitUntilCondition(Condition *cond) : cond(cond) {}
+  bool run() override
+  {
+    return cond->test();
+  }
+
+private:
+  Condition *cond;
 };
 
 /// @brief InOrder runs its commands sequentially then continues.
@@ -153,39 +167,4 @@ public:
 
 private:
   AutoCommand *cmd;
-};
-
-/// @brief Awaitable provides a way to start a command and set it loose.
-/// Use with caution, often Parallel is what you're looking for
-/// If you do use this, calling await (to wait for command to run its course), or
-/// stop() to explicitly give up on the command is recommended to avoid
-/// IF YOU ARE USING THIS, CONSIDER USING PARALLEL?
-/// Think about it at least
-class Awaitable
-{
-public:
-  /// @brief Creates a new awaitable. 
-  /// use this.start() in the command controller to set it loose 
-  /// use this.await() in the command controller to wait upon it to finish
-  /// THIS AN ONLY BE USED ONCE
-  /// @param cmd 
-  Awaitable(AutoCommand *cmd);
-  /// @brief begins the awaiting command
-  /// @return the command that does this
-  AutoCommand *start();
-  /// @brief waits for the command to finish
-  /// or if specified, waits for that many seconds before moving on
-  /// @return the command that does this
-  AutoCommand *await(double timeout = -1.0);
-
-private:
-  AutoCommand *cmd = nullptr;
-  vex::task *runner = nullptr;
-  std::atomic<bool> is_done;
-
-  // dont look at these, they are for Awaitable to use
-  void beginner();
-  bool checker();
-  void ender();
-
 };
