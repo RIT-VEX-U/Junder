@@ -333,8 +333,8 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   double rside = drive_pid_rval - correction;
 
   // limit the outputs between -1 and +1
-  lside = clamp(lside, -1, 1);
-  rside = clamp(rside, -1, 1);
+  lside = clamp(lside, -max_speed, max_speed);
+  rside = clamp(rside, -max_speed, max_speed);
 
   drive_tank(lside, rside);
 
