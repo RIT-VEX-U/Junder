@@ -26,8 +26,6 @@ PID::pid_config_t drive_pid_cfg =
         .deadband = 0.1,
         .on_target_time = 0};
 
-PID drive_pid = PID(drive_pid_cfg);
-
 PID::pid_config_t turn_pid_cfg =
     {
         .p = 0.014,
@@ -35,7 +33,6 @@ PID::pid_config_t turn_pid_cfg =
         .d = 0.0025,
         .deadband = 1,
         .on_target_time = 0.1};
-PID turn_pid = PID(turn_pid_cfg);
 
 robot_specs_t robot_cfg = {
     .robot_radius = 12,            // inches
@@ -43,8 +40,8 @@ robot_specs_t robot_cfg = {
     .odom_gear_ratio = 1.03,       // inches
     .dist_between_wheels = 9.18,   // inches
     .drive_correction_cutoff = 12, // inches
-    .drive_feedback = drive_pid,
-    .turn_feedback = turn_pid,
+    .drive_feedback = new PID(drive_pid_cfg),
+    .turn_feedback = new PID(turn_pid_cfg),
     .correction_pid = (PID::pid_config_t){
         .p = .03,
     }};
@@ -68,5 +65,5 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
  */
 void robot_init()
 {
-    imu.calibrate();
+  imu.calibrate();
 }

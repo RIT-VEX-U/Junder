@@ -4,8 +4,10 @@
 #include "../core/include/utils/command_structure/drive_commands.h"
 
 TankDrive::TankDrive(motor_group &left_motors, motor_group &right_motors, robot_specs_t &config, OdometryBase *odom)
-    : left_motors(left_motors), right_motors(right_motors), correction_pid(config.correction_pid), drive_default_feedback(config.drive_feedback), turn_default_feedback(config.turn_feedback), odometry(odom), config(config)
+    : left_motors(left_motors), right_motors(right_motors), correction_pid(config.correction_pid), odometry(odom), config(config)
 {
+  drive_default_feedback = config.drive_feedback;
+  turn_default_feedback = config.turn_feedback;
 }
 
 AutoCommand *TankDrive::DriveToPointCmd(Feedback &fb, point_t pt, vex::directionType dir, double max_speed)
@@ -15,21 +17,22 @@ AutoCommand *TankDrive::DriveToPointCmd(Feedback &fb, point_t pt, vex::direction
 
 AutoCommand *TankDrive::DriveToPointCmd(point_t pt, vex::directionType dir, double max_speed)
 {
-  return new DriveToPointCommand(*this, drive_default_feedback, pt, dir, max_speed);
+  return new DriveToPointCommand(*this, *drive_default_feedback, pt, dir, max_speed);
+}
+
+AutoCommand *TankDrive::DriveForwardCmd(double dist, vex::directionType dir, double max_speed)
+{
+  return new DriveForwardCommand(*this, *drive_default_feedback, dist, dir, max_speed);
 }
 
 AutoCommand *TankDrive::DriveForwardCmd(Feedback &fb, double dist, vex::directionType dir, double max_speed)
 {
   return new DriveForwardCommand(*this, fb, dist, dir, max_speed);
 }
-AutoCommand *TankDrive::DriveForwardCmd(double dist, vex::directionType dir, double max_speed)
-{
-  return new DriveForwardCommand(*this, drive_default_feedback, dist, dir, max_speed);
-}
 
 AutoCommand *TankDrive::TurnToHeadingCmd(double heading, double max_speed)
 {
-  return new TurnToHeadingCommand(*this, turn_default_feedback, heading, max_speed);
+  return new TurnToHeadingCommand(*this, *turn_default_feedback, heading, max_speed);
 }
 AutoCommand *TankDrive::TurnToHeadingCmd(Feedback &fb, double heading, double max_speed)
 {
@@ -38,7 +41,7 @@ AutoCommand *TankDrive::TurnToHeadingCmd(Feedback &fb, double heading, double ma
 
 AutoCommand *TankDrive::TurnDegreesCmd(double degrees, double max_speed)
 {
-  return new TurnDegreesCommand(*this, turn_default_feedback, degrees, max_speed);
+  return new TurnDegreesCommand(*this, *turn_default_feedback, degrees, max_speed);
 }
 AutoCommand *TankDrive::TurnDegreesCmd(Feedback &fb, double degrees, double max_speed)
 {
@@ -158,7 +161,12 @@ bool TankDrive::drive_forward(double inches, directionType dir, Feedback &feedba
  */
 bool TankDrive::drive_forward(double inches, directionType dir, double max_speed)
 {
-  return drive_forward(inches, dir, drive_default_feedback, max_speed);
+  if (drive_default_feedback != NULL)
+    return drive_forward(inches, dir, *drive_default_feedback, max_speed);
+
+  printf("tank_drive.cpp: Cannot run drive_forward without a feedback controller!\n");
+  fflush(stdout);
+  return true;
 }
 
 /**
@@ -191,7 +199,7 @@ bool TankDrive::turn_degrees(double degrees, Feedback &feedback, double max_spee
     target_heading = start_heading + degrees;
   }
 
-  return turn_to_heading(target_heading, feedback,max_speed);
+  return turn_to_heading(target_heading);
 }
 
 /**
@@ -206,7 +214,12 @@ bool TankDrive::turn_degrees(double degrees, Feedback &feedback, double max_spee
  */
 bool TankDrive::turn_degrees(double degrees, double max_speed)
 {
-  return turn_degrees(degrees, turn_default_feedback, max_speed);
+  if (turn_default_feedback != NULL)
+    return turn_degrees(degrees, *turn_default_feedback, max_speed);
+
+  printf("tank_drive.cpp: Cannot run turn_degrees without a feedback controller!\n");
+  fflush(stdout);
+  return true;
 }
 
 /**
@@ -320,8 +333,8 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   double rside = drive_pid_rval - correction;
 
   // limit the outputs between -1 and +1
-  lside = clamp(lside, -max_speed, max_speed);
-  rside = clamp(rside, -max_speed, max_speed);
+  lside = clamp(lside, -1, 1);
+  rside = clamp(rside, -1, 1);
 
   drive_tank(lside, rside);
 
@@ -351,7 +364,12 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
  */
 bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, double max_speed)
 {
-  return this->drive_to_point(x, y, dir, drive_default_feedback, max_speed);
+  if (drive_default_feedback != NULL)
+    return this->drive_to_point(x, y, dir, *drive_default_feedback, max_speed);
+
+  printf("tank_drive.cpp: Cannot run drive_to_point without a feedback controller!\n");
+  fflush(stdout);
+  return true;
 }
 
 /**
@@ -410,8 +428,12 @@ bool TankDrive::turn_to_heading(double heading_deg, Feedback &feedback, double m
  */
 bool TankDrive::turn_to_heading(double heading_deg, double max_speed)
 {
+  if (turn_default_feedback != NULL)
+    return turn_to_heading(heading_deg, *turn_default_feedback, max_speed);
 
-  return turn_to_heading(heading_deg, turn_default_feedback, max_speed);
+  printf("tank_drive.cpp: Cannot run turn_to_heading without a feedback controller!\n");
+  fflush(stdout);
+  return true;
 }
 
 /**

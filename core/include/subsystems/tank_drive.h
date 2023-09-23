@@ -194,8 +194,8 @@ private:
   motor_group &right_motors; ///< right drive motors
 
   PID correction_pid;                      ///< PID controller used to drive in as straight a line as possible
-  Feedback &drive_default_feedback; ///< feedback to use to drive if none is specified
-  Feedback &turn_default_feedback;  ///< feedback to use to turn if none is specified
+  Feedback *drive_default_feedback = NULL; ///< feedback to use to drive if none is specified
+  Feedback *turn_default_feedback = NULL;  ///< feedback to use to turn if none is specified
 
   OdometryBase *odometry; ///< odometry system to track position and rotation. necessary for autonomous driving
 
