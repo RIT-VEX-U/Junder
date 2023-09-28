@@ -166,5 +166,5 @@ public:
   bool run() override;
 
 private:
-  AutoCommand *cmd;
+  AutoCommand *cmd = nullptr;
 };

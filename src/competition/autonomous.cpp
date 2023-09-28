@@ -41,17 +41,23 @@ void autonomous()
 
     PID p = PID(pct);
 
+    printf("Starting cc\n");
+    fflush(stdout);
+    vex::wait(1,vex::sec);
     CommandController cc{
-        drive_sys.TurnDegreesCmd(90),
-        drive_sys.DriveForwardCmd(10, vex::forward),
-        drive_sys.TurnDegreesCmd(90),
-        drive_sys.DriveForwardCmd(10),
-        drive_sys.TurnDegreesCmd(90),
-        drive_sys.DriveForwardCmd(10),
-        drive_sys.TurnDegreesCmd(90),
-        drive_sys.DriveForwardCmd(10),
-        drive_sys.TurnDegreesCmd(90),
-    };
+        new Async{
+            new InOrder{
+                new DelayCommand(1000),
+                new FunctionCommand([]()
+                                    {printf("1000\n");return true; }),
+            },
+        },
+            new InOrder{
+                new DelayCommand(2000),
+                new FunctionCommand([]()
+                                    {printf("2000\n");return true; }),
+
+        }};
 
     cc.run();
 }

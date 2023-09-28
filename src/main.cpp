@@ -28,7 +28,7 @@ int main()
 
 
     comp.autonomous(autonomous);
-    comp.drivercontrol(opcontrol);
+    comp.drivercontrol(autonomous);
 
     robot_init();
 
