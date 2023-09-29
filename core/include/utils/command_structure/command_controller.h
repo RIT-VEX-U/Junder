@@ -16,8 +16,7 @@ class CommandController
 {
 public:
   /// @brief Create an empty CommandController. Add Command with CommandController::add()
-  [[deprecated("Use list constructor instead.")]] 
-  CommandController() : command_queue({}) {}
+  [[deprecated("Use list constructor instead.")]] CommandController() : command_queue({}) {}
 
   /// @brief Create a CommandController with commands pre added. More can be added with CommandController::add()
   /// @param cmds
@@ -48,14 +47,18 @@ public:
    * @param ms - number of milliseconds to wait
    *    before continuing execution of autonomous
    */
-  void
-  add_delay(int ms);
+  void add_delay(int ms);
+
+  /// @brief add_cancel_func specifies that when this func evaluates to true, to cancel the command controller
+  /// @param true_if_cancel a function that returns true when we want to cancel the command controller
+  void add_cancel_func(std::function<bool(void)> true_if_cancel);
 
   /**
    * Begin execution of the queue
    * Execute and remove commands in FIFO order
    */
   void run();
+
   /**
    * last_command_timed_out tells how the last command ended
    * Use this if you want to make decisions based on the end of the last command
@@ -66,4 +69,6 @@ public:
 private:
   std::queue<AutoCommand *> command_queue;
   bool command_timed_out = false;
+  std::function<bool()> should_cancel = []()
+  { return false; };
 };

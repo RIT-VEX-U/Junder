@@ -233,7 +233,7 @@ static int async_runner(void *arg)
 bool Async::run()
 {
     vex::task *t = new vex::task(async_runner, (void *)cmd);
-    (void *)t;
+    (void)t;
     // lmao get memory leaked
     return true;
 }
