@@ -89,7 +89,7 @@ TOOL_INC  = -I"$(VEX_SDK_PATH)/$(PLATFORM)/clang/$(HEADERS)/include" -I"$(VEX_SD
 TOOL_LIB  = -L"$(VEX_SDK_PATH)/$(PLATFORM)/gcc/libs"
 
 # compiler flags
-CODE_QUALITY_FLAGS =-Wall -Wextra -Wpedantic -Wno-c99-extensions -Wno-c++17-extensions  -Wdeprecated-declarations -Wno-keyword-macro -Wno-sign-compare
+CODE_QUALITY_FLAGS =-Wall -Wextra -Wpedantic -Wno-c99-extensions -Wno-c++17-extensions -Wno-c++14-extensions -Wdeprecated-declarations -Wno-keyword-macro -Wno-sign-compare
 CFLAGS_CL = ${CODE_QUALITY_FLAGS} -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' 
 CFLAGS_V7 = -march=armv7-a -mfpu=neon -mfloat-abi=softfp 
 CFLAGS    = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Werror=return-type -ansi -std=gnu99 $(DEFINES)
