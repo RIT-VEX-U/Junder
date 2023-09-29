@@ -169,9 +169,13 @@ public:
    */
   void stopNonTasks();
 
-  AutoCommand *SpinRpmCmd(int rpm){
-    spinRPM(1000);
+  AutoCommand *SpinRpmCmd(int rpm)
+  {
+
+    return new FunctionCommand([this]()
+                               {spinRPM(1000); return true; });
   }
+
   AutoCommand *WaitUntilUpToSpeedCmd()
   {
     return new WaitUntilCondition(
