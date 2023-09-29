@@ -4,8 +4,6 @@
  *    Interface for module-specifc commands
  */
 
-// DoWhile(action, condition)
-// WaitUntilCondition()
 #pragma once
 
 #include "vex.h"
@@ -48,6 +46,23 @@ public:
    * - something else...
    */
   double timeout_seconds = default_timeout;
+};
+
+/**
+ * FunctionCommand is fun and good way to do simple things
+ * Printing, launching nukes, and other quick and dirty one time things
+ */
+class FunctionCommand : public AutoCommand
+{
+public:
+  FunctionCommand(std::function<bool(void)> f) : f(f) {}
+  bool run()
+  {
+    return f();
+  }
+
+private:
+  std::function<bool(void)> f;
 };
 
 /**
