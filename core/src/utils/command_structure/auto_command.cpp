@@ -44,11 +44,11 @@ bool InOrder::run()
 
     double seconds = static_cast<double>(tmr.time()) / 1000.0;
 
-    bool doTimeout = current_command->timeout_seconds > 0.0;
+    bool should_timeout = current_command->timeout_seconds > 0.0;
     bool command_timed_out = seconds > current_command->timeout_seconds;
 
     // timeout
-    if (doTimeout && command_timed_out)
+    if (should_timeout && command_timed_out)
     {
         current_command->on_timeout();
         current_command = nullptr;
@@ -127,10 +127,6 @@ bool Parallel::run()
         if (runners[i] != nullptr)
         {
             all_finished = false;
-            if (cmds[i] != nullptr)
-            {
-                delete cmds[i];
-            }
         }
     }
     return all_finished;
@@ -143,11 +139,17 @@ void Parallel::on_timeout()
         if (runners[i] != nullptr)
         {
             runners[i]->stop();
-            cmds[i]->on_timeout();
+            if (cmds[i] != nullptr)
+            {
+                cmds[i]->on_timeout();
+            }
             delete runners[i];
             runners[i] = nullptr;
-            delete cmds[i];
-            cmds[i] = nullptr;
+            if (cmds[i] != nullptr)
+            {
+                delete cmds[i];
+                cmds[i] = nullptr;
+            }
         }
     }
 }
@@ -216,12 +218,15 @@ static int async_runner(void *arg)
         }
         double t = (double)(tmr.time()) / 1000.0;
         bool timed_out = t > cmd->timeout_seconds;
-        if (timed_out)
+        bool should_timeout = cmd->timeout_seconds > 0;
+        if (timed_out && should_timeout)
         {
             cmd->on_timeout();
+            break;
         }
         vexDelay(20);
     }
+    delete cmd;
 
     return 0;
 }
@@ -231,4 +236,3 @@ bool Async::run()
     // lmao get memory leaked
     return true;
 }
-

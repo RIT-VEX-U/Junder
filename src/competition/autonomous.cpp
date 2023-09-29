@@ -43,21 +43,22 @@ void autonomous()
 
     printf("Starting cc\n");
     fflush(stdout);
-    vex::wait(1,vex::sec);
     CommandController cc{
-        new Async{
+        new Parallel{
             new InOrder{
                 new DelayCommand(1000),
                 new FunctionCommand([]()
-                                    {printf("1000\n");return true; }),
+                                    {printf("1000\n");fflush(stdout);return true; }),
             },
-        },
-            new InOrder{
-                new DelayCommand(2000),
-                new FunctionCommand([]()
-                                    {printf("2000\n");return true; }),
 
-        }};
+        new InOrder{
+            new DelayCommand(2000),
+            new FunctionCommand([]()
+                                {printf("20000\n");fflush(stdout);return true; }),
+        },
+        },
+
+    };
 
     cc.run();
 }
