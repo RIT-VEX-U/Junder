@@ -1,6 +1,7 @@
 name: C/C++ CI
 
 on:
+  pull_request:
   push:
     branches: [ "main" ]
 
@@ -39,7 +40,7 @@ jobs:
       if: ${{ failure() }}
       uses: rlespinasse/git-commit-data-action@v1
     - name: Send Slack Notification
-      if: ${{ failure() }}
+      if: ${{ failure() }} && ${{ github.event_name }} == 'push'
       id: slack
       uses: slackapi/slack-github-action@v1.24.0
       with:
