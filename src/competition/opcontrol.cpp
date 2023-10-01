@@ -11,33 +11,37 @@ void opcontrol()
     imu.calibrate();
     while(imu.isCalibrating());
     
-    std::vector<point_t> path1 = {
+    static std::vector<point_t> path1 = {
         {0, 0},
-        {0, -24},
-        {-24, -24},
-        {-24, -48}
+        {0, 24},
+        {24, 24},
+        {24, 48}
     };
 
-    std::vector<point_t> path2 = {
-        {-24, -48},
-        {-24, -24},
-        {0, -24},
+    static std::vector<point_t> path2 = {
+        {24, 48},
+        {24, 24},
+        {0, 24},
         {0, 0},
     };
 
     odometry.set_position();
+
+    static std::atomic<bool> auto_driving(false);
+    con.ButtonA.pressed([](){
+        auto_driving = true;
+        CommandController cmd;
+        cmd.add(new PurePursuitCommand(drive_system, *robot_cfg.drive_feedback, path1, fwd, 12, .4));
+        cmd.add(new PurePursuitCommand(drive_system, *robot_cfg.drive_feedback, path2, directionType::rev, 12, .4));
+        cmd.run();
+        auto_driving = false;
+    });
+
     // ================ PERIODIC ================
     while(true)
     {
-        if(con.ButtonA.pressing())
-        {
-            while(!drive_system.pure_pursuit(path1, directionType::rev, 12, *robot_cfg.drive_feedback, .5));
-            while(!drive_system.pure_pursuit(path2, directionType::fwd, 12, *robot_cfg.drive_feedback, .5));
-        }else
-        {
-            drive_system.reset_auto();
+        if(!auto_driving)
             drive_system.drive_arcade(con.Axis3.position()/100.0, con.Axis1.position()/100.0);
-        }
 
         if(con.ButtonB.pressing())
             odometry.set_position();
