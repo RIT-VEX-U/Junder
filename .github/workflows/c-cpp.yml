@@ -1,11 +1,13 @@
 name: C/C++ CI
 
 on:
+  pull_request:
   push:
     branches: [ "main" ]
 
 jobs:
   build:
+    name: 'Build Project'
 
     runs-on: ubuntu-latest
 
@@ -36,10 +38,10 @@ jobs:
         sudo chmod +x toolchain_linux64/gcc/bin/*
     - run: PATH=${PATH}:toolchain_linux64/gcc/bin make VEX_SDK_PATH=${{ env.VERSION }}
     - name: Expose git commit data
-      if: ${{ failure() }}
+      if: ${{ failure() && github.event_name == 'push' }}
       uses: rlespinasse/git-commit-data-action@v1
     - name: Send Slack Notification
-      if: ${{ failure() }}
+      if: ${{ failure() && github.event_name == 'push' }}
       id: slack
       uses: slackapi/slack-github-action@v1.24.0
       with:
