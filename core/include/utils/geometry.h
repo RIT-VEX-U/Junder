@@ -14,7 +14,7 @@ struct point_t
      * @param other the point to measure the distance from
      * @return the euclidian distance between this and other
      */
-    double dist(const point_t other)
+    double dist(const point_t other) const
     {
         return std::sqrt(std::pow(this->x - other.x, 2) + pow(this->y - other.y, 2));
     }
@@ -44,6 +44,11 @@ struct point_t
             .y = this->y - other.y};
         return p;
     }
+
+    bool operator==(const point_t& rhs)
+    {
+        return x==rhs.x && y==rhs.y;
+    }
 };
 
 
@@ -55,4 +60,9 @@ typedef struct
     double x;   ///< x position in the world
     double y;   ///< y position in the world
     double rot; ///< rotation in the world
+
+    point_t get_point()
+    {
+        return point_t{.x=x, .y=y};
+    }
 } pose_t;

@@ -52,13 +52,13 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
 /**
  * Selects a look ahead from all the intersections in the path.
  */
-[[maybe_unused]] point_t PurePursuit::get_lookahead(std::vector<point_t> path, point_t robot_loc, double radius)
+[[maybe_unused]] point_t PurePursuit::get_lookahead(const std::vector<point_t> &path, pose_t robot_loc, double radius)
 { 
   //Default: the end of the path
   point_t target = path.back();
 
-  
-  if(target.dist(robot_loc) <= radius)
+
+  if(target.dist(robot_loc.get_point()) <= radius)
   {
     return target;
   }
@@ -69,7 +69,7 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
     point_t start = path[i];
     point_t end = path[i+1];
 
-    std::vector<point_t> intersections = line_circle_intersections(robot_loc, radius, start, end);
+    std::vector<point_t> intersections = line_circle_intersections(robot_loc.get_point(), radius, start, end);
     //Choose the intersection that is closest to the end of the line segment
     //This prioritizes the closest intersection to the end of the path
     for(point_t intersection: intersections)
@@ -85,7 +85,7 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
 /**
  Injects points in a path without changing the curvature with a certain spacing.
 */
-[[maybe_unused]] std::vector<point_t> PurePursuit::inject_path(std::vector<point_t> path, double spacing)
+[[maybe_unused]] std::vector<point_t> PurePursuit::inject_path(const std::vector<point_t> &path, double spacing)
 {
   std::vector<point_t> new_path;
 
@@ -125,7 +125,7 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
  * Honestly have no idea if/how this works.
  * https://medium.com/@jaems33/understanding-robot-motion-path-smoothing-5970c8363bc4
 */
-[[maybe_unused]] std::vector<point_t> PurePursuit::smooth_path(std::vector<point_t> path, double weight_data, double weight_smooth, double tolerance)
+[[maybe_unused]] std::vector<point_t> PurePursuit::smooth_path(const std::vector<point_t> &path, double weight_data, double weight_smooth, double tolerance)
 {
   std::vector<point_t> new_path = path;
   double change = tolerance;
@@ -159,7 +159,7 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
  * @param steps The number of points interpolated between points.
  * @return The smoothed path.
  */
-[[maybe_unused]] std::vector<point_t> PurePursuit::smooth_path_hermite(std::vector<hermite_point> path, double steps) {
+[[maybe_unused]] std::vector<point_t> PurePursuit::smooth_path_hermite(const std::vector<hermite_point> &path, double steps) {
   std::vector<point_t> new_path;
   for(int i = 0; i < path.size() - 1; i++) {
     for(int t = 0; t < steps; t++) {
@@ -191,7 +191,7 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
   return new_path;
 }
 
-[[maybe_unused]] std::vector<point_t> PurePursuit::smooth_path_cubic(std::vector<point_t> path, double res) {
+[[maybe_unused]] std::vector<point_t> PurePursuit::smooth_path_cubic(const std::vector<point_t> &path, double res) {
   std::vector<point_t> new_path;
   std::vector<spline> splines;
 
@@ -234,3 +234,45 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
 
   return new_path;
 }
+
+/**
+ * Estimates the remaining distance from the robot's position to the end,
+ * by "searching" for the robot along the path and running a "connect the dots"
+ * distance algoritm
+ * 
+ * @param path The pure pursuit path the robot is following
+ * @param robot_pose The robot's current position
+ * @param radius Pure pursuit "radius", used to search for the robot along the path
+ * @return A rough estimate of the remaining distance
+*/
+double PurePursuit::estimate_remaining_dist(const std::vector<point_t> &path, pose_t robot_pose, double radius)
+{
+  point_t lookahead_pt = get_lookahead(path, robot_pose, radius);
+  
+  if (lookahead_pt == path[path.size() - 1])
+    return robot_pose.get_point().dist(lookahead_pt);
+
+  double dist = 0;
+
+  // Run through the path backwards, adding distances
+  for(int i = path.size()-1; i >= 0; i--)
+  {
+    // Test if the robot is between the two points
+    auto pts = line_circle_intersections(robot_pose.get_point(), radius, path[i-1], path[i]);
+    
+    // There is an intersection? Robot is between the points so add the distance
+    // from the bot to the next point and end.
+    if(!pts.empty())
+    {
+      dist += robot_pose.get_point().dist(path[i]);
+      return dist;
+    }
+    
+    // No intersections? Add the distance between the two points and move backwards
+    // in the path until we find the robot, or run out of points.
+    dist += path[i-1].dist(path[i]);      
+  }
+
+  return dist;
+}
+

@@ -9,7 +9,7 @@
 #include "../core/include/utils/pid.h"
 #include "../core/include/utils/feedback_base.h"
 #include "../core/include/robot_specs.h"
-#include "../core/src/utils/pure_pursuit.cpp"
+#include "../core/include/utils/pure_pursuit.h"
 #include "../core/include/utils/command_structure/auto_command.h"
 #include <vector>
 
@@ -43,6 +43,9 @@ public:
   AutoCommand *TurnDegreesCmd(double degrees, double max_speed = 1.0);
   AutoCommand *TurnDegreesCmd(Feedback &fb, double degrees, double max_speed = 1.0);
 
+  AutoCommand *PurePursuitCmd(std::vector<point_t> path, directionType dir, double radius, double max_speed=1);
+  AutoCommand *PurePursuitCmd(Feedback &feedback, std::vector<point_t> path, directionType dir, double radius, double max_speed=1);
+
   /**
    * Stops rotation of all the motors using their "brake mode"
    */
@@ -58,7 +61,7 @@ public:
    * @param power modifies the input velocities left^power, right^power
    * @param isdriver default false. if true uses motor percentage. if false uses plain percentage of maximum voltage
    */
-  void drive_tank(double left, double right, int power = 1, bool isdriver = false);
+  void drive_tank(double left, double right, int power=1);
 
   /**
    * Drive the robot using arcade style controls. forward_back controls the linear motion,
@@ -177,17 +180,33 @@ public:
   static double modify_inputs(double input, int power = 2);
 
   /**
-   * Follow a hermite curve using the pure pursuit algorithm.
-   *
-   * @param path The hermite curve for the robot to take. Must have 2 or more points.
-   * @param dir Whether the robot should move forward or backwards
-   * @param radius How the pure pursuit radius, in inches, for finding the lookahead point
-   * @param res The number of points to use along the path; the hermite curve is split up into "res" individual points.
-   * @param feedback The feedback controller to use
-   * @param max_speed Robot's maximum speed throughout the path, between 0 and 1.0
-   * @return true when we reach the end of the path
-   */
-  bool pure_pursuit(std::vector<PurePursuit::hermite_point> path, directionType dir, double radius, double res, Feedback &feedback, double max_speed = 1);
+   * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of 
+   * waypoints - the robot will attempt to follow the points while cutting corners (radius)
+   * to save time (compared to stop / turn / start)
+   * 
+   * @param path The list of coordinates to follow, in order
+   * @param dir Run the bot forwards or backwards
+   * @param radius How big the corner cutting should be - small values follow the path more closely
+   * @param feedback The feedback controller determining speed
+   * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
+   * @return True when the path is complete
+  */
+  bool pure_pursuit(std::vector<point_t> path, directionType dir, double radius, Feedback &feedback, double max_speed=1);
+
+  /**
+   * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of 
+   * waypoints - the robot will attempt to follow the points while cutting corners (radius)
+   * to save time (compared to stop / turn / start)
+   * 
+   * Use the default drive feedback
+   * 
+   * @param path The list of coordinates to follow, in order
+   * @param dir Run the bot forwards or backwards
+   * @param radius How big the corner cutting should be - small values follow the path more closely
+   * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
+   * @return True when the path is complete
+  */
+  bool pure_pursuit(std::vector<point_t> path, directionType dir, double radius, double max_speed=1);
 
 private:
   motor_group &left_motors;  ///< left drive motors

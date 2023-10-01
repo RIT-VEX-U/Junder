@@ -1,6 +1,7 @@
 #include "../core/include/utils/geometry.h"
 #include "../core/include/subsystems/tank_drive.h"
 #include "../core/include/utils/math_util.h"
+#include "../core/include/utils/pidff.h"
 #include "../core/include/utils/command_structure/drive_commands.h"
 
 TankDrive::TankDrive(motor_group &left_motors, motor_group &right_motors, robot_specs_t &config, OdometryBase *odom)
@@ -47,6 +48,14 @@ AutoCommand *TankDrive::TurnDegreesCmd(Feedback &fb, double degrees, double max_
 {
   return new TurnDegreesCommand(*this, fb, degrees, max_speed);
 }
+AutoCommand *TankDrive::PurePursuitCmd(std::vector<point_t> path, directionType dir, double radius, double max_speed)
+{
+  return new PurePursuitCommand(*this, *drive_default_feedback, path, dir, radius, max_speed);
+}
+AutoCommand *TankDrive::PurePursuitCmd(Feedback &feedback, std::vector<point_t> path, directionType dir, double radius, double max_speed)
+{
+  return new PurePursuitCommand(*this, feedback, path, dir, radius, max_speed);
+}
 
 /**
  * Reset the initialization for autonomous drive functions
@@ -71,21 +80,13 @@ void TankDrive::stop()
  *
  * left_motors and right_motors are in "percent": -1.0 -> 1.0
  */
-void TankDrive::drive_tank(double left, double right, int power, bool isdriver)
+void TankDrive::drive_tank(double left, double right, int power)
 {
   left = modify_inputs(left, power);
   right = modify_inputs(right, power);
 
-  if (isdriver == false)
-  {
-    left_motors.spin(directionType::fwd, left * 12, voltageUnits::volt);
-    right_motors.spin(directionType::fwd, right * 12, voltageUnits::volt);
-  }
-  else
-  {
-    left_motors.spin(directionType::fwd, left * 100.0, percentUnits::pct);
-    right_motors.spin(directionType::fwd, right * 100.0, percentUnits::pct);
-  }
+  left_motors.spin(directionType::fwd, left * 12, voltageUnits::volt);
+  right_motors.spin(directionType::fwd, right * 12, voltageUnits::volt);
 }
 
 /**
@@ -199,7 +200,7 @@ bool TankDrive::turn_degrees(double degrees, Feedback &feedback, double max_spee
     target_heading = start_heading + degrees;
   }
 
-  return turn_to_heading(target_heading);
+  return turn_to_heading(target_heading, feedback, max_speed);
 }
 
 /**
@@ -448,23 +449,98 @@ double TankDrive::modify_inputs(double input, int power)
   return sign(input) * pow(std::abs(input), power);
 }
 
-bool TankDrive::pure_pursuit(std::vector<PurePursuit::hermite_point> path, directionType dir, double radius, double res, Feedback &feedback, double max_speed)
+/**
+ * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of 
+ * waypoints - the robot will attempt to follow the points while cutting corners (radius)
+ * to save time (compared to stop / turn / start)
+ * 
+ * @param path The list of coordinates to follow, in order
+ * @param dir Run the bot forwards or backwards
+ * @param radius How big the corner cutting should be - small values follow the path more closely
+ * @param feedback The feedback controller determining speed
+ * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
+ * @return True when the path is complete
+*/
+bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, double radius, Feedback &feedback, double max_speed)
 {
-  is_pure_pursuit = true;
-  std::vector<point_t> smoothed_path = PurePursuit::smooth_path_hermite(path, res);
+  pose_t robot_pose = odometry->get_position();
 
-  point_t lookahead = PurePursuit::get_lookahead(smoothed_path, {odometry->get_position().x, odometry->get_position().y}, radius);
-  // printf("%f\t%f\n", odometry->get_position().x, odometry->get_position().y);
-  // printf("%f\t%f\n", lookahead.x, lookahead.y);
-  bool is_last_point = (path.back().x == lookahead.x) && (path.back().y == lookahead.y);
+  // On function initialization, send the path-length estimate to the feedback controller
+  if(!func_initialized)
+  {
+    if(dir != directionType::rev)
+      feedback.init(-estimate_path_length(path), 0);
+    else
+      feedback.init(estimate_path_length(path), 0);
+    
+    func_initialized = true;
+  }
+  
+  point_t lookahead = PurePursuit::get_lookahead(path, odometry->get_position(), radius);
+  point_t localized = lookahead - robot_pose.get_point();
 
-  if (is_last_point)
-    is_pure_pursuit = false;
+  point_t last_point = path[path.size()-1];
+  bool is_last_point = (lookahead == last_point);
+  
+  double correction = 0;
+  double dist_remaining = PurePursuit::estimate_remaining_dist(path, robot_pose, radius);
+  double angle_diff = 0;
+  
+  // Robot is facing forwards / backwards, change the bot's angle by 180
+  if(dir != directionType::rev)
+    angle_diff = OdometryBase::smallest_angle(robot_pose.rot, rad2deg(atan2(localized.y, localized.x)));
+  else
+    angle_diff = OdometryBase::smallest_angle(robot_pose.rot + 180, rad2deg(atan2(localized.y, localized.x)));
 
-  bool retval = drive_to_point(lookahead.x, lookahead.y, dir, feedback, max_speed);
+  // Correct the robot's heading until the last cut-off 
+  if(!(is_last_point && robot_pose.get_point().dist(last_point) < config.drive_correction_cutoff))
+  {
+    correction_pid.update(angle_diff);
+    correction = correction_pid.get();
+  } else // Inside cut-off radius, ignore horizontal diffs
+  {
+    dist_remaining *= cos(angle_diff * (PI / 180.0));
+  }
 
-  if (is_last_point)
-    return retval;
+  if(dir != directionType::rev)
+    feedback.update(-dist_remaining);
+  else
+    feedback.update(dist_remaining);
 
+  max_speed = fabs(max_speed);
+
+  double left = clamp(feedback.get(), -max_speed, max_speed);
+  double right = clamp(feedback.get(), -max_speed, max_speed);
+
+  left += correction;
+  right -= correction;
+  
+  drive_tank(left, right);
+
+  // When the robot has reached the end point and feedback reports on target, end pure pursuit
+  if(is_last_point && feedback.is_on_target())
+  {
+    func_initialized = false;
+    stop();
+    return true;
+  }
   return false;
+}
+
+/**
+ * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of 
+ * waypoints - the robot will attempt to follow the points while cutting corners (radius)
+ * to save time (compared to stop / turn / start)
+ * 
+ * Use the default drive feedback
+ * 
+ * @param path The list of coordinates to follow, in order
+ * @param dir Run the bot forwards or backwards
+ * @param radius How big the corner cutting should be - small values follow the path more closely
+ * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
+ * @return True when the path is complete
+*/
+bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, double radius, double max_speed)
+{
+  return pure_pursuit(path, dir, radius, *config.drive_feedback, max_speed);
 }
