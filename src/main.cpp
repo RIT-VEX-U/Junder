@@ -18,19 +18,23 @@ vex::competition comp;
 
 /**
  * Program entrypoint. Defines the competition autonomous and opcontrol entrypoints,
- * and init functions. 
- * 
+ * and init functions.
+ *
  * Do not modify this file!
-*/
-int main() {
+ */
+
+int main()
+{
+
 
     comp.autonomous(autonomous);
     comp.drivercontrol(opcontrol);
 
     robot_init();
-   
-    while(1) {
-        
+
+    while (1)
+    {
+
         // Allow other tasks to run
         this_thread::sleep_for(1000);
     }
