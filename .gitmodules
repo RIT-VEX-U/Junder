@@ -1,0 +1,4 @@
+[submodule "core"]
+	path = core
+	url = git@github.com:RIT-VEX-U/Core.git
+	branch = 2023-2024-1
