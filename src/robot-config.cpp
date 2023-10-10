@@ -25,6 +25,10 @@ vex::motor cata2(vex::PORT10, vex::gearSetting::ratio36_1, true);
 
 vex::motor_group cata_motors(cata1, cata2);
 
+
+std::map<std::string, vex::motor&> motor_names = {};
+
+
 PID::pid_config_t drive_pid_cfg =
     {
         .p = .2,
@@ -55,6 +59,7 @@ robot_specs_t robot_cfg = {
 
 OdometryTank odom{left_motors, right_motors, robot_cfg};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
+
 
 #else
 
@@ -116,10 +121,13 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 // ================ UTILS ================
 
 #endif
+
+std::vector<screen::Page&> pages = {new screen::MotorPage(motor_names)};
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
     imu.calibrate();
+    screen::start_screen(Brain.Screen, pages);
 }
