@@ -1,10 +1,15 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
+#define COMP_BOT
+
 
 extern vex::brain brain;
 extern vex::controller con;
 extern vex::inertial imu;
+#ifdef COMP_BOT
+extern vex::motor_group cata_motors;
+#endif
 
 // ================ INPUTS ================
 // Digital sensors
