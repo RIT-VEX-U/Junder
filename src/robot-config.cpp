@@ -4,26 +4,26 @@ vex::controller con;
 
 #ifdef COMP_BOT
 
-inertial imu(PORT10);
+inertial imu(PORT12);
 
 // 1 is frontmost, 4 is rearmost
 vex::motor left1(vex::PORT1, vex::gearSetting::ratio6_1, true);
 vex::motor left2(vex::PORT2, vex::gearSetting::ratio6_1, true);
 vex::motor left3(vex::PORT3, vex::gearSetting::ratio6_1, true);
-vex::motor left4(vex::PORT4, vex::gearSetting::ratio6_1, true);
+vex::motor left4(vex::PORT10, vex::gearSetting::ratio6_1, true);
 
-vex::motor right1(vex::PORT1, vex::gearSetting::ratio6_1, false);
-vex::motor right2(vex::PORT2, vex::gearSetting::ratio6_1, false);
-vex::motor right3(vex::PORT3, vex::gearSetting::ratio6_1, false);
-vex::motor right4(vex::PORT4, vex::gearSetting::ratio6_1, false);
+vex::motor right1(vex::PORT6, vex::gearSetting::ratio6_1, false);
+vex::motor right2(vex::PORT7, vex::gearSetting::ratio6_1, false);
+vex::motor right3(vex::PORT8, vex::gearSetting::ratio6_1, false);
+vex::motor right4(vex::PORT9, vex::gearSetting::ratio6_1, false);
 
 vex::motor_group left_motors(left1, left2, left3, left4);
 vex::motor_group right_motors(right1, right2, right3, right4);
 
-vex::motor cata1(vex::PORT9, vex::gearSetting::ratio36_1, true);
-vex::motor cata2(vex::PORT10, vex::gearSetting::ratio36_1, true);
+vex::motor cata_r(vex::PORT4, vex::gearSetting::ratio36_1, false);
+vex::motor cata_l(vex::PORT5, vex::gearSetting::ratio36_1, true);
 
-vex::motor_group cata_motors(cata1, cata2);
+vex::motor_group cata_motors(cata_r, cata_l);
 
 PID::pid_config_t drive_pid_cfg =
     {
