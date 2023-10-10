@@ -122,7 +122,7 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 #endif
 
-std::vector<screen::Page&> pages = {new screen::MotorPage(motor_names)};
+std::vector<screen::Page*> pages = {new screen::MotorPage(motor_names)};
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
