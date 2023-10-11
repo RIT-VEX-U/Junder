@@ -7,18 +7,18 @@ vex::controller con;
 inertial imu(PORT12);
 
 // 1 is frontmost, 4 is rearmost
-vex::motor left1(vex::PORT1, vex::gearSetting::ratio6_1, true);
-vex::motor left2(vex::PORT2, vex::gearSetting::ratio6_1, true);
-vex::motor left3(vex::PORT3, vex::gearSetting::ratio6_1, true);
-vex::motor left4(vex::PORT10, vex::gearSetting::ratio6_1, true);
+vex::motor left_front(vex::PORT14, vex::gearSetting::ratio6_1, true);
+vex::motor left_middle(vex::PORT20, vex::gearSetting::ratio6_1, true);
+vex::motor left_back(vex::PORT15, vex::gearSetting::ratio6_1, true);
+vex::motor left_raised(vex::PORT8, vex::gearSetting::ratio6_1, false);
 
-vex::motor right1(vex::PORT6, vex::gearSetting::ratio6_1, false);
-vex::motor right2(vex::PORT7, vex::gearSetting::ratio6_1, false);
-vex::motor right3(vex::PORT8, vex::gearSetting::ratio6_1, false);
-vex::motor right4(vex::PORT9, vex::gearSetting::ratio6_1, false);
+vex::motor right_front(vex::PORT6, vex::gearSetting::ratio6_1, false);
+vex::motor right_middle(vex::PORT3, vex::gearSetting::ratio6_1, false);
+vex::motor right_back(vex::PORT11, vex::gearSetting::ratio6_1, false);
+vex::motor right_raised(vex::PORT5, vex::gearSetting::ratio6_1, true);
 
-vex::motor_group left_motors(left1, left2, left3, left4);
-vex::motor_group right_motors(right1, right2, right3, right4);
+vex::motor_group left_motors(left_front, left_middle, left_back, left_raised);
+vex::motor_group right_motors(right_front, right_middle, right_back, right_raised);
 
 vex::motor cata_r(vex::PORT4, vex::gearSetting::ratio36_1, false);
 vex::motor cata_l(vex::PORT5, vex::gearSetting::ratio36_1, true);
