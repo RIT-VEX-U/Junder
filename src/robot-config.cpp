@@ -4,7 +4,7 @@ vex::controller con;
 
 #ifdef COMP_BOT
 
-inertial imu(PORT10);
+inertial imu(PORT12);
 
 // 1 is frontmost, 4 is rearmost
 vex::motor left1(vex::PORT11, vex::gearSetting::ratio6_1, true);
@@ -17,8 +17,9 @@ vex::motor right2(vex::PORT16, vex::gearSetting::ratio6_1, false);
 vex::motor right3(vex::PORT17, vex::gearSetting::ratio6_1, false);
 vex::motor right4(vex::PORT18, vex::gearSetting::ratio6_1, false);
 
-vex::motor_group left_motors(left1, left2, left3, left4);
-vex::motor_group right_motors(right1, right2, right3, right4);
+
+vex::motor_group left_motors(left_front, left_middle, left_back, left_raised);
+vex::motor_group right_motors(right_front, right_middle, right_back, right_raised);
 
 vex::motor cata_r(vex::PORT4, vex::gearSetting::ratio36_1, false);
 vex::motor cata_l(vex::PORT5, vex::gearSetting::ratio36_1, true);
