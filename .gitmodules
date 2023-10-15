@@ -1,4 +1,0 @@
-[submodule "core"]
-	path = core
-	url = ../Core.git
-	branch = 2023-2024-1
