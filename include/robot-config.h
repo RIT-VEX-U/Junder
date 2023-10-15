@@ -4,7 +4,7 @@
 #define COMP_BOT
 
 
-extern vex::brain brain;
+extern vex::brain Brain;
 extern vex::controller con;
 extern vex::inertial imu;
 #ifdef COMP_BOT

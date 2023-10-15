@@ -6,7 +6,6 @@ vex::controller con;
 
 inertial imu(PORT12);
 
-// 1 is frontmost, 4 is rearmost
 vex::motor left_front(vex::PORT14, vex::gearSetting::ratio6_1, true);
 vex::motor left_middle(vex::PORT20, vex::gearSetting::ratio6_1, true);
 vex::motor left_back(vex::PORT15, vex::gearSetting::ratio6_1, true);
@@ -23,7 +22,22 @@ vex::motor_group right_motors(right_front, right_middle, right_back, right_raise
 vex::motor cata_r(vex::PORT4, vex::gearSetting::ratio36_1, false);
 vex::motor cata_l(vex::PORT5, vex::gearSetting::ratio36_1, true);
 
-vex::motor_group cata_motors(cata_r, cata_l);
+vex::motor_group cata_motors(cata_l, cata_r);
+
+std::map<std::string, vex::motor &> motor_names = {
+    {"left f", left_front},
+    {"left m", left_middle},
+    {"left b", left_back},
+    {"left r", left_raised},
+
+    {"right f", right_front},
+    {"right m", right_middle},
+    {"right b", right_back},
+    {"right r", right_raised},
+
+    {"cata L", cata_l},
+    {"cata R", cata_r},
+};
 
 PID::pid_config_t drive_pid_cfg =
     {
@@ -116,10 +130,16 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 // ================ UTILS ================
 
 #endif
+
+std::vector<screen::Page *> pages;
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
+
+    odom.set_position({36, 36, 45});
+    pages = {new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true)};
     imu.calibrate();
+    screen::start_screen(Brain.Screen, pages, 1);
 }
