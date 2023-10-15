@@ -26,7 +26,6 @@ vex::competition comp;
 int main()
 {
 
-
     comp.autonomous(autonomous);
     comp.drivercontrol(opcontrol);
 
