@@ -74,7 +74,7 @@ bool InOrder::run()
     {
         printf("TAKING INORDER: len =  %d\n", cmds.size());
         current_command = cmds.front();
-        printf("Current command: %p\n", (void*)current_command);
+        printf("Current command: %p\n", (void *)current_command);
         cmds.pop();
         tmr.reset();
     }
@@ -91,10 +91,15 @@ bool InOrder::run()
     double seconds = static_cast<double>(tmr.time()) / 1000.0;
 
     bool should_timeout = current_command->timeout_seconds > 0.0;
-    bool command_timed_out = seconds > current_command->timeout_seconds;
+    bool doTimeout = should_timeout && seconds > current_command->timeout_seconds;
+    if (current_command->true_to_end != nullptr)
+    {
+        doTimeout = doTimeout || current_command->true_to_end->test();
+    }
+
     printf(".");
     // timeout
-    if (should_timeout && command_timed_out)
+    if (doTimeout)
     {
         current_command->on_timeout();
         current_command = nullptr;
@@ -130,9 +135,12 @@ static int parallel_runner(void *arg)
         }
         double t = (double)(tmr.time()) / 1000.0;
         bool timed_out = t > ri->cmd->timeout_seconds;
-        bool should_timeout = ri->cmd->timeout_seconds > 0;
-
-        if (timed_out && should_timeout)
+        bool doTimeout = timed_out && (ri->cmd->timeout_seconds > 0);
+        if (ri->cmd->true_to_end != nullptr)
+        {
+            doTimeout = doTimeout || ri->cmd->true_to_end->test();
+        }
+        if (doTimeout)
         {
             ri->cmd->on_timeout();
         }
@@ -264,8 +272,12 @@ static int async_runner(void *arg)
         }
         double t = (double)(tmr.time()) / 1000.0;
         bool timed_out = t > cmd->timeout_seconds;
-        bool should_timeout = cmd->timeout_seconds > 0;
-        if (timed_out && should_timeout)
+        bool doTimeout = timed_out && cmd->timeout_seconds > 0;
+        if (cmd->true_to_end != nullptr)
+        {
+            doTimeout = doTimeout || cmd->true_to_end->test();
+        }
+        if (doTimeout)
         {
             cmd->on_timeout();
             break;
@@ -284,13 +296,19 @@ bool Async::run()
     return true;
 }
 
-RepeatUntil::RepeatUntil(InOrder cmds, size_t times) : RepeatUntil(cmds, new TimesTestedCondition(times)) {}
+RepeatUntil::RepeatUntil(InOrder cmds, size_t times) : RepeatUntil(cmds, new TimesTestedCondition(times))
+{
+    timeout_seconds = -1.0;
+}
 
-RepeatUntil::RepeatUntil(InOrder cmds, Condition *cond) : cmds(cmds), working_cmds(cmds), cond(cond) {}
+RepeatUntil::RepeatUntil(InOrder cmds, Condition *cond) : cmds(cmds), working_cmds(new InOrder(cmds)), cond(cond)
+{
+    timeout_seconds = -1.0;
+}
 
 bool RepeatUntil::run()
 {
-    bool finished = working_cmds.run();
+    bool finished = working_cmds->run();
     if (!finished)
     {
         // return if we're not done yet
@@ -304,11 +322,12 @@ bool RepeatUntil::run()
     {
         return true;
     }
-    working_cmds = InOrder(cmds);
+    working_cmds = new InOrder(cmds);
+
     return false;
 }
 
 void RepeatUntil::on_timeout()
 {
-    working_cmds.on_timeout();
+    working_cmds->on_timeout();
 }

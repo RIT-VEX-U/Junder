@@ -12,6 +12,25 @@
 #include <queue>
 #include <atomic>
 
+
+/**
+ * A Condition is a function that returns true or false
+ * is_even is a predicate that would return true if a number is even
+ * For our purposes, a Condition is a choice to be made at runtime
+ * drive_sys.reached_point(10, 30) is a predicate
+ * time.has_elapsed(10, vex::seconds) is a predicate
+ * extend this class for different choices you wish to make
+
+ */
+class Condition
+{
+public:
+  Condition *Or(Condition *b);
+  Condition *And(Condition *b);
+  virtual bool test() = 0;
+};
+
+
 class AutoCommand
 {
 public:
@@ -36,6 +55,10 @@ public:
     this->timeout_seconds = t_seconds;
     return this;
   }
+  AutoCommand *withCancelCondition(Condition *true_to_end){
+    this->true_to_end = true_to_end;
+    return this;
+  }
   /**
    * How long to run until we cancel this command.
    * If the command is cancelled, on_timeout() is called to allow any cleanup from the function.
@@ -46,6 +69,7 @@ public:
    * - something else...
    */
   double timeout_seconds = default_timeout;
+  Condition *true_to_end = nullptr;
 };
 
 /**
@@ -63,23 +87,6 @@ public:
 
 private:
   std::function<bool(void)> f;
-};
-
-/**
- * A Condition is a function that returns true or false
- * is_even is a predicate that would return true if a number is even
- * For our purposes, a Condition is a choice to be made at runtime
- * drive_sys.reached_point(10, 30) is a predicate
- * time.has_elapsed(10, vex::seconds) is a predicate
- * extend this class for different choices you wish to make
-
- */
-class Condition
-{
-public:
-  Condition *Or(Condition *b);
-  Condition *And(Condition *b);
-  virtual bool test() = 0;
 };
 
 // Times tested 3
@@ -156,6 +163,7 @@ private:
 class InOrder : public AutoCommand
 {
 public:
+  InOrder(const InOrder &other) = default;
   InOrder(std::queue<AutoCommand *> cmds);
   InOrder(std::initializer_list<AutoCommand *> cmds);
   bool run() override;
@@ -229,7 +237,7 @@ public:
   void on_timeout() override;
 
 private:
-  InOrder cmds;
-  InOrder working_cmds;
+  const InOrder cmds;
+  InOrder *working_cmds;
   Condition *cond;
 };

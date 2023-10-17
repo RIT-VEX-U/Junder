@@ -91,7 +91,7 @@ PID::pid_config_t drive_pid_cfg =
     {
         .p = .24,
         .i = 0.0,
-        .d = .015,
+        .d = .01,
         .deadband = 0.1,
         .on_target_time = 0};
 
