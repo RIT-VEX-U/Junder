@@ -77,7 +77,34 @@ private:
 class Condition
 {
 public:
+  Condition *Or(Condition *b);
+  Condition *And(Condition *b);
   virtual bool test() = 0;
+};
+
+// Times tested 3
+// Test 1 -> false
+// Test 2 -> false
+// Test 3 -> true
+// Returns false until the Nth time that it is called
+// This is pretty much only good for implementing RepeatUntil
+class TimesTestedCondition : public Condition
+{
+public:
+  TimesTestedCondition(size_t N) : max(N) {}
+  bool test() override
+  {
+    count++;
+    if (count >= max)
+    {
+      return true;
+    }
+    return false;
+  }
+
+private:
+  size_t count = 0;
+  size_t max;
 };
 
 /// @brief FunctionCondition is a quick and dirty Condition to wrap some expression that should be evaluated at runtime
@@ -120,6 +147,9 @@ public:
 private:
   Condition *cond;
 };
+
+/// @brief InOrder runs its commands sequentially then continues.
+/// How to handle timeout in this case. Automatically set it to sum of commands timouts?
 
 /// @brief InOrder runs its commands sequentially then continues.
 /// How to handle timeout in this case. Automatically set it to sum of commands timouts?
@@ -182,4 +212,24 @@ public:
 
 private:
   AutoCommand *cmd = nullptr;
+};
+
+class RepeatUntil : public AutoCommand
+{
+public:
+  /// @brief RepeatUntil that runs a fixed number of times
+  /// @param cmds the cmds to repeat
+  /// @param repeats the number of repeats to do
+  RepeatUntil(InOrder cmds, size_t repeats);
+  /// @brief RepeatUntil the condition
+  /// @param cmds the cmds to run
+  /// @param true_to_end we will repeat until true_or_end.test() returns true
+  RepeatUntil(InOrder cmds, Condition *true_to_end);
+  bool run() override;
+  void on_timeout() override;
+
+private:
+  InOrder cmds;
+  InOrder working_cmds;
+  Condition *cond;
 };

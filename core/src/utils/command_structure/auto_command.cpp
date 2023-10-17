@@ -1,5 +1,47 @@
 #include "../core/include/utils/command_structure/auto_command.h"
 
+class OrCondition : public Condition
+{
+public:
+    OrCondition(Condition *A, Condition *B) : A(A), B(B) {}
+    bool test() override
+    {
+        bool a = A->test();
+        bool b = B->test();
+        return a | b;
+    }
+
+private:
+    Condition *A;
+    Condition *B;
+};
+
+class AndCondition : public Condition
+{
+public:
+    AndCondition(Condition *A, Condition *B) : A(A), B(B) {}
+    bool test() override
+    {
+        bool a = A->test();
+        bool b = B->test();
+        return a & b;
+    }
+
+private:
+    Condition *A;
+    Condition *B;
+};
+
+Condition *Condition::Or(Condition *b)
+{
+    return new OrCondition(this, b);
+}
+
+Condition *Condition::And(Condition *b)
+{
+    return new AndCondition(this, b);
+}
+
 bool FunctionCondition::test()
 {
     return cond();
@@ -22,14 +64,17 @@ InOrder::InOrder(std::initializer_list<AutoCommand *> cmds) : cmds(cmds)
 bool InOrder::run()
 {
     // outer loop finished
-    if (cmds.size() == 0)
+    if (cmds.size() == 0 && current_command == nullptr)
     {
+        printf("INORDER finished\n");
         return true;
     }
     // retrieve and remove command at the front of the queue
     if (current_command == nullptr)
     {
+        printf("TAKING INORDER: len =  %d\n", cmds.size());
         current_command = cmds.front();
+        printf("Current command: %p\n", (void*)current_command);
         cmds.pop();
         tmr.reset();
     }
@@ -38,15 +83,16 @@ bool InOrder::run()
     bool cmd_finished = current_command->run();
     if (cmd_finished)
     {
+        printf("InOrder Cmd finished\n");
         current_command = nullptr;
-        return false; // continue omn next command
+        return false; // continue onto next command
     }
 
     double seconds = static_cast<double>(tmr.time()) / 1000.0;
 
     bool should_timeout = current_command->timeout_seconds > 0.0;
     bool command_timed_out = seconds > current_command->timeout_seconds;
-
+    printf(".");
     // timeout
     if (should_timeout && command_timed_out)
     {
@@ -236,4 +282,33 @@ bool Async::run()
     (void)t;
     // lmao get memory leaked
     return true;
+}
+
+RepeatUntil::RepeatUntil(InOrder cmds, size_t times) : RepeatUntil(cmds, new TimesTestedCondition(times)) {}
+
+RepeatUntil::RepeatUntil(InOrder cmds, Condition *cond) : cmds(cmds), working_cmds(cmds), cond(cond) {}
+
+bool RepeatUntil::run()
+{
+    bool finished = working_cmds.run();
+    if (!finished)
+    {
+        // return if we're not done yet
+        return false;
+    }
+    // this run finished
+
+    bool res = cond->test();
+    // we should finish
+    if (res)
+    {
+        return true;
+    }
+    working_cmds = InOrder(cmds);
+    return false;
+}
+
+void RepeatUntil::on_timeout()
+{
+    working_cmds.on_timeout();
 }

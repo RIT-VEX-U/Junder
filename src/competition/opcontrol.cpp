@@ -7,9 +7,36 @@
  */
 void opcontrol()
 {
+    while (imu.isCalibrating())
+    {
+        vexDelay(20);
+    }
+
+    CommandController c{
+        (new InOrder{
+            drive_sys.DriveToPointCmd({12, 0}, fwd, 0.2),
+            drive_sys.DriveToPointCmd({0, 0}, reverse, 0.2),
+        }),
+        (new InOrder{
+            drive_sys.DriveToPointCmd({12, 0}, fwd, 0.2),
+            drive_sys.DriveToPointCmd({0, 0}, reverse, 0.2),
+        })
+        // ->withTimeout(200),
+        // new InOrder{
+        // drive_sys.DriveForwardCmd(12, fwd, 0.2),
+        // drive_sys.DriveForwardCmd(12, reverse, 0.2),
+        // },
+        // new RepeatUntil(,
+        // 3)};
+    };
+    c.run();
+
+    // return;
     // ================ INIT ================
-    con.ButtonL1.pressed([](){cata_motors.spin(vex::fwd, 12.0, vex::voltageUnits::volt);});
-    con.ButtonL1.released([](){cata_motors.stop();});
+    // con.ButtonL1.pressed([]()
+    //  { cata_motors.spin(vex::fwd, 12.0, vex::voltageUnits::volt); });
+    // con.ButtonL1.released([]()
+    //   { cata_motors.stop(); });
 
     while (true)
     {
