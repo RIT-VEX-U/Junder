@@ -149,7 +149,7 @@ std::vector<screen::Page *> pages;
 void robot_init()
 {
 
-    odom.set_position({0, 0, 0});
+    odom.set_position({72, 62, 0});
     pages = {new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true)};
     imu.calibrate();
     screen::start_screen(Brain.Screen, pages, 1);
