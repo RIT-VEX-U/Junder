@@ -192,6 +192,8 @@ namespace screen
         int num = 0;
         int x = 40;
         int y = y_start + row_height;
+        scr.setPenWidth(1);
+
         scr.drawRectangle(x, y_start, row_width, row_height);
         scr.printAt(x, y_start + 16, false, " port temp  name");
         for (auto &kv : motors)
@@ -329,12 +331,13 @@ namespace screen
     }
     void SliderWidget::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame_number)
     {
-        if (rect.height() <= 0){
+        if (rect.height() <= 0)
+        {
             printf("Slider: %s has no height. Cant use it.", name.c_str());
         }
         double xl = rect.min.x;
         double xh = rect.max.x;
-        double xmid = (xl + xh)/2.0;
+        double xmid = (xl + xh) / 2.0;
         double y = rect.min.y + rect.height() / 2;
         const double margin = 5.0;
 
@@ -350,6 +353,6 @@ namespace screen
         const double handle_height = 4;
         scr.drawRectangle(vx - (handle_width / 2), y - (handle_height / 2), handle_width, handle_height);
         int text_w = scr.getStringWidth((name + "      ").c_str());
-        scr.printAt(xmid - text_w/2, y - 30, false, "%s: %.2f", name.c_str(), value);
+        scr.printAt(xmid - text_w / 2, y - 30, false, "%s: %.2f", name.c_str(), value);
     }
 } // namespace screen

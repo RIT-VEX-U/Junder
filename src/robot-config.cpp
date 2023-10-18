@@ -167,7 +167,7 @@ void robot_init()
     serializer = new Serializer("cata_params.ser");
     motor_volts = serializer->double_or("cata_volts", 6.0);
     odom.set_position({72, 62, 0});
-    pages = {new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true), new screen::FunctionPage(updatef, drawf)};
+    pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}), new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true), new screen::FunctionPage(updatef, drawf)};
     imu.calibrate();
     screen::start_screen(Brain.Screen, pages, 2);
 }

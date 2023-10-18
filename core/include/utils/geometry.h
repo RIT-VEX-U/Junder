@@ -89,17 +89,23 @@ struct Rect
 {
     point_t min;
     point_t max;
+    static Rect from_min_and_size(point_t min, point_t size){
+        return {min, min+size};
+    }
     point_t dimensions() const
     {
         return max - min;
     }
-    double weight() const{
+    point_t center() const{
+        return (min + max)/2;
+    }
+    double width() const{
         return max.x - min.x;
     }
     double height() const{
         return max.y - min.y;
     }
-    bool contains(point_t p)
+    bool contains(point_t p) const
     {
         bool xin = p.x > min.x && p.x < max.x;
         bool yin = p.y > min.y && p.y < max.y;
