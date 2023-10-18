@@ -32,6 +32,7 @@
 #include "../core/include/utils/pure_pursuit.h"
 #include "../core/include/utils/trapezoid_profile.h"
 #include "../core/include/utils/vector2d.h"
+#include "../core/include/utils/serializer.h"
 
 // Base package
 #include "../core/include/robot_specs.h"

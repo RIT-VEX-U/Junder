@@ -24,7 +24,7 @@ struct point_t
      * @param other the point to add on to this
      * @return this + other (this.x + other.x, this.y + other.y)
      */
-    point_t operator+(const point_t &other)
+    point_t operator+(const point_t &other) const
     {
         point_t p{
             .x = this->x + other.x,
@@ -37,7 +37,7 @@ struct point_t
      * @param other the point_t to subtract from this
      * @return this - other (this.x - other.x, this.y - other.y)
      */
-    point_t operator-(const point_t &other)
+    point_t operator-(const point_t &other) const
     {
         point_t p{
             .x = this->x - other.x,
@@ -84,6 +84,29 @@ typedef struct
     }
 
 } pose_t;
+
+struct Rect
+{
+    point_t min;
+    point_t max;
+    point_t dimensions() const
+    {
+        return max - min;
+    }
+    double weight() const{
+        return max.x - min.x;
+    }
+    double height() const{
+        return max.y - min.y;
+    }
+    bool contains(point_t p)
+    {
+        bool xin = p.x > min.x && p.x < max.x;
+        bool yin = p.y > min.y && p.y < max.y;
+        return xin && yin;
+    }
+
+};
 
 struct Mat2
 {

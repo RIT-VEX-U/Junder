@@ -66,7 +66,7 @@ namespace screen
 
     /**
      * @brief a page that shows odometry position and rotation and a map (if an sd card with the file is on)
-    */
+     */
     class OdometryPage : public Page
     {
     public:
@@ -85,7 +85,7 @@ namespace screen
         int buf_size = 0;
         pose_t path[path_len];
         int path_index = 0;
-        bool do_trail;        
+        bool do_trail;
     };
 
     /// @brief Simple page that stores no internal data. the draw and update functions use only global data rather than storing anything
@@ -100,6 +100,24 @@ namespace screen
     private:
         update_func_t update_f;
         draw_func_t draw_f;
+    };
+
+    class SliderWidget
+    {
+    public:
+        SliderWidget(double &val, double low, double high, Rect rect, std::string name) : value(val), low(low), high(high), rect(rect), name(name) {}
+
+        void update(bool was_pressed, int x, int y);
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+
+    private:
+        double &value;
+
+        double low;
+        double high;
+
+        Rect rect;
+        std::string name = "";
     };
 
 }

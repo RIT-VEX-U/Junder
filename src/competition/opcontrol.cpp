@@ -7,6 +7,8 @@
  */
 void opcontrol()
 {
+    vex::motor mot(vex::PORT10);
+
     while (imu.isCalibrating())
     {
         vexDelay(20);
@@ -21,10 +23,18 @@ void opcontrol()
         double r = con.Axis2.position() / 100.0;
         drive_sys.drive_tank(l, r);
 #else
+
         double f = con.Axis2.position() / 100.0;
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s);
 #endif
+
+        if (con.ButtonA.pressing())
+        {
+            mot.spin(vex::fwd, motor_volts, vex::volt);
+        }
+        else
+            mot.stop();
 
         vexDelay(10);
     }

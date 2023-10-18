@@ -1,5 +1,5 @@
 #include "../core/include/subsystems/screen.h"
-
+#include "../core/include/utils/math_util.h"
 namespace screen
 {
     /**
@@ -309,5 +309,47 @@ namespace screen
         (void)x;
         (void)y;
         (void)was_pressed;
+    }
+
+    void SliderWidget::update(bool was_pressed, int x, int y)
+    {
+        const double margin = 10.0;
+
+        if (was_pressed)
+        {
+            double dx = x;
+            double dy = y;
+            if (rect.contains(point_t{dx, dy}))
+            {
+                double pct = (dx - rect.min.x - margin) / (rect.dimensions().x - 2 * margin);
+                pct = clamp(pct, 0.0, 1.0);
+                value = (low + pct * (high - low));
+            }
+        }
+    }
+    void SliderWidget::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame_number)
+    {
+        if (rect.height() <= 0){
+            printf("Slider: %s has no height. Cant use it.", name.c_str());
+        }
+        double xl = rect.min.x;
+        double xh = rect.max.x;
+        double xmid = (xl + xh)/2.0;
+        double y = rect.min.y + rect.height() / 2;
+        const double margin = 5.0;
+
+        scr.setPenColor(vex::color(50, 50, 50));
+        scr.setFillColor(vex::color(50, 50, 50));
+        scr.drawRectangle(rect.min.x, rect.min.y, rect.dimensions().x, rect.dimensions().y);
+        scr.setPenColor(vex::color(200, 200, 200));
+        scr.setPenWidth(4);
+        scr.drawLine(xl + margin, y, xh - margin, y);
+        double pct = (value - low) / (high - low);
+        double vx = pct * (rect.dimensions().x - (2 * margin)) + rect.min.x + margin;
+        const double handle_width = 4;
+        const double handle_height = 4;
+        scr.drawRectangle(vx - (handle_width / 2), y - (handle_height / 2), handle_width, handle_height);
+        int text_w = scr.getStringWidth((name + "      ").c_str());
+        scr.printAt(xmid - text_w/2, y - 30, false, "%s: %.2f", name.c_str(), value);
     }
 } // namespace screen
