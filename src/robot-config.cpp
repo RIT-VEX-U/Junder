@@ -89,9 +89,9 @@ CustomEncoder left_enc = CustomEncoder{Brain.ThreeWirePort.C, 90};
 // ======== SUBSYSTEMS ========
 PID::pid_config_t drive_pid_cfg =
     {
-        .p = .2,
+        .p = .24,
         .i = 0.0,
-        .d = .02,
+        .d = .01,
         .deadband = 0.1,
         .on_target_time = 0};
 
@@ -124,6 +124,17 @@ vex::motor right_back(vex::PORT4);
 vex::motor_group left_motors(left_front, left_back);
 vex::motor_group right_motors(right_front, right_back);
 
+
+std::map<std::string, vex::motor &> motor_names = {
+    {"left f", left_front},
+    {"left b", left_back},
+
+    {"right f", right_front},
+    {"right b", right_back},
+
+};
+
+
 OdometryTank odom{left_enc, right_enc, robot_cfg, &imu};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
@@ -138,7 +149,7 @@ std::vector<screen::Page *> pages;
 void robot_init()
 {
 
-    odom.set_position({36, 36, 45});
+    odom.set_position({72, 62, 0});
     pages = {new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true)};
     imu.calibrate();
     screen::start_screen(Brain.Screen, pages, 1);

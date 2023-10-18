@@ -7,15 +7,25 @@
  */
 void opcontrol()
 {
+    while (imu.isCalibrating())
+    {
+        vexDelay(20);
+    }
+
     // ================ INIT ================
-    con.ButtonL1.pressed([](){cata_motors.spin(vex::fwd, 12.0, vex::voltageUnits::volt);});
-    con.ButtonL1.released([](){cata_motors.stop();});
 
     while (true)
     {
+#ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
         drive_sys.drive_tank(l, r);
+#else
+        double f = con.Axis2.position() / 100.0;
+        double s = con.Axis1.position() / 100.0;
+        drive_sys.drive_arcade(f, s);
+#endif
+
         vexDelay(10);
     }
 

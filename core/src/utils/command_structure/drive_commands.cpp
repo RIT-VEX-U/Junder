@@ -45,8 +45,8 @@ bool DriveForwardCommand::run() {
  * reset the drive system if we timeout
 */
 void DriveForwardCommand::on_timeout(){
-  drive_sys.reset_auto();
   drive_sys.stop();
+  drive_sys.reset_auto();
 }
 
 
@@ -72,8 +72,8 @@ bool TurnDegreesCommand::run() {
  * reset the drive system if we timeout
 */
 void TurnDegreesCommand::on_timeout(){
-  drive_sys.reset_auto();
   drive_sys.stop();
+  drive_sys.reset_auto();
 }
 
 
@@ -112,8 +112,8 @@ bool DriveToPointCommand::run() {
  * reset the drive system if we don't hit our target
 */
 void DriveToPointCommand::on_timeout(){
-  drive_sys.reset_auto();
   drive_sys.stop();
+  drive_sys.reset_auto();
 }
 
 
@@ -139,8 +139,8 @@ bool TurnToHeadingCommand::run() {
  * reset the drive system if we don't hit our target
 */
 void TurnToHeadingCommand::on_timeout(){
-  drive_sys.reset_auto();
   drive_sys.stop();
+  drive_sys.reset_auto();
 }
 
 /**
@@ -169,8 +169,8 @@ bool PurePursuitCommand::run()
 */
 void PurePursuitCommand::on_timeout()
 {
-  drive_sys.reset_auto();
   drive_sys.stop();
+  drive_sys.reset_auto();
 }
 
 /**

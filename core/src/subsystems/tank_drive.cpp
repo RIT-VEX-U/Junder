@@ -131,14 +131,21 @@ bool TankDrive::drive_forward(double inches, directionType dir, Feedback &feedba
   // Generate a point X inches forward of the current position, on first startup
   if (!func_initialized)
   {
+    printf("drive_forward %s: %.1f\n", (dir == fwd ? "fwd" : "rev"), inches);
+
     pose_t cur_pos = odometry->get_position();
 
     // forwards is positive Y axis, backwards is negative
     if (dir == directionType::rev)
+    {
+      printf("going backwards\n");
       inches = -fabs(inches);
+    }
     else
+    {
+      printf("going forwards\n");
       inches = fabs(inches);
-
+    }
     // Use vector math to get an X and Y
     Vector2D cur_pos_vec({.x = cur_pos.x, .y = cur_pos.y});
     Vector2D delta_pos_vec(deg2rad(cur_pos.rot), inches);
@@ -162,6 +169,7 @@ bool TankDrive::drive_forward(double inches, directionType dir, Feedback &feedba
  */
 bool TankDrive::drive_forward(double inches, directionType dir, double max_speed)
 {
+
   if (drive_default_feedback != NULL)
     return drive_forward(inches, dir, *drive_default_feedback, max_speed);
 
@@ -186,7 +194,7 @@ bool TankDrive::turn_degrees(double degrees, Feedback &feedback, double max_spee
   // We can't run the auto drive function without odometry
   if (odometry == NULL)
   {
-    fprintf(stderr, "Odometry is NULL. Unable to run drive_forward()\n");
+    fprintf(stderr, "Odometry is NULL. Unable to run turn_degrees()\n");
     fflush(stderr);
     return true;
   }
@@ -237,6 +245,7 @@ bool TankDrive::turn_degrees(double degrees, double max_speed)
  */
 bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedback &feedback, double max_speed)
 {
+
   // We can't run the auto drive function without odometry
   if (odometry == NULL)
   {
@@ -344,6 +353,7 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   {
     stop();
     func_initialized = false;
+    printf("Func unitililized\n");
     stop();
     return true;
   }
@@ -450,59 +460,60 @@ double TankDrive::modify_inputs(double input, int power)
 }
 
 /**
- * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of 
+ * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of
  * waypoints - the robot will attempt to follow the points while cutting corners (radius)
  * to save time (compared to stop / turn / start)
- * 
+ *
  * @param path The list of coordinates to follow, in order
  * @param dir Run the bot forwards or backwards
  * @param radius How big the corner cutting should be - small values follow the path more closely
  * @param feedback The feedback controller determining speed
  * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
  * @return True when the path is complete
-*/
+ */
 bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, double radius, Feedback &feedback, double max_speed)
 {
   pose_t robot_pose = odometry->get_position();
 
   // On function initialization, send the path-length estimate to the feedback controller
-  if(!func_initialized)
+  if (!func_initialized)
   {
-    if(dir != directionType::rev)
+    if (dir != directionType::rev)
       feedback.init(-estimate_path_length(path), 0);
     else
       feedback.init(estimate_path_length(path), 0);
-    
+
     func_initialized = true;
   }
-  
+
   point_t lookahead = PurePursuit::get_lookahead(path, odometry->get_position(), radius);
   point_t localized = lookahead - robot_pose.get_point();
 
-  point_t last_point = path[path.size()-1];
+  point_t last_point = path[path.size() - 1];
   bool is_last_point = (lookahead == last_point);
-  
+
   double correction = 0;
   double dist_remaining = PurePursuit::estimate_remaining_dist(path, robot_pose, radius);
   double angle_diff = 0;
-  
+
   // Robot is facing forwards / backwards, change the bot's angle by 180
-  if(dir != directionType::rev)
+  if (dir != directionType::rev)
     angle_diff = OdometryBase::smallest_angle(robot_pose.rot, rad2deg(atan2(localized.y, localized.x)));
   else
     angle_diff = OdometryBase::smallest_angle(robot_pose.rot + 180, rad2deg(atan2(localized.y, localized.x)));
 
-  // Correct the robot's heading until the last cut-off 
-  if(!(is_last_point && robot_pose.get_point().dist(last_point) < config.drive_correction_cutoff))
+  // Correct the robot's heading until the last cut-off
+  if (!(is_last_point && robot_pose.get_point().dist(last_point) < config.drive_correction_cutoff))
   {
     correction_pid.update(angle_diff);
     correction = correction_pid.get();
-  } else // Inside cut-off radius, ignore horizontal diffs
+  }
+  else // Inside cut-off radius, ignore horizontal diffs
   {
     dist_remaining *= cos(angle_diff * (PI / 180.0));
   }
 
-  if(dir != directionType::rev)
+  if (dir != directionType::rev)
     feedback.update(-dist_remaining);
   else
     feedback.update(dist_remaining);
@@ -514,11 +525,11 @@ bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, doubl
 
   left += correction;
   right -= correction;
-  
+
   drive_tank(left, right);
 
   // When the robot has reached the end point and feedback reports on target, end pure pursuit
-  if(is_last_point && feedback.is_on_target())
+  if (is_last_point && feedback.is_on_target())
   {
     func_initialized = false;
     stop();
@@ -528,18 +539,18 @@ bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, doubl
 }
 
 /**
- * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of 
+ * Drive the robot autonomously using a pure-pursuit algorithm - Input path with a set of
  * waypoints - the robot will attempt to follow the points while cutting corners (radius)
  * to save time (compared to stop / turn / start)
- * 
+ *
  * Use the default drive feedback
- * 
+ *
  * @param path The list of coordinates to follow, in order
  * @param dir Run the bot forwards or backwards
  * @param radius How big the corner cutting should be - small values follow the path more closely
  * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
  * @return True when the path is complete
-*/
+ */
 bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, double radius, double max_speed)
 {
   return pure_pursuit(path, dir, radius, *config.drive_feedback, max_speed);
