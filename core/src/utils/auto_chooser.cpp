@@ -5,7 +5,7 @@
  * so the driver can choose which autonomous to run.
  * @param brain the brain on which to draw the selection boxes
  */
-AutoChooser::AutoChooser(std::vector<std::string> paths)
+AutoChooser::AutoChooser(std::vector<std::string> paths, size_t def) : choice(def)
 {
   const static int per_line = 3;
   const static int num_lines = 2;
@@ -32,16 +32,18 @@ AutoChooser::AutoChooser(std::vector<std::string> paths)
 }
 void AutoChooser::update(bool was_pressed, int x, int y)
 {
+  size_t i = 0;
   for (const entry_t &e : list)
   {
     if (e.rect.contains({(double)x, (double)y}))
     {
-      choice = e.name;
+      choice = i;
     }
+    i++;
   }
 }
 
-void AutoChooser::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame_number)
+void AutoChooser::draw(vex::brain::lcd &scr, [[maybe_unused]] bool first_draw, [[maybe_unused]] unsigned int frame_number)
 {
   scr.setFont(vex::fontType::mono20);
 
@@ -50,7 +52,7 @@ void AutoChooser::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame
     entry_t e = list[i];
     scr.setFillColor(vex::blue);
 
-    if (choice == e.name)
+    if (choice == i)
     {
       scr.setFillColor(vex::green);
     }
@@ -64,7 +66,7 @@ void AutoChooser::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame
 /**
  * Return the selected autonomous
  */
-std::string AutoChooser::get_choice()
+size_t AutoChooser::get_choice() 
 {
   return choice;
 }

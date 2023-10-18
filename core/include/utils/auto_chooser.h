@@ -21,7 +21,7 @@ public:
    * so the driver can choose which autonomous to run.
    * @param brain the brain on which to draw the selection boxes
    */
-  AutoChooser(std::vector<std::string> paths);
+  AutoChooser(std::vector<std::string> paths, size_t def = 0);
 
   void update(bool was_pressed, int x, int y);
   void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
@@ -30,7 +30,7 @@ public:
    * Get the currently selected auto choice
    * @return the identifier to the auto path
    */
-  std::string get_choice();
+  size_t get_choice();
 
 protected:
   /**
@@ -45,6 +45,6 @@ protected:
   static const size_t width = 380;
   static const size_t height = 220;
 
-  std::string choice; /**< the current choice of auto*/
+  size_t choice; /**< the current choice of auto*/
   std::vector<entry_t> list /**< a list of all possible auto choices*/;
 };
