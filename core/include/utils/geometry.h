@@ -1,10 +1,11 @@
 #pragma once
 #include <cmath>
+// #include "../core/include/utils/vector2d.h"
 
 /**
  * Data structure representing an X,Y coordinate
  */
-struct point_t
+typedef struct point_s
 {
     double x; ///< the x position in space
     double y; ///< the y position in space
@@ -14,7 +15,7 @@ struct point_t
      * @param other the point to measure the distance from
      * @return the euclidian distance between this and other
      */
-    double dist(const point_t other) const
+    double dist(const point_s other) const
     {
         return std::sqrt(std::pow(this->x - other.x, 2) + pow(this->y - other.y, 2));
     }
@@ -24,9 +25,9 @@ struct point_t
      * @param other the point to add on to this
      * @return this + other (this.x + other.x, this.y + other.y)
      */
-    point_t operator+(const point_t &other)
+    point_s operator+(const point_s &other)
     {
-        point_t p{
+        point_s p{
             .x = this->x + other.x,
             .y = this->y + other.y};
         return p;
@@ -37,37 +38,37 @@ struct point_t
      * @param other the point_t to subtract from this
      * @return this - other (this.x - other.x, this.y - other.y)
      */
-    point_t operator-(const point_t &other)
+    point_s operator-(const point_s &other)
     {
-        point_t p{
+        point_s p{
             .x = this->x - other.x,
             .y = this->y - other.y};
         return p;
     }
 
-    point_t operator*(double s) const
+    point_s operator*(double s) const
     {
         return {x * s, y * s};
     }
-    point_t operator/(double s) const
+    point_s operator/(double s) const
     {
         return {x / s, y / s};
     }
 
-    point_t operator-() const
+    point_s operator-() const
     {
         return {-x, -y};
     }
-    point_t operator+() const
+    point_s operator+() const
     {
         return {x, y};
     }
 
-    bool operator==(const point_t &rhs)
+    bool operator==(const point_s &rhs)
     {
         return x == rhs.x && y == rhs.y;
     }
-};
+} point_t;
 
 /**
  *  Describes a single position and rotation
@@ -84,6 +85,9 @@ typedef struct
     }
 
 } pose_t;
+
+
+
 
 struct Mat2
 {

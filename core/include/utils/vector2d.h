@@ -107,3 +107,14 @@ double deg2rad(double deg);
 
  */
 double rad2deg(double r);
+
+/**
+ * Describes the velocity and acceleration for a pose_t
+*/
+typedef struct 
+{
+    double rot_vel; /// Rotational velocity, degrees/sec
+    double rot_accel; /// Rotational accelration, degrees/sec2
+    Vector2D lin_vel; /// Linear velocity, X / Y or direction / magnitude
+    Vector2D lin_accel; /// Linear acceleration, X / Y or direction / magnitude
+} trajectory_t;
