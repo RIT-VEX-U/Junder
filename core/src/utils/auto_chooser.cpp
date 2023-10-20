@@ -35,7 +35,7 @@ void AutoChooser::update(bool was_pressed, int x, int y)
   size_t i = 0;
   for (const entry_t &e : list)
   {
-    if (e.rect.contains({(double)x, (double)y}))
+    if (was_pressed && e.rect.contains({(double)x, (double)y}))
     {
       choice = i;
     }

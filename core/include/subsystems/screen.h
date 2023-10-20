@@ -3,7 +3,9 @@
 #include <vector>
 #include <functional>
 #include <map>
+#include <cassert>
 #include "../core/include/subsystems/odometry/odometry_base.h"
+#include "../core/include/utils/graph_drawer.h"
 
 namespace screen
 {
@@ -29,6 +31,56 @@ namespace screen
          */
         virtual void draw(vex::brain::lcd &screen, bool first_draw,
                           unsigned int frame_number);
+    };
+
+    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
+    class SliderWidget
+    {
+    public:
+        /// @brief Creates a slider widget
+        /// @param val reference to the value to modify
+        /// @param low minimum value to go to
+        /// @param high maximum value to go to
+        /// @param rect rect to draw it
+        /// @param name name of the value
+        SliderWidget(double &val, double low, double high, Rect rect, std::string name) : value(val), low(low), high(high), rect(rect), name(name) {}
+
+        /// @brief responds to user input
+        /// @param was_pressed if the screen is pressed
+        /// @param x x position if the screen was pressed
+        /// @param y y position if the screen was pressed
+        bool update(bool was_pressed, int x, int y);
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+
+    private:
+        double &value;
+
+        double low;
+        double high;
+
+        Rect rect;
+        std::string name = "";
+    };
+
+    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
+    class ButtonWidget
+    {
+    public:
+        ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+        ButtonWidget(void (*onpress)(), Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+
+        /// @brief responds to user input
+        /// @param was_pressed if the screen is pressed
+        /// @param x x position if the screen was pressed
+        /// @param y y position if the screen was pressed
+        bool update(bool was_pressed, int x, int y);
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+
+    private:
+        std::function<void(void)> onpress;
+        Rect rect;
+        std::string name = "";
+        bool was_pressed_last = false;
     };
 
     /**
@@ -102,53 +154,44 @@ namespace screen
         draw_func_t draw_f;
     };
 
-    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
-    class SliderWidget
+    class PIDPage : public Page
     {
     public:
-        /// @brief Creates a slider widget
-        /// @param val reference to the value to modify
-        /// @param low minimum value to go to
-        /// @param high maximum value to go to
-        /// @param rect rect to draw it
-        /// @param name name of the value
-        SliderWidget(double &val, double low, double high, Rect rect, std::string name) : value(val), low(low), high(high), rect(rect), name(name) {}
-
-        /// @brief responds to user input
-        /// @param was_pressed if the screen is pressed
-        /// @param x x position if the screen was pressed
-        /// @param y y position if the screen was pressed
-        bool update(bool was_pressed, int x, int y);
-        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
-
-    private:
-        double &value;
-
-        double low;
-        double high;
-
-        Rect rect;
-        std::string name = "";
-    };
-
-    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
-    class ButtonWidget
-    {
-    public:
-        ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
-
-        /// @brief responds to user input
-        /// @param was_pressed if the screen is pressed
-        /// @param x x position if the screen was pressed
-        /// @param y y position if the screen was pressed
-        bool update(bool was_pressed, int x, int y);
-        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+        PIDPage(
+            PID::pid_config_t &m_cfg, PID *pid, std::string name, std::function<void(void)> onchange = []() {})
+            : cfg(m_cfg), pid(pid), name(name), onchange(onchange),
+              p_slider(cfg.p, 0.0, 0.5, Rect{{60, 20}, {210, 60}}, "P"),
+              i_slider(cfg.i, 0.0, 0.05, Rect{{60, 80}, {180, 120}}, "I"),
+              d_slider(cfg.d, 0.0, 0.05, Rect{{60, 140}, {180, 180}}, "D"),
+              zero_i([this]()
+                     { zero_i_f(); },
+                     Rect{{180, 80}, {220, 120}}, "0"),
+              zero_d([this]()
+                     { zero_d_f(); },
+                     Rect{{180, 140}, {220, 180}}, "0"),
+              graph(40, 0, 0, {vex::red, vex::green}, 2)
+        {
+            assert(pid != nullptr);
+        }
+        void update(bool was_pressed, int x, int y) override;
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
-        std::function<void(void)> onpress;
-        Rect rect;
-        std::string name = "";
-        bool was_pressed_last = false;
+        void zero_d_f(void) { cfg.d = 0; }
+        void zero_i_f(void) { cfg.i = 0; }
+
+        PID::pid_config_t &cfg;
+        PID *pid;
+        const std::string name;
+        std::function<void(void)> onchange;
+
+        SliderWidget p_slider;
+        SliderWidget i_slider;
+        SliderWidget d_slider;
+        ButtonWidget zero_i;
+        ButtonWidget zero_d;
+
+        GraphDrawer graph;
     };
 
 }

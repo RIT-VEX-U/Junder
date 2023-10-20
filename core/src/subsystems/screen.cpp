@@ -373,7 +373,7 @@ namespace screen
             return true;
         }
         was_pressed_last = was_pressed;
-        return true;
+        return false;
     }
 
     void ButtonWidget::draw(vex::brain::lcd &scr, bool first_draw [[maybe_unused]], unsigned int frame_number [[maybe_unused]])
@@ -385,6 +385,37 @@ namespace screen
         int w = scr.getStringWidth(name.c_str());
         int h = scr.getStringHeight(name.c_str());
         scr.printAt(rect.center().x - w / 2, rect.center().y + h / 2, name.c_str());
+    }
+    void PIDPage::update(bool was_pressed, int x, int y)
+    {
+        bool updated = false;
+        updated |= p_slider.update(was_pressed, x, y);
+        updated |= i_slider.update(was_pressed, x, y);
+        updated |= d_slider.update(was_pressed, x, y);
+
+        updated |= zero_i.update(was_pressed, x, y);
+        updated |= zero_d.update(was_pressed, x, y);
+        if (updated)
+        {
+            onchange();
+        }
+    }
+    void PIDPage::draw(vex::brain::lcd &scr, bool first_draw [[maybe_unused]], unsigned int frame_number [[maybe_unused]])
+    {
+        p_slider.draw(scr, first_draw, frame_number);
+        i_slider.draw(scr, first_draw, frame_number);
+        d_slider.draw(scr, first_draw, frame_number);
+        zero_i.draw(scr, first_draw, frame_number);
+        zero_d.draw(scr, first_draw, frame_number);
+
+        graph.add_samples({pid->get_target(), pid->get_sensor_val()});
+
+        graph.draw(scr, 230, 20, 200, 200);
+
+        scr.setPenColor(vex::white);
+        
+        printf(": %s\n", name.c_str());
+        scr.printAt(60, 215, false, "%s", name.c_str());
     }
 
 } // namespace screen

@@ -74,6 +74,14 @@ public:
    */
   double update(double sensor_val) override;
 
+  
+  /**
+   * @brief gets the sensor value that we were last updated with
+   * @return sensor_val
+  */
+  double get_sensor_val();
+
+
   /**
    * Gets the current PID out value, from when update() was last run
    * @return the Out value of the controller (voltage, RPM, whatever the PID controller is controlling)
