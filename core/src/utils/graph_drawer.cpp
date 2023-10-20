@@ -22,6 +22,9 @@ GraphDrawer::GraphDrawer(int num_samples, double lower_bound, double upper_bound
     {
         upper = -1000.0;
         lower = 1000.0;
+    } else {
+        upper = upper_bound;
+        lower = lower_bound;
     }
 }
 
@@ -111,6 +114,7 @@ void GraphDrawer::draw(vex::brain::lcd &screen, int x, int y, int width, int hei
     double sample_range = upper - lower;
     screen.setPenWidth(2);
 
+    printf("low: %f high: %f\n", lower, upper);
     for (int j = 0; j < series.size(); j++)
     {
         double x_s = (double)x;

@@ -169,7 +169,7 @@ namespace screen
               zero_d([this]()
                      { zero_d_f(); },
                      Rect{{180, 140}, {220, 180}}, "0"),
-              graph(40, 0, 0, {vex::red, vex::green}, 2)
+              graph(40, -30, 120, {vex::red, vex::green}, 2)
         {
             assert(pid != nullptr);
         }

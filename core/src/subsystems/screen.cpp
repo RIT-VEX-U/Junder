@@ -413,8 +413,6 @@ namespace screen
         graph.draw(scr, 230, 20, 200, 200);
 
         scr.setPenColor(vex::white);
-        
-        printf(": %s\n", name.c_str());
         scr.printAt(60, 215, false, "%s", name.c_str());
     }
 
