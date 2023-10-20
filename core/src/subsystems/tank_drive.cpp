@@ -48,11 +48,11 @@ AutoCommand *TankDrive::TurnDegreesCmd(Feedback &fb, double degrees, double max_
 {
   return new TurnDegreesCommand(*this, fb, degrees, max_speed, end_speed);
 }
-AutoCommand *TankDrive::PurePursuitCmd(std::vector<point_t> path, directionType dir, double radius, double max_speed, double end_speed)
+AutoCommand *TankDrive::PurePursuitCmd(PurePursuit::Path path, directionType dir, double radius, double max_speed, double end_speed)
 {
   return new PurePursuitCommand(*this, *drive_default_feedback, path, dir, radius, max_speed, end_speed);
 }
-AutoCommand *TankDrive::PurePursuitCmd(Feedback &feedback, std::vector<point_t> path, directionType dir, double radius, double max_speed, double end_speed)
+AutoCommand *TankDrive::PurePursuitCmd(Feedback &feedback, PurePursuit::Path path, directionType dir, double radius, double max_speed, double end_speed)
 {
   return new PurePursuitCommand(*this, feedback, path, dir, radius, max_speed, end_speed);
 }
@@ -476,29 +476,33 @@ double TankDrive::modify_inputs(double input, int power)
  * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
  * @return True when the path is complete
  */
-bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, double radius, Feedback &feedback, double max_speed, double end_speed)
+bool TankDrive::pure_pursuit(PurePursuit::Path path, directionType dir, double radius, Feedback &feedback, double max_speed, double end_speed)
 {
+  std::vector<point_t> points = path.get_points();
+  if (!path.is_valid()) {
+    printf("WARNING: Unexpected pure pursuit path - some segments intersect or are too close\n");
+  }
   pose_t robot_pose = odometry->get_position();
 
   // On function initialization, send the path-length estimate to the feedback controller
   if (!func_initialized)
   {
     if (dir != directionType::rev)
-      feedback.init(-estimate_path_length(path), 0, odometry->get_speed(), end_speed);
+      feedback.init(-estimate_path_length(points), 0, odometry->get_speed(), end_speed);
     else
-      feedback.init(estimate_path_length(path), 0, odometry->get_speed(), end_speed);
+      feedback.init(estimate_path_length(points), 0, odometry->get_speed(), end_speed);
 
     func_initialized = true;
   }
 
-  point_t lookahead = PurePursuit::get_lookahead(path, odometry->get_position(), radius);
+  point_t lookahead = PurePursuit::get_lookahead(points, odometry->get_position(), radius);
   point_t localized = lookahead - robot_pose.get_point();
 
-  point_t last_point = path[path.size() - 1];
+  point_t last_point = points[points.size() - 1];
   bool is_last_point = (lookahead == last_point);
 
   double correction = 0;
-  double dist_remaining = PurePursuit::estimate_remaining_dist(path, robot_pose, radius);
+  double dist_remaining = PurePursuit::estimate_remaining_dist(points, robot_pose, radius);
   double angle_diff = 0;
 
   // Robot is facing forwards / backwards, change the bot's angle by 180
@@ -556,7 +560,7 @@ bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, doubl
  * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
  * @return True when the path is complete
  */
-bool TankDrive::pure_pursuit(std::vector<point_t> path, directionType dir, double radius, double max_speed, double end_speed)
+bool TankDrive::pure_pursuit(PurePursuit::Path path, directionType dir, double radius, double max_speed, double end_speed)
 {
   return pure_pursuit(path, dir, radius, *config.drive_feedback, max_speed, end_speed);
 }
