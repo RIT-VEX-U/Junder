@@ -25,6 +25,11 @@ namespace PurePursuit {
        * Get the points associated with this Path
        */
       std::vector<point_t> get_points();
+
+      /**
+       * Get the radius associated with this Path
+       */
+      double get_radius();
       
       /**
        * Get whether this path will behave as expected

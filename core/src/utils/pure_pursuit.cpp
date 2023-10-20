@@ -45,6 +45,13 @@ std::vector<point_t> PurePursuit::Path::get_points() {
 }
 
 /**
+ * Get the radius associated with this Path
+ */
+double PurePursuit::Path::get_radius() {
+  return this->radius;
+}
+
+/**
  * Get whether this path will behave as expected
  */
 bool PurePursuit::Path::is_valid() {
