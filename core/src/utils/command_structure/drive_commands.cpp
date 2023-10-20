@@ -148,12 +148,11 @@ void TurnToHeadingCommand::on_timeout(){
  * 
  * @param path The list of coordinates to follow, in order
  * @param dir Run the bot forwards or backwards
- * @param radius How big the corner cutting should be - small values follow the path more closely
  * @param feedback The feedback controller determining speed
  * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
 */
-PurePursuitCommand::PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback, std::vector<point_t> path, directionType dir, double radius, double max_speed, double end_speed)
-: drive_sys(drive_sys), path(path), dir(dir), radius(radius), feedback(feedback), max_speed(max_speed), end_speed(end_speed)
+PurePursuitCommand::PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback, PurePursuit::Path path, directionType dir, double max_speed, double end_speed)
+: drive_sys(drive_sys), path(path), dir(dir), feedback(feedback), max_speed(max_speed), end_speed(end_speed)
 {}
 
 /**
@@ -161,7 +160,7 @@ PurePursuitCommand::PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback,
 */
 bool PurePursuitCommand::run()
 {
-  return drive_sys.pure_pursuit(path, dir, radius, feedback, max_speed, end_speed);
+  return drive_sys.pure_pursuit(path, dir, feedback, max_speed, end_speed);
 }
 
 /**

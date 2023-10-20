@@ -182,11 +182,10 @@ class PurePursuitCommand: public AutoCommand
    * 
    * @param path The list of coordinates to follow, in order
    * @param dir Run the bot forwards or backwards
-   * @param radius How big the corner cutting should be - small values follow the path more closely
    * @param feedback The feedback controller determining speed
    * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
   */
-  PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback, std::vector<point_t> path, directionType dir, double radius, double max_speed=1, double end_speed=0);
+  PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback, PurePursuit::Path path, directionType dir, double max_speed=1, double end_speed=0);
 
   /**
    * Direct call to TankDrive::pure_pursuit
@@ -200,9 +199,8 @@ class PurePursuitCommand: public AutoCommand
 
   private:
   TankDrive &drive_sys;
-  std::vector<point_t> path;
+  PurePursuit::Path path;
   directionType dir;
-  double radius;
   Feedback &feedback;
   double max_speed;
   double end_speed;

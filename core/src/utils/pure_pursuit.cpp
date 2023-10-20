@@ -1,6 +1,64 @@
 #include "../core/include/utils/pure_pursuit.h"
 
 /**
+ * Create a Path
+ * @param points the points that make up the path
+ * @param radius the lookahead radius for pure pursuit
+ */
+PurePursuit::Path::Path(std::vector<point_t> points, double radius) {
+  this->points = points;
+  this->radius = radius;
+  this->valid = true;
+
+  for(int i = 0; i < points.size() - 1; i++) {
+    for(int j = i + 2; j < points.size() - 1; j++) {
+      // Iterate over points on the segments discretely and compare distances
+      double segment_i_dist = points[i].dist(points[i+1]);
+      if (segment_i_dist == 0) segment_i_dist = 0.1;
+      double segment_j_dist = points[j].dist(points[j+1]);
+      if (segment_j_dist == 0) segment_j_dist = 0.1;
+      for(double t1 = 0; t1 <= 1; t1 += radius / segment_i_dist) {
+        point_t p1;
+        p1.x = points[i].x + t1 * (points[i+1].x - points[i].x);
+        p1.y = points[i].y + t1 * (points[i+1].y - points[i].y);
+
+        for(double t2 = 0; t2 <= 1; t2 += radius / segment_j_dist) {
+          point_t p2;
+          p2.x = points[j].x + t2 * (points[j+1].x - points[j].x);
+          p2.y = points[j].y + t2 * (points[j+1].y - points[j].y);
+
+          if(p1.dist(p2) < radius) {
+            this->valid = false;
+            return;
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Get the points associated with this Path
+ */
+std::vector<point_t> PurePursuit::Path::get_points() {
+  return this->points;
+}
+
+/**
+ * Get the radius associated with this Path
+ */
+double PurePursuit::Path::get_radius() {
+  return this->radius;
+}
+
+/**
+ * Get whether this path will behave as expected
+ */
+bool PurePursuit::Path::is_valid() {
+  return this->valid;
+}
+
+/**
   * Returns points of the intersections of a line segment and a circle. The line 
   * segment is defined by two points, and the circle is defined by a center and radius.
   */
