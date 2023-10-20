@@ -26,6 +26,9 @@ extern OdometryTank odom;
 extern TankDrive drive_sys;
 
 extern double motor_volts;
+extern PID::pid_config_t cfg;
+extern GraphDrawer target_graph;
+extern GraphDrawer pos_graph;
 extern Serializer *serializer;
 
 // ================ UTILS ================

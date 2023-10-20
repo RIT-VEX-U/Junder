@@ -4,7 +4,6 @@ vex::controller con;
 
 Serializer *serializer = nullptr;
 
-
 #ifdef COMP_BOT
 
 inertial imu(PORT12);
@@ -142,21 +141,50 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 // ================ UTILS ================
 
 #endif
-double motor_volts = 6.0;
+
+PID::pid_config_t cfg = {0, 0, 0, 0, 0.01, PID::ERROR_TYPE::LINEAR};
 
 std::vector<screen::Page *> pages;
 
-screen::SliderWidget motor_volt_slider(motor_volts, -12.0, 12.0, Rect{{60, 80}, {420, 120}}, "cata volts");
+screen::SliderWidget p_slider(cfg.p, -0.5, 0.5, Rect{{60, 20}, {210, 60}}, "P");
+screen::SliderWidget i_slider(cfg.i, -0.05, 0.05, Rect{{60, 80}, {180, 120}}, "I");
+screen::SliderWidget d_slider(cfg.d, -0.05, 0.05, Rect{{60, 140}, {180, 180}}, "D");
+
+screen::ButtonWidget zero_i([]()
+                            { cfg.i = 0; },
+                            Rect{{180, 80}, {220, 120}}, "0");
+screen::ButtonWidget zero_d([]()
+                            { cfg.d = 0; },
+                            Rect{{180, 140}, {220, 180}}, "0");
+
+GraphDrawer target_graph(Brain.Screen, 40, "", "", vex::color(255, 0, 0), true, -30, 120);
+GraphDrawer pos_graph(Brain.Screen, 40, "", "", vex::color(0, 255, 0), false, -30, 120);
 
 auto updatef = [](bool was_pressed, int x, int y)
 {
-    motor_volt_slider.update(was_pressed, x, y);
-    serializer->set_double("cata_volts", motor_volts);
+    if (p_slider.update(was_pressed, x, y))
+        serializer->set_double("motor_p", cfg.p);
+
+    if (i_slider.update(was_pressed, x, y))
+        serializer->set_double("motor_i", cfg.i);
+
+    if (d_slider.update(was_pressed, x, y))
+        serializer->set_double("motor_d", cfg.d);
+
+    zero_i.update(was_pressed, x, y);
+    zero_d.update(was_pressed, x, y);
 };
 
 auto drawf = [](vex::brain::lcd &scr, bool first_draw, unsigned int frame_number)
 {
-    motor_volt_slider.draw(scr, first_draw, frame_number);
+    p_slider.draw(scr, first_draw, frame_number);
+    i_slider.draw(scr, first_draw, frame_number);
+    d_slider.draw(scr, first_draw, frame_number);
+    zero_i.draw(scr, first_draw, frame_number);
+    zero_d.draw(scr, first_draw, frame_number);
+
+    target_graph.draw(230, 20, 200, 200);
+    pos_graph.draw(230, 20, 200, 200);
 };
 
 /**
@@ -165,9 +193,15 @@ auto drawf = [](vex::brain::lcd &scr, bool first_draw, unsigned int frame_number
 void robot_init()
 {
     serializer = new Serializer("cata_params.ser");
-    motor_volts = serializer->double_or("cata_volts", 6.0);
+
+    cfg.p = serializer->double_or("motor_p", 0.0);
+    cfg.i = serializer->double_or("motor_i", 0.0);
+    cfg.d = serializer->double_or("motor_d", 0.0);
+
+    fprintf(stderr, "AHHHHHHHHH");
+
     odom.set_position({72, 62, 0});
     pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}), new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true), new screen::FunctionPage(updatef, drawf)};
     imu.calibrate();
-    screen::start_screen(Brain.Screen, pages, 2);
+    screen::start_screen(Brain.Screen, pages, 3);
 }

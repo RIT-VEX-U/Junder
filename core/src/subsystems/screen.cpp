@@ -98,7 +98,7 @@ namespace screen
             }
 
             // Draw First Page
-            if (frame % 5 == 0)
+            if (frame % 2 == 0)
             {
                 screen_data.screen.clearScreen(vex::color::black);
                 screen_data.screen.setPenColor("#FFFFFF");
@@ -122,7 +122,7 @@ namespace screen
             screen_data.screen.render();
             frame++;
             was_pressed = pressing;
-            vexDelay(20);
+            vexDelay(5);
         }
 
         return 0;
@@ -187,7 +187,7 @@ namespace screen
         scr.drawRectangle(x, y, row_width, row_height, col);
         scr.printAt(x + 2, y + 16, false, " %2d   %2.0fC   %.7s", port, temp, name.c_str());
     }
-    void StatsPage::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame_number)
+    void StatsPage::draw(vex::brain::lcd &scr, bool first_draw [[maybe_unused]], unsigned int frame_number [[maybe_unused]])
     {
         int num = 0;
         int x = 40;
@@ -238,7 +238,7 @@ namespace screen
         return (int)(p * 240);
     }
 
-    void OdometryPage::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame_number)
+    void OdometryPage::draw(vex::brain::lcd &scr, bool first_draw [[maybe_unused]], unsigned int frame_number [[maybe_unused]])
     {
         if (do_trail)
         {
@@ -313,7 +313,7 @@ namespace screen
         (void)was_pressed;
     }
 
-    void SliderWidget::update(bool was_pressed, int x, int y)
+    bool SliderWidget::update(bool was_pressed, int x, int y)
     {
         const double margin = 10.0;
 
@@ -327,9 +327,11 @@ namespace screen
                 pct = clamp(pct, 0.0, 1.0);
                 value = (low + pct * (high - low));
             }
+            return true;
         }
+        return false;
     }
-    void SliderWidget::draw(vex::brain::lcd &scr, bool first_draw, unsigned int frame_number)
+    void SliderWidget::draw(vex::brain::lcd &scr, bool first_draw [[maybe_unused]], unsigned int frame_number [[maybe_unused]])
     {
         if (rect.height() <= 0)
         {
@@ -343,16 +345,46 @@ namespace screen
 
         scr.setPenColor(vex::color(50, 50, 50));
         scr.setFillColor(vex::color(50, 50, 50));
+        scr.setPenWidth(1);
+
         scr.drawRectangle(rect.min.x, rect.min.y, rect.dimensions().x, rect.dimensions().y);
+
         scr.setPenColor(vex::color(200, 200, 200));
         scr.setPenWidth(4);
+
         scr.drawLine(xl + margin, y, xh - margin, y);
+
         double pct = (value - low) / (high - low);
         double vx = pct * (rect.dimensions().x - (2 * margin)) + rect.min.x + margin;
         const double handle_width = 4;
         const double handle_height = 4;
+
         scr.drawRectangle(vx - (handle_width / 2), y - (handle_height / 2), handle_width, handle_height);
         int text_w = scr.getStringWidth((name + "      ").c_str());
-        scr.printAt(xmid - text_w / 2, y - 30, false, "%s: %.2f", name.c_str(), value);
+        scr.printAt(xmid - text_w / 2, y - 15, false, "%s: %.3f", name.c_str(), value);
     }
+
+    bool ButtonWidget::update(bool was_pressed, int x, int y)
+    {
+        if (was_pressed && !was_pressed_last && rect.contains({(double)x, (double)y}))
+        {
+            onpress();
+            was_pressed_last = was_pressed;
+            return true;
+        }
+        was_pressed_last = was_pressed;
+        return true;
+    }
+
+    void ButtonWidget::draw(vex::brain::lcd &scr, bool first_draw [[maybe_unused]], unsigned int frame_number [[maybe_unused]])
+    {
+        scr.setPenColor(vex::white);
+        scr.setPenWidth(1);
+        scr.setFillColor(vex::color(50, 50, 50));
+        scr.drawRectangle(rect.min.x, rect.min.y, rect.width(), rect.height());
+        int w = scr.getStringWidth(name.c_str());
+        int h = scr.getStringHeight(name.c_str());
+        scr.printAt(rect.center().x - w / 2, rect.center().y + h / 2, name.c_str());
+    }
+
 } // namespace screen

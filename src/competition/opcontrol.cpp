@@ -7,7 +7,9 @@
  */
 void opcontrol()
 {
-    vex::motor mot(vex::PORT10);
+    static vex::motor mot(vex::PORT1);
+
+    static Feedback *tf = new PID(cfg);
 
     while (imu.isCalibrating())
     {
@@ -15,7 +17,10 @@ void opcontrol()
     }
 
     // ================ INIT ================
-
+    const static double target_pos = 90.0;
+    con.ButtonA.pressed([]()
+                        { mot.setPosition(0, vex::degrees); tf->init(mot.position(vex::degrees), target_pos); });
+    int tick = 0;
     while (true)
     {
 #ifdef Tank
@@ -28,14 +33,20 @@ void opcontrol()
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s);
 #endif
-
+        double pos = mot.position(vex::degrees);
+        if (tick % 2 == 0)
+        {
+            pos_graph.add_sample({(double)vex::timer::system(), pos});
+            target_graph.add_sample({(double)vex::timer::system(), target_pos});
+        }
+        tf->update(pos);
         if (con.ButtonA.pressing())
         {
-            mot.spin(vex::fwd, motor_volts, vex::volt);
+            mot.spin(vex::fwd, tf->get(), vex::volt);
         }
         else
             mot.stop();
-
+        tick++;
         vexDelay(10);
     }
 

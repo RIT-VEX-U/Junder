@@ -102,12 +102,23 @@ namespace screen
         draw_func_t draw_f;
     };
 
+    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
     class SliderWidget
     {
     public:
+        /// @brief Creates a slider widget
+        /// @param val reference to the value to modify
+        /// @param low minimum value to go to
+        /// @param high maximum value to go to
+        /// @param rect rect to draw it
+        /// @param name name of the value
         SliderWidget(double &val, double low, double high, Rect rect, std::string name) : value(val), low(low), high(high), rect(rect), name(name) {}
 
-        void update(bool was_pressed, int x, int y);
+        /// @brief responds to user input
+        /// @param was_pressed if the screen is pressed
+        /// @param x x position if the screen was pressed
+        /// @param y y position if the screen was pressed
+        bool update(bool was_pressed, int x, int y);
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
 
     private:
@@ -118,6 +129,26 @@ namespace screen
 
         Rect rect;
         std::string name = "";
+    };
+
+    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
+    class ButtonWidget
+    {
+    public:
+        ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+
+        /// @brief responds to user input
+        /// @param was_pressed if the screen is pressed
+        /// @param x x position if the screen was pressed
+        /// @param y y position if the screen was pressed
+        bool update(bool was_pressed, int x, int y);
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+
+    private:
+        std::function<void(void)> onpress;
+        Rect rect;
+        std::string name = "";
+        bool was_pressed_last = false;
     };
 
 }

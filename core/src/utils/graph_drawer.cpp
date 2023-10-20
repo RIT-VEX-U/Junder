@@ -91,7 +91,7 @@ void GraphDrawer::draw(int x, int y, int width, int height)
     double sample_range = current_max - current_min;
     double x_s = (double)x;
     double y_s = (double)y + (double)height;
-    Screen.setPenWidth(4);
+    Screen.setPenWidth(2);
     Screen.setPenColor(col);
     for (int i = sample_index; i < samples.size() + sample_index - 1; i++)
     {
