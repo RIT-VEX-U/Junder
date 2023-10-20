@@ -18,10 +18,10 @@ public:
     OdometryFusion(vex::motor_group &left_side, vex::motor_group &right_side, odomfus_cfg_t &config, vex::inertial &imu, bool is_async = true);
     OdometryFusion(CustomEncoder &left_custom_enc, CustomEncoder &right_custom_enc, odomfus_cfg_t &config, vex::inertial &imu, bool is_async = true);
 
-    pose_t update() override;
+    // pose_t update() override;
 
-    void calibrate();
-    bool is_calibrating();
+    // void calibrate();
+    // bool is_calibrating();
 
 
 private:

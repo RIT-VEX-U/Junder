@@ -45,4 +45,6 @@ pose_t OdometryFusion::calculate_new_pose(robot_specs_t &config, pose_t &stored_
     
     last_lside_rev = lside_rev;
     last_rside_rev = rside_rev;
+
+    return pose_t{};
 }

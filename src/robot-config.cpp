@@ -82,7 +82,7 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 // ================ SUBSYSTEMS ================
 
-inertial imu(PORT10);
+IMU imu(PORT10);
 CustomEncoder right_enc = CustomEncoder{Brain.ThreeWirePort.A, 90};
 CustomEncoder left_enc = CustomEncoder{Brain.ThreeWirePort.C, 90};
 
@@ -124,22 +124,19 @@ vex::motor right_back(vex::PORT4);
 vex::motor_group left_motors(left_front, left_back);
 vex::motor_group right_motors(right_front, right_back);
 
-OdometryTank odom{left_enc, right_enc, robot_cfg, &imu};
+OdometryTank odom{left_enc, right_enc, robot_cfg};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 // ================ UTILS ================
 
 #endif
 
-std::vector<screen::Page *> pages;
+// std::vector<screen::Page *> pages;
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
-
-    odom.set_position({36, 36, 45});
-    pages = {new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true)};
-    imu.calibrate();
-    screen::start_screen(Brain.Screen, pages, 1);
+    // pages = {new screen::StatsPage(motimuor_names), new screen::OdometryPage(odom, 12, 12, true)};
+    // screen::start_screen(Brain.Screen, pages, 1);
 }
