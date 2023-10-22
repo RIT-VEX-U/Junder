@@ -33,7 +33,7 @@ namespace screen
                           unsigned int frame_number);
     };
 
-    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
+    /// @brief Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
     class SliderWidget
     {
     public:
@@ -49,7 +49,9 @@ namespace screen
         /// @param was_pressed if the screen is pressed
         /// @param x x position if the screen was pressed
         /// @param y y position if the screen was pressed
+        /// @return true if the value updated
         bool update(bool was_pressed, int x, int y);
+        /// @brief @ref Page::draws the slide to the screen
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
 
     private:
@@ -62,18 +64,28 @@ namespace screen
         std::string name = "";
     };
 
-    /// Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
+    /// @brief Widget that does something when you tap it. The function is only called once when you first tap it
     class ButtonWidget
     {
     public:
+        /// @brief Create a Button widget
+        /// @param onpress the function to be called when the button is tapped
+        /// @param rect the area the button should take up on the screen
+        /// @param name the label put on the button
         ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+        /// @brief Create a Button widget
+        /// @param onpress the function to be called when the button is tapped
+        /// @param rect the area the button should take up on the screen
+        /// @param name the label put on the button
         ButtonWidget(void (*onpress)(), Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
 
         /// @brief responds to user input
         /// @param was_pressed if the screen is pressed
         /// @param x x position if the screen was pressed
         /// @param y y position if the screen was pressed
+        /// @return true if the button was pressed
         bool update(bool was_pressed, int x, int y);
+        /// @brief draws the button to the screen
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
 
     private:
@@ -100,11 +112,17 @@ namespace screen
     /// @brief  type of function needed for draw
     using draw_func_t = std::function<void(vex::brain::lcd &screen, bool, unsigned int)>;
 
+
+    /// @brief Draws motor stats and battery stats to the screen 
     class StatsPage : public Page
     {
     public:
+        /// @brief Creates a stats page
+        /// @param motors a map of string to motor that we want to draw on this page
         StatsPage(std::map<std::string, vex::motor &> motors);
+        /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
+        /// @brief @see Page#draw
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
@@ -129,9 +147,9 @@ namespace screen
         /// @param robot_height the robot_height (front to back) of the robot in inches. Used for visualization
         /// @param do_trail whether or not to calculate and draw the trail. Drawing and storing takes a very *slight* extra amount of processing power 
         OdometryPage(OdometryBase &odom, double robot_width, double robot_height, bool do_trail);
-        /// @brief draw the page
+        /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
-        /// @brief draw the page
+        /// @brief @see Page#draw
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
@@ -152,10 +170,13 @@ namespace screen
     class FunctionPage : public Page
     {
     public:
+        /// @brief Creates a function page
+        /// @param update_f the function called every tick to respond to user input or do data collection
+        /// @param draw_t the function called to draw to the screen
         FunctionPage(update_func_t update_f, draw_func_t draw_t);
-        /// @brief update the page
+        /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
-        /// @brief draw the page
+        /// @brief @see Page#draw
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
@@ -173,9 +194,9 @@ namespace screen
         /// @param onchange a function that is called when a tuning parameter is changed. If you need to update stuff on that change register a handler here
         PIDPage(PID *pid, std::string name, std::function<void(void)> onchange);
 
-        /// @brief update the page
+        /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
-        /// @brief draw the page
+        /// @brief @see Page#draw
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
