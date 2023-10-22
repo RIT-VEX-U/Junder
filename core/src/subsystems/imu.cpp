@@ -4,7 +4,7 @@
 IMU::IMU(uint32_t port, axisType fwd_axis, axisType lat_axis, bool fwd_is_positive)
 : imu_cfg(new imu_cfg_t(default_settings)), vex::inertial(port)
 {
-    is_calibrating = false;
+    is_calibrating_thresh = false;
     acc_cal_thresh = 0.0;
     orient(fwd_axis, lat_axis, fwd_is_positive);
 }
@@ -12,14 +12,14 @@ IMU::IMU(uint32_t port, axisType fwd_axis, axisType lat_axis, bool fwd_is_positi
 IMU::IMU(uint32_t port, imu_cfg_t &imu_cfg)
 : imu_cfg(&imu_cfg), vex::inertial(port)
 {
-    is_calibrating = false;
+    is_calibrating_thresh = false;
     acc_cal_thresh = 0.0;
 }
 
 IMU::IMU(uint32_t port) 
 : imu_cfg(new imu_cfg_t(default_settings)), vex::inertial(port) 
 {
-    is_calibrating = false;
+    is_calibrating_thresh = false;
     acc_cal_thresh = 0.0;
 }
 
@@ -85,10 +85,10 @@ int calibrate_thread(void* arg)
 
     // The threshold for decaying velocity will be when acceleration is
     // below twice what we measured here
-    imu.acc_cal_thresh = 2 * max_acc;
+    imu.acc_cal_thresh = imu.imu_cfg->decay_threshold_factor * max_acc;
 
     // Signal that calibrating is finished
-    imu.is_calibrating = false;
+    imu.is_calibrating_thresh = false;
     
     return 0;
 }
@@ -100,7 +100,7 @@ void IMU::calibrate(bool blocking)
 {
     vex::inertial::calibrate();
     
-    if(!is_calibrating)
+    if(!is_calibrating_thresh)
     {   
         if(cal_task != NULL)
             delete cal_task;
@@ -109,22 +109,38 @@ void IMU::calibrate(bool blocking)
         // calibrate for a minimum threshold (for velocity decay)
         // runs while inertial::calibrate is running
         cal_task = new vex::task(calibrate_thread, this);
-        is_calibrating = true;
+        is_calibrating_thresh = true;
     }
 
     if(blocking)
     {
         // Wait until vex calibration AND this calibration is finished
-        while(vex::inertial::isCalibrating() || is_calibrating) { vexDelay(10); }
+        while(vex::inertial::isCalibrating() || is_calibrating_thresh) { vexDelay(10); }
     }
 }
 
-kinematics_t IMU::get_gyro(axisType axis)
+bool IMU::is_calibrating()
+{
+    return vex::inertial::isCalibrating() || is_calibrating_thresh;
+}
+
+int integral_callback(void* arg)
+{
+    IMU &imu = *(IMU*)arg;
+
+    double time_delta_sec = imu.integral_tmr.time() / 1000.0;
+    imu.integral_tmr.reset();
+
+
+    return 0;
+}
+
+kinematics_t IMU::get_gyro(rel_axis_t axis)
 {
     return kinematics_t{};
 }
 
-kinematics_t IMU::get_accel(axisType axis)
+kinematics_t IMU::get_accel(rel_axis_t axis)
 {
     return kinematics_t{};
 }
