@@ -30,6 +30,10 @@ extern robot_specs_t robot_cfg;
 extern OdometryTank odom;
 extern TankDrive drive_sys;
 
+
+
+extern Serializer *serializer;
+
 // ================ UTILS ================
 
 void robot_init();

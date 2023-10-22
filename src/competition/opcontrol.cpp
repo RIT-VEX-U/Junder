@@ -7,23 +7,22 @@
  */
 void opcontrol()
 {
-    imu.calibrate();
-    // while(imu.isCalibrating()) {};
-    
-    // ================ INIT ================
-    #ifdef COMP_BOT
-    con.ButtonL1.pressed([](){cata_motors.spin(vex::fwd, 12.0, vex::voltageUnits::volt);});
-    con.ButtonL1.released([](){cata_motors.stop();});
-    #endif
 
+    // ================ INIT ================
+    const static double target_pos = 90.0;
     while (true)
     {
+#ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
         drive_sys.drive_tank(l, r);
-
+#else
+        double f = con.Axis2.position() / 100.0;
+        double s = con.Axis1.position() / 100.0;
+        drive_sys.drive_arcade(f, s);
+#endif
         // printf("x: %f, y: %f, z: %f\n", 
-            // imu.acceleration(xaxis), imu.acceleration(yaxis), imu.acceleration(zaxis));
+        // imu.acceleration(xaxis), imu.acceleration(yaxis), imu.acceleration(zaxis));
 
         vexDelay(10);
     }

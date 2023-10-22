@@ -14,6 +14,7 @@
 
 // Utils package
 #include "../core/include/utils/command_structure/auto_command.h"
+#include "../core/include/utils/command_structure/basic_command.h"
 #include "../core/include/utils/command_structure/command_controller.h"
 #include "../core/include/utils/command_structure/delay_command.h"
 #include "../core/include/utils/command_structure/drive_commands.h"
@@ -33,6 +34,7 @@
 #include "../core/include/utils/pure_pursuit.h"
 #include "../core/include/utils/trapezoid_profile.h"
 #include "../core/include/utils/vector2d.h"
+#include "../core/include/utils/serializer.h"
 
 // Base package
 #include "../core/include/robot_specs.h"

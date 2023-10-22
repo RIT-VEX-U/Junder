@@ -25,7 +25,7 @@ typedef struct point_s
      * @param other the point to add on to this
      * @return this + other (this.x + other.x, this.y + other.y)
      */
-    point_s operator+(const point_s &other)
+    point_s operator+(const point_s &other) const
     {
         point_s p{
             .x = this->x + other.x,
@@ -38,7 +38,7 @@ typedef struct point_s
      * @param other the point_t to subtract from this
      * @return this - other (this.x - other.x, this.y - other.y)
      */
-    point_s operator-(const point_s &other)
+    point_s operator-(const point_s &other) const
     {
         point_s p{
             .x = this->x - other.x,
@@ -73,7 +73,7 @@ typedef struct point_s
 /**
  *  Describes a single position and rotation
  */
-typedef struct
+struct pose_t
 {
     double x;   ///< x position in the world
     double y;   ///< y position in the world
@@ -84,7 +84,36 @@ typedef struct
         return point_t{.x = x, .y = y};
     }
 
-} pose_t;
+} ;
+
+struct Rect
+{
+    point_t min;
+    point_t max;
+    static Rect from_min_and_size(point_t min, point_t size){
+        return {min, min+size};
+    }
+    point_t dimensions() const
+    {
+        return max - min;
+    }
+    point_t center() const{
+        return (min + max)/2;
+    }
+    double width() const{
+        return max.x - min.x;
+    }
+    double height() const{
+        return max.y - min.y;
+    }
+    bool contains(point_t p) const
+    {
+        bool xin = p.x > min.x && p.x < max.x;
+        bool yin = p.y > min.y && p.y < max.y;
+        return xin && yin;
+    }
+
+};
 
 
 
