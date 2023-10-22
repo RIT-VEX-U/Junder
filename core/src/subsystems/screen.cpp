@@ -30,6 +30,13 @@ namespace screen
     void start_screen(vex::brain::lcd &screen, std::vector<Page *> pages,
                       int first_page)
     {
+        if (pages.size() == 0)
+        {
+            printf("No pages, not starting screen");
+            return;
+        }
+        first_page %= pages.size();
+
         if (running)
         {
             printf("THERE IS ALREADY A SCREEN THREAD RUNNING\n");
@@ -240,11 +247,13 @@ namespace screen
 
     void OdometryPage::draw(vex::brain::lcd &scr, bool first_draw [[maybe_unused]], unsigned int frame_number [[maybe_unused]])
     {
-        if (do_trail)
+        pose_t pose = odom.get_position();
+        path[path_index] = pose;
+
+        if (do_trail && frame_number % 5 == 0)
         {
             path_index++;
             path_index %= path_len;
-            path[path_index] = odom.get_position();
         }
 
         auto to_px = [](const point_t p) -> point_t
@@ -257,7 +266,6 @@ namespace screen
             scr.drawLine((int)to_px(from).x, (int)to_px(from).y, (int)to_px(to).x, (int)to_px(to).y);
         };
 
-        pose_t pose = path[path_index];
         point_t pos = pose.get_point();
         fflush(stdout);
         scr.printAt(45, 30, "(%.2f, %.2f)", pose.x, pose.y);
@@ -387,7 +395,7 @@ namespace screen
     }
 
     PIDPage::PIDPage(
-        PID *pid, std::string name, std::function<void(void)> onchange = []() {})
+        PID *pid, std::string name, std::function<void(void)> onchange)
         : cfg(pid->config), pid(pid), name(name), onchange(onchange),
           p_slider(cfg.p, 0.0, 0.5, Rect{{60, 20}, {210, 60}}, "P"),
           i_slider(cfg.i, 0.0, 0.05, Rect{{60, 80}, {180, 120}}, "I"),

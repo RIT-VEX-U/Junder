@@ -192,7 +192,7 @@ namespace screen
         /// @param pid the pid controller we're changing
         /// @param name a name to recognize this pid controller if we've got multiple pid screens
         /// @param onchange a function that is called when a tuning parameter is changed. If you need to update stuff on that change register a handler here
-        PIDPage(PID *pid, std::string name, std::function<void(void)> onchange);
+        PIDPage(PID *pid, std::string name, std::function<void(void)> onchange = [](){});
 
         /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;

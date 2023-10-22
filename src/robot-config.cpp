@@ -151,13 +151,11 @@ std::vector<screen::Page *> pages;
 void robot_init()
 {
 
-
     odom.set_position({72, 62, 0});
     pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
              new screen::StatsPage(motor_names),
              new screen::OdometryPage(odom, 12, 12, true),
-             new screen::PIDPage(pid_to_tune, "a motor", []()
-                                 { printf("CHANGED\n"); })};
+             new screen::PIDPage(pid_to_tune, "Motor")};
     imu.calibrate();
     screen::start_screen(Brain.Screen, pages, 3);
 }
