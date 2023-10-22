@@ -72,7 +72,7 @@ struct point_t
 /**
  *  Describes a single position and rotation
  */
-typedef struct
+struct pose_t
 {
     double x;   ///< x position in the world
     double y;   ///< y position in the world
@@ -83,7 +83,7 @@ typedef struct
         return point_t{.x = x, .y = y};
     }
 
-} pose_t;
+} ;
 
 struct Rect
 {
