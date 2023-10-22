@@ -118,18 +118,3 @@ Vector2D Vector2D::operator*(const double &x)
   return Vector2D(this->dir, this->mag * x);
 }
 
-/**
- * General function for converting degrees to radians
- */
-double deg2rad(double deg)
-{
-    return deg * (PI / 180.0);
-}
-
-/**
- * General function for converting radians to degrees
- */
-double rad2deg(double rad)
-{
-    return rad * (180.0 / PI);
-}

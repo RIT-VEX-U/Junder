@@ -1,5 +1,4 @@
 #include "../core/include/subsystems/imu.h"
-#include <utility>
 
 IMU::IMU(uint32_t port, axisType fwd_axis, axisType lat_axis, bool fwd_is_positive)
 : imu_cfg(new imu_cfg_t(default_settings)), vex::inertial(port)
@@ -32,32 +31,21 @@ void IMU::orient(axisType fwd_axis, axisType lat_axis, bool fwd_is_positive)
         return;
     }
 
-    imu_cfg->fwd_axis=fwd_axis;
-    imu_cfg->lat_axis=lat_axis;
-    imu_cfg->fwd_is_pos=fwd_is_positive;
+    // Mat3 out = get_swapaxis_matrix(yaxis, fwd_axis) * get_swapaxis_matrix(xaxis, lat_axis);
 
-    // Given two different axes, find the third and assign it
-    switch(fwd_axis)
-    {
-        case axisType::xaxis:
-            if(lat_axis == axisType::yaxis)
-                imu_cfg->vert_axis = axisType::zaxis;
-            else if(lat_axis == axisType::zaxis)
-                imu_cfg->vert_axis = axisType::yaxis;
-        break;
-        case axisType::yaxis:
-            if(lat_axis == axisType::xaxis)
-                imu_cfg->vert_axis = axisType::zaxis;
-            else if(lat_axis == axisType::zaxis)
-                imu_cfg->vert_axis = axisType::xaxis;
-        break;
-        case axisType::zaxis:
-            if(lat_axis == axisType::yaxis)
-                imu_cfg->vert_axis = axisType::xaxis;
-            else if(lat_axis == axisType::xaxis)
-                imu_cfg->vert_axis = axisType::yaxis;
-    }
     
+}
+
+void IMU::orient(std::vector<std::tuple<vex::axisType, double>> rotation_list)
+{
+    Mat3 out = notransform_matrix;
+
+    for(int i = 0; i < rotation_list.size(); i++)
+        out = out * get_rotation_matrix(
+            std::get<0>(rotation_list[i]), 
+            std::get<1>(rotation_list[i]));
+    
+    imu_cfg->orientation = out;
 }
 
 int calibrate_thread(void* arg)
@@ -65,20 +53,20 @@ int calibrate_thread(void* arg)
     IMU &imu = *(IMU*)arg;
     vex::timer tmr;
     double max_acc = 0;
-    axisType fwd_axis = imu.imu_cfg->fwd_axis;
-    axisType lat_axis = imu.imu_cfg->lat_axis;
+
+    //TODO - Get x / y accel after matrix orientation
     
     // For 3 seconds, get the max baseline acceleration at standstill
     while(tmr.time() < 3000)
     {
-        double acc1 = imu.acceleration(fwd_axis);
-        double acc2 = imu.acceleration(lat_axis);
+        // double acc1 = imu.acceleration(fwd_axis);
+        // double acc2 = imu.acceleration(lat_axis);
 
-        if(fabs(acc1) > max_acc)
-            max_acc = fabs(acc1);
+        // if(fabs(acc1) > max_acc)
+        //     max_acc = fabs(acc1);
 
-        if(fabs(acc2) > max_acc) 
-            max_acc = fabs(acc2);
+        // if(fabs(acc2) > max_acc) 
+        //     max_acc = fabs(acc2);
 
         vexDelay(10);
     }

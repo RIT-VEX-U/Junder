@@ -4,6 +4,7 @@
 #include "vex.h"
 #include "../core/include/utils/geometry.h"
 
+typedef struct point_s point_t;
 
 /**
 * Constrain the input between a minimum and a maximum value
@@ -57,3 +58,18 @@ Calculates the slope and y intercept of the line of best fit for the data
 std::pair<double, double> calculate_linear_regression(std::vector<std::pair<double, double>> const &points);
 
 double estimate_path_length(const std::vector<point_t> &points);
+
+/**
+ * General function for converting degrees to radians
+ * @param deg the angle in degrees
+ * @return the angle in radians
+ */
+double deg2rad(double deg);
+
+/**
+ * General function for converting radians to degrees
+ * @param r the angle in radians
+ * @return the angle in degrees
+
+ */
+double rad2deg(double r);

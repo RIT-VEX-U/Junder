@@ -1,6 +1,9 @@
 #pragma once
 #include "vex.h"
+#include <tuple>
 #include <atomic>
+#include <vector>
+#include "../core/include/utils/geometry.h"
 
 #define INT_PERIOD_MS 10
 
@@ -15,10 +18,7 @@ typedef struct
 
 typedef struct
 {
-    axisType fwd_axis;
-    axisType vert_axis;
-    axisType lat_axis;
-    bool fwd_is_pos;
+    Mat3 orientation;
     int pos_mov_avg_buf;
     int vel_mov_avg_buf;
     int accel_mov_avg_buf;  
@@ -40,6 +40,8 @@ class IMU : protected vex::inertial
     IMU(uint32_t port);
  
     void orient(axisType fwd_axis, axisType vert_axis, bool fwd_is_positive=true);
+    void orient(std::vector<std::tuple<vex::axisType, double>> rotation_list);
+
     void calibrate(bool blocking=true);
     bool is_calibrating();
     kinematics_t get_gyro(rel_axis_t axis);
@@ -51,10 +53,7 @@ class IMU : protected vex::inertial
     friend int integral_callback(void* arg);
 
     inline static constexpr imu_cfg_t default_settings = {
-        .fwd_axis=axisType::yaxis,
-        .vert_axis=axisType::zaxis,
-        .lat_axis=axisType::xaxis,
-        .fwd_is_pos=true,
+        .orientation=notransform_matrix,
         .pos_mov_avg_buf=0,
         .vel_mov_avg_buf=0,
         .accel_mov_avg_buf=0,
@@ -67,9 +66,7 @@ class IMU : protected vex::inertial
     std::atomic<bool> is_calibrating_thresh;
     vex::timer integral_tmr;
 
-    kinematics_t x_imu_rot, y_imu_rot, z_imu_rot;
-    kinematics_t x_imu_lin, y_imu_lin, z_imu_lin;
-    kinematics_t x_robot_rot, y_robot_rot, z_robot_rot;
-    kinematics_t x_robot_lin, y_robot_lin, z_robot_lin;
+    kinematics_t x_rot, y_rot, z_rot;
+    kinematics_t x_lin, y_lin, z_lin;
     
 };

@@ -137,3 +137,19 @@ double estimate_path_length(const std::vector<point_t> &points)
   
   return dist;
 }
+
+/**
+ * General function for converting degrees to radians
+ */
+double deg2rad(double deg)
+{
+    return deg * (PI / 180.0);
+}
+
+/**
+ * General function for converting radians to degrees
+ */
+double rad2deg(double rad)
+{
+    return rad * (180.0 / PI);
+}

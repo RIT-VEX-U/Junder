@@ -1,6 +1,6 @@
 #pragma once
 #include <cmath>
-// #include "../core/include/utils/vector2d.h"
+#include "../core/include/utils/math_util.h"
 
 /**
  * Data structure representing an X,Y coordinate
@@ -15,60 +15,43 @@ typedef struct point_s
      * @param other the point to measure the distance from
      * @return the euclidian distance between this and other
      */
-    double dist(const point_s other) const
-    {
-        return std::sqrt(std::pow(this->x - other.x, 2) + pow(this->y - other.y, 2));
-    }
+    double dist(const point_s other) const;
 
     /**
      * Vector2D addition operation on points
      * @param other the point to add on to this
      * @return this + other (this.x + other.x, this.y + other.y)
      */
-    point_s operator+(const point_s &other) const
-    {
-        point_s p{
-            .x = this->x + other.x,
-            .y = this->y + other.y};
-        return p;
-    }
+    point_s operator+(const point_s &other) const;
 
     /**
      * Vector2D subtraction operation on points
      * @param other the point_t to subtract from this
      * @return this - other (this.x - other.x, this.y - other.y)
      */
-    point_s operator-(const point_s &other) const
-    {
-        point_s p{
-            .x = this->x - other.x,
-            .y = this->y - other.y};
-        return p;
-    }
+    point_s operator-(const point_s &other) const;
+    
 
-    point_s operator*(double s) const
-    {
-        return {x * s, y * s};
-    }
-    point_s operator/(double s) const
-    {
-        return {x / s, y / s};
-    }
+    point_s operator*(double s) const;
+    
+    point_s operator/(double s) const;
 
-    point_s operator-() const
-    {
-        return {-x, -y};
-    }
-    point_s operator+() const
-    {
-        return {x, y};
-    }
+    point_s operator-() const;
 
-    bool operator==(const point_s &rhs)
-    {
-        return x == rhs.x && y == rhs.y;
-    }
+    point_s operator+() const;
+
+    bool operator==(const point_s &rhs);
 } point_t;
+
+typedef struct point3_s
+{
+    double x, y, z;
+
+    bool operator==(const point3_s &rhs);
+    
+    // TODO Math functions, if needed in the future
+
+} point3_t;
 
 /**
  *  Describes a single position and rotation
@@ -79,10 +62,7 @@ struct pose_t
     double y;   ///< y position in the world
     double rot; ///< rotation in the world
 
-    point_t get_point()
-    {
-        return point_t{.x = x, .y = y};
-    }
+    point_t get_point();
 
 } ;
 
@@ -90,50 +70,66 @@ struct Rect
 {
     point_t min;
     point_t max;
-    static Rect from_min_and_size(point_t min, point_t size){
-        return {min, min+size};
-    }
-    point_t dimensions() const
-    {
-        return max - min;
-    }
-    point_t center() const{
-        return (min + max)/2;
-    }
-    double width() const{
-        return max.x - min.x;
-    }
-    double height() const{
-        return max.y - min.y;
-    }
-    bool contains(point_t p) const
-    {
-        bool xin = p.x > min.x && p.x < max.x;
-        bool yin = p.y > min.y && p.y < max.y;
-        return xin && yin;
-    }
+    static Rect from_min_and_size(point_t min, point_t size);
+
+    point_t dimensions() const;
+    point_t center() const;
+    double width() const;
+    double height() const;
+    bool contains(point_t p) const;
 
 };
-
-
-
 
 struct Mat2
 {
     double X11, X12;
     double X21, X22;
-    point_t operator*(const point_t p) const
-    {
-        double outx = p.x * X11 + p.y * X12;
-        double outy = p.x * X21 + p.y * X22;
-        return {outx, outy};
-    }
+    point_t operator*(const point_t p) const;
 
-    static Mat2 FromRotationDegrees(double degrees)
-    {
-        double rad = degrees * (M_PI / 180.0);
-        double c = cos(rad);
-        double s = sin(rad);
-        return {c, -s, s, c};
-    }
+    static Mat2 FromRotationDegrees(double degrees);
+};
+
+/**
+ * 3 dimensional matrix type, useful for transformations.
+*/
+struct Mat3
+{
+    double X11, X12, X13;
+    double X21, X22, X23;
+    double X31, X32, X33;
+
+    /**
+     * Multipily by a 3x1 matrix (aka point3)
+     */
+    point3_t operator*(const point3_t rhs) const;
+
+    /**
+     * Multiply by another 3X3 matrix
+    */
+    Mat3 operator*(const Mat3 rhs) const;
+
+};
+
+/**
+ * Returns a rotation matrix that can then be multiplied by a point3_t. For example:
+ * 
+ * \code{.cpp}
+ * point3_t orient = {1, 2, 3};
+ * point3_t reorient = get_rotation_matrix(xaxis, 90) * orient;
+ * \endcode
+ * 
+ * Source: \link https://austinmorlan.com/posts/rotation_matrices/ \endlink
+ * 
+ * @param axis axis to rotate about
+ * @param degrees angle to rotate; Follow right hand rule for pos / neg
+ * @return rotation matrix for multiplication
+*/
+Mat3 get_rotation_matrix(vex::axisType axis, double degrees);
+
+Mat3 get_swapaxis_matrix(vex::axisType a1, vex::axisType a2);
+
+inline constexpr Mat3 notransform_matrix = {
+    .X11 = 1, .X12 = 0, .X13 = 0,
+    .X21 = 0, .X22 = 1, .X23 = 0,
+    .X31 = 0, .X32 = 0, .X33 = 1
 };

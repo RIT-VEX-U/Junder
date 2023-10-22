@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include "../core/include/utils/geometry.h"
+#include "../core/include/utils/math_util.h"
 
 #ifndef PI
 #define PI 3.141592654
@@ -92,21 +93,6 @@ private:
     double dir, mag;
 
 };
-
-/**
- * General function for converting degrees to radians
- * @param deg the angle in degrees
- * @return the angle in radians
- */
-double deg2rad(double deg);
-
-/**
- * General function for converting radians to degrees
- * @param r the angle in radians
- * @return the angle in degrees
-
- */
-double rad2deg(double r);
 
 /**
  * Describes the velocity and acceleration for a pose_t
