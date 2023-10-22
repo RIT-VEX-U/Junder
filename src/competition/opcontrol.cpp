@@ -7,7 +7,6 @@
  */
 void opcontrol()
 {
-    static vex::motor mot(vex::PORT1);
 
 
     while (imu.isCalibrating())
@@ -17,8 +16,6 @@ void opcontrol()
 
     // ================ INIT ================
     const static double target_pos = 90.0;
-    con.ButtonA.pressed([]()
-                        { mot.setPosition(0, vex::degrees); pid_to_tune->init(mot.position(vex::degrees), target_pos); });
     while (true)
     {
 #ifdef Tank
@@ -31,12 +28,6 @@ void opcontrol()
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s);
 #endif
-        double pos = mot.position(vex::degrees);
-        pid_to_tune->update(pos);
-        if (con.ButtonA.pressing())
-            mot.spin(vex::fwd, pid_to_tune->get(), vex::volt);
-        else
-            mot.stop();
         vexDelay(10);
     }
 

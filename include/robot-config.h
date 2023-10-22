@@ -26,8 +26,6 @@ extern OdometryTank odom;
 extern TankDrive drive_sys;
 
 
-extern PID::pid_config_t cfg;
-extern PID *pid_to_tune;
 
 extern Serializer *serializer;
 
