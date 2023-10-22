@@ -4,7 +4,7 @@ class BangBang : public Feedback
 {
 
 public:
-    BangBang(double low, double high);
+    BangBang(double thresshold, double low, double high);
     /**
      * Initialize the feedback controller for a movement
      *
@@ -46,5 +46,6 @@ private:
     double sensor_val;
     double lower_bound, upper_bound;
     double last_output;
+    double threshhold;
 };
 

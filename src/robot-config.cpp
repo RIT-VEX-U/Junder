@@ -143,10 +143,10 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 std::vector<screen::Page *> pages;
 
 // PID::pid_config_t pcfg = {.p = 0.001, 0, 0, 0, 0, PID::LINEAR};
-// FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
+FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
 
 FeedForward ff = FeedForward(ffcfg);
-BangBang bb = BangBang(0.0, 1.0);
+BangBang bb = BangBang(10.0, 0.0, 0.1);
 Feedback &fb = bb;
 
 
