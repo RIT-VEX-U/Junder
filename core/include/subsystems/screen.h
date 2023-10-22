@@ -91,6 +91,7 @@ namespace screen
      */
     void start_screen(vex::brain::lcd &screen, std::vector<Page *> pages, int first_page = 0);
 
+    /// @brief stops the screen. If you have a drive team that hates fun call this at the start of opcontrol
     void stop_screen();
 
     /// @brief  type of function needed for update
@@ -122,8 +123,15 @@ namespace screen
     class OdometryPage : public Page
     {
     public:
-        OdometryPage(OdometryBase &odom, double width, double height, bool do_trail);
+        /// @brief Create an odometry trail. Make sure odometry is initilized before now
+        /// @param odom the odometry system to monitor
+        /// @param robot_width the width (side to side) of the robot in inches. Used for visualization
+        /// @param robot_height the robot_height (front to back) of the robot in inches. Used for visualization
+        /// @param do_trail whether or not to calculate and draw the trail. Drawing and storing takes a very *slight* extra amount of processing power 
+        OdometryPage(OdometryBase &odom, double robot_width, double robot_height, bool do_trail);
+        /// @brief draw the page
         void update(bool was_pressed, int x, int y) override;
+        /// @brief draw the page
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
@@ -131,8 +139,8 @@ namespace screen
         static constexpr char const *field_filename = "vex_field_240p.png";
 
         OdometryBase &odom;
-        double width;
-        double height;
+        double robot_width;
+        double robot_height;
         uint8_t *buf = nullptr;
         int buf_size = 0;
         pose_t path[path_len];
@@ -145,8 +153,9 @@ namespace screen
     {
     public:
         FunctionPage(update_func_t update_f, draw_func_t draw_t);
-
+        /// @brief update the page
         void update(bool was_pressed, int x, int y) override;
+        /// @brief draw the page
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
@@ -154,31 +163,26 @@ namespace screen
         draw_func_t draw_f;
     };
 
+    /// @brief PIDPage provides a way to tune a pid controller on the screen
     class PIDPage : public Page
     {
     public:
-        PIDPage(
-            PID::pid_config_t &m_cfg, PID *pid, std::string name, std::function<void(void)> onchange = []() {})
-            : cfg(m_cfg), pid(pid), name(name), onchange(onchange),
-              p_slider(cfg.p, 0.0, 0.5, Rect{{60, 20}, {210, 60}}, "P"),
-              i_slider(cfg.i, 0.0, 0.05, Rect{{60, 80}, {180, 120}}, "I"),
-              d_slider(cfg.d, 0.0, 0.05, Rect{{60, 140}, {180, 180}}, "D"),
-              zero_i([this]()
-                     { zero_i_f(); },
-                     Rect{{180, 80}, {220, 120}}, "0"),
-              zero_d([this]()
-                     { zero_d_f(); },
-                     Rect{{180, 140}, {220, 180}}, "0"),
-              graph(40, -30, 120, {vex::red, vex::green}, 2)
-        {
-            assert(pid != nullptr);
-        }
+        /// @brief Create a PIDPage
+        /// @param pid the pid controller we're changing
+        /// @param name a name to recognize this pid controller if we've got multiple pid screens
+        /// @param onchange a function that is called when a tuning parameter is changed. If you need to update stuff on that change register a handler here
+        PIDPage(PID *pid, std::string name, std::function<void(void)> onchange);
+
+        /// @brief update the page
         void update(bool was_pressed, int x, int y) override;
+        /// @brief draw the page
         void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override;
 
     private:
-        void zero_d_f(void) { cfg.d = 0; }
-        void zero_i_f(void) { cfg.i = 0; }
+        /// @brief reset d
+        void zero_d_f() { cfg.d = 0; }
+        /// @brief reset i
+        void zero_i_f() { cfg.i = 0; }
 
         PID::pid_config_t &cfg;
         PID *pid;

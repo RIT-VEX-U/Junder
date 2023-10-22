@@ -216,7 +216,7 @@ namespace screen
         scr.printAt(50, 220, "Battery: %2.1fv  %2.0fC %d%%", b.Battery.voltage(), b.Battery.temperature(vex::temperatureUnits::celsius), b.Battery.capacity());
     }
 
-    OdometryPage::OdometryPage(OdometryBase &odom, double width, double height, bool do_trail) : odom(odom), width(width), height(height), do_trail(do_trail)
+    OdometryPage::OdometryPage(OdometryBase &odom, double width, double height, bool do_trail) : odom(odom), robot_width(width), robot_height(height), do_trail(do_trail)
     {
         vex::brain b;
         if (b.SDcard.exists(field_filename))
@@ -290,8 +290,8 @@ namespace screen
         scr.setPenColor(vex::color::white);
 
         Mat2 mat = Mat2::FromRotationDegrees(pose.rot - 90);
-        const point_t to_left = point_t{-width / 2.0, 0};
-        const point_t to_front = point_t{0.0, height / 2.0};
+        const point_t to_left = point_t{-robot_width / 2.0, 0};
+        const point_t to_front = point_t{0.0, robot_height / 2.0};
 
         const point_t fl = pos + mat * (+to_left + to_front);
         const point_t fr = pos + mat * (-to_left + to_front);
@@ -316,7 +316,6 @@ namespace screen
     bool SliderWidget::update(bool was_pressed, int x, int y)
     {
         const double margin = 10.0;
-
         if (was_pressed)
         {
             double dx = x;
@@ -386,6 +385,24 @@ namespace screen
         int h = scr.getStringHeight(name.c_str());
         scr.printAt(rect.center().x - w / 2, rect.center().y + h / 2, name.c_str());
     }
+
+    PIDPage::PIDPage(
+        PID *pid, std::string name, std::function<void(void)> onchange = []() {})
+        : cfg(pid->config), pid(pid), name(name), onchange(onchange),
+          p_slider(cfg.p, 0.0, 0.5, Rect{{60, 20}, {210, 60}}, "P"),
+          i_slider(cfg.i, 0.0, 0.05, Rect{{60, 80}, {180, 120}}, "I"),
+          d_slider(cfg.d, 0.0, 0.05, Rect{{60, 140}, {180, 180}}, "D"),
+          zero_i([this]()
+                 { zero_i_f(); },
+                 Rect{{180, 80}, {220, 120}}, "0"),
+          zero_d([this]()
+                 { zero_d_f(); },
+                 Rect{{180, 140}, {220, 180}}, "0"),
+          graph(40, 0, 0, {vex::red, vex::green}, 2)
+    {
+        assert(pid != nullptr);
+    }
+
     void PIDPage::update(bool was_pressed, int x, int y)
     {
         bool updated = false;
@@ -414,6 +431,11 @@ namespace screen
 
         scr.setPenColor(vex::white);
         scr.printAt(60, 215, false, "%s", name.c_str());
+
+        scr.setPenColor(vex::red);
+        scr.printAt(240, 20, false, "%.2f", pid->get_target());
+        scr.setPenColor(vex::green);
+        scr.printAt(300, 20, false, "%.2f", pid->get_sensor_val());
     }
 
 } // namespace screen

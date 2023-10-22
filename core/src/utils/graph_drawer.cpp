@@ -114,7 +114,6 @@ void GraphDrawer::draw(vex::brain::lcd &screen, int x, int y, int width, int hei
     double sample_range = upper - lower;
     screen.setPenWidth(2);
 
-    printf("low: %f high: %f\n", lower, upper);
     for (int j = 0; j < series.size(); j++)
     {
         double x_s = (double)x;

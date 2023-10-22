@@ -140,7 +140,7 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 #endif
 
-PID::pid_config_t cfg = {0, 0, 0, 0, 0.01, PID::ERROR_TYPE::LINEAR};
+PID::pid_config_t cfg = {.1, 0, 0, 0, 0.01, PID::ERROR_TYPE::LINEAR};
 PID *pid_to_tune = new PID(cfg);
 
 std::vector<screen::Page *> pages;
@@ -151,13 +151,12 @@ std::vector<screen::Page *> pages;
 void robot_init()
 {
 
-    fprintf(stderr, "AHHHHHHHHH");
 
     odom.set_position({72, 62, 0});
     pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
              new screen::StatsPage(motor_names),
              new screen::OdometryPage(odom, 12, 12, true),
-             new screen::PIDPage(cfg, pid_to_tune, "a motor", []()
+             new screen::PIDPage(pid_to_tune, "a motor", []()
                                  { printf("CHANGED\n"); })};
     imu.calibrate();
     screen::start_screen(Brain.Screen, pages, 3);
