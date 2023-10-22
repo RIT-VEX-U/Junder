@@ -124,7 +124,6 @@ vex::motor right_back(vex::PORT4);
 vex::motor_group left_motors(left_front, left_back);
 vex::motor_group right_motors(right_front, right_back);
 
-
 std::map<std::string, vex::motor &> motor_names = {
     {"left f", left_front},
     {"left b", left_back},
@@ -134,7 +133,6 @@ std::map<std::string, vex::motor &> motor_names = {
 
 };
 
-
 OdometryTank odom{left_enc, right_enc, robot_cfg, &imu};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
@@ -142,15 +140,18 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 #endif
 
+
 std::vector<screen::Page *> pages;
+
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
 
-    odom.set_position({72, 62, 0});
-    pages = {new screen::StatsPage(motor_names), new screen::OdometryPage(odom, 12, 12, true)};
+    pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
+             new screen::StatsPage(motor_names),
+             new screen::OdometryPage(odom, 12, 12, true)};
+    screen::start_screen(Brain.Screen, pages, 0);
     imu.calibrate();
-    screen::start_screen(Brain.Screen, pages, 1);
 }

@@ -7,13 +7,15 @@
  */
 void opcontrol()
 {
+
+
     while (imu.isCalibrating())
     {
         vexDelay(20);
     }
 
     // ================ INIT ================
-
+    const static double target_pos = 90.0;
     while (true)
     {
 #ifdef Tank
@@ -21,11 +23,11 @@ void opcontrol()
         double r = con.Axis2.position() / 100.0;
         drive_sys.drive_tank(l, r);
 #else
+
         double f = con.Axis2.position() / 100.0;
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s);
 #endif
-
         vexDelay(10);
     }
 

@@ -194,19 +194,24 @@ std::string Serializer::string_or(const std::string &name, std::string otherwise
 /// @brief forms data bytes then saves to filename this was openned with
 void Serializer::save_to_disk() const
 {
+    vex::brain::sdcard sd;
+    if (!sd.isInserted())
+    {
+        printf("!! Trying to Serialize to No SD Card !!\n");
+        return;
+    }
+
     std::vector<char> data = {};
     add_data<int>(data, ints);
     add_data<bool>(data, bools);
     add_data<double>(data, doubles);
     add_data<std::string>(data, strings);
 
-    fflush(stdout);
 
-    vex::brain::sdcard sd;
     int32_t written = sd.savefile(filename.c_str(), (unsigned char *)&data[0], data.size());
     if (written != data.size())
     {
-        printf("!! Error writing to `%s`!!", filename.c_str());
+        printf("!! Error writing to `%s`!!\n", filename.c_str());
         return;
     }
 }
@@ -221,8 +226,16 @@ bool Serializer::read_from_disk()
         return false;
     }
     int size = sd.size(filename.c_str());
+    if (size == 0)
+    {
+        ints = {};
+        doubles = {};
+        bools = {};
+        return true;
+    }
 
-    if (filename == ""){
+    if (filename == "")
+    {
         printf("!! Can't write to empty filename!!\n");
         return false;
     }
@@ -239,9 +252,11 @@ bool Serializer::read_from_disk()
     int readsize = sd.loadfile(filename.c_str(), (unsigned char *)&data[0], size);
     if (size != readsize)
     {
-        printf("!! Error reading from file !!");;
+        printf("!! Error reading from file !!");
+        ;
         return false;
     }
+
 
     auto bool_start = read_data<int>(data, data.cbegin(), ints);
     auto doubles_start = read_data<bool>(data, bool_start, bools);
