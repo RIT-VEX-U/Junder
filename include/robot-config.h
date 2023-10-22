@@ -25,7 +25,9 @@ extern robot_specs_t robot_cfg;
 extern OdometryTank odom;
 extern TankDrive drive_sys;
 
-
+extern PID::pid_config_t pcfg;
+extern FeedForward::ff_config_t ffcfg;
+extern Flywheel fw;
 
 extern Serializer *serializer;
 

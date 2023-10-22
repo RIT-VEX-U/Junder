@@ -140,8 +140,20 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 #endif
 
-
 std::vector<screen::Page *> pages;
+
+PID::pid_config_t pcfg = {.p = 0.001, 0, 0, 0, 0, PID::LINEAR};
+FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
+
+FeedForward ff = FeedForward(ffcfg);
+PID pid = PID(pcfg);
+Feedback &fb = pid;
+
+
+vex::motor flywheel_mot(vex::PORT11);
+vex::motor_group mots = {flywheel_mot};
+
+Flywheel fw(mots, fb, ff, 6.0, 10);
 
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
@@ -151,7 +163,9 @@ void robot_init()
 
     pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
              new screen::StatsPage(motor_names),
-             new screen::OdometryPage(odom, 12, 12, true)};
-    screen::start_screen(Brain.Screen, pages, 0);
+             new screen::OdometryPage(odom, 12, 12, true),
+             new screen::PIDPage(pid, "Flywheel")};
+
+    screen::start_screen(Brain.Screen, pages, 3);
     imu.calibrate();
 }

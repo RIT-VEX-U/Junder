@@ -66,7 +66,7 @@ public:
    * @param start_vel completely ignored for PID. necessary to satisfy Feedback base
    * @param end_vel sets the target end velocity of the PID controller
    */
-  void init(double start_pt, double set_pt, double start_vel, double end_vel) override;
+  void init(double start_pt, double set_pt, double start_vel = 0, double end_vel = 0) override;
 
   /**
    * Update the PID loop by taking the time difference from last update,

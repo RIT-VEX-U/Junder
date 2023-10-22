@@ -395,8 +395,8 @@ namespace screen
     }
 
     PIDPage::PIDPage(
-        PID *pid, std::string name, std::function<void(void)> onchange)
-        : cfg(pid->config), pid(pid), name(name), onchange(onchange),
+        PID &pid, std::string name, std::function<void(void)> onchange)
+        : cfg(pid.config), pid(pid), name(name), onchange(onchange),
           p_slider(cfg.p, 0.0, 0.5, Rect{{60, 20}, {210, 60}}, "P"),
           i_slider(cfg.i, 0.0, 0.05, Rect{{60, 80}, {180, 120}}, "I"),
           d_slider(cfg.d, 0.0, 0.05, Rect{{60, 140}, {180, 180}}, "D"),
@@ -408,8 +408,9 @@ namespace screen
                  Rect{{180, 140}, {220, 180}}, "0"),
           graph(40, 0, 0, {vex::red, vex::green}, 2)
     {
-        assert(pid != nullptr);
     }
+
+    PIDPage::PIDPage(PIDFF &pidff, std::string name, std::function<void(void)> onchange) : PIDPage((pidff.pid), name, onchange) {}
 
     void PIDPage::update(bool was_pressed, int x, int y)
     {
@@ -433,7 +434,7 @@ namespace screen
         zero_i.draw(scr, first_draw, frame_number);
         zero_d.draw(scr, first_draw, frame_number);
 
-        graph.add_samples({pid->get_target(), pid->get_sensor_val()});
+        graph.add_samples({pid.get_target(), pid.get_sensor_val()});
 
         graph.draw(scr, 230, 20, 200, 200);
 
@@ -441,9 +442,9 @@ namespace screen
         scr.printAt(60, 215, false, "%s", name.c_str());
 
         scr.setPenColor(vex::red);
-        scr.printAt(240, 20, false, "%.2f", pid->get_target());
+        scr.printAt(240, 20, false, "%.2f", pid.get_target());
         scr.setPenColor(vex::green);
-        scr.printAt(300, 20, false, "%.2f", pid->get_sensor_val());
+        scr.printAt(300, 20, false, "%.2f", pid.get_sensor_val());
     }
 
 } // namespace screen

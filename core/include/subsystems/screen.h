@@ -6,6 +6,8 @@
 #include <cassert>
 #include "../core/include/subsystems/odometry/odometry_base.h"
 #include "../core/include/utils/graph_drawer.h"
+#include "../core/include/utils/pid.h"
+#include "../core/include/utils/pidff.h"
 
 namespace screen
 {
@@ -192,7 +194,8 @@ namespace screen
         /// @param pid the pid controller we're changing
         /// @param name a name to recognize this pid controller if we've got multiple pid screens
         /// @param onchange a function that is called when a tuning parameter is changed. If you need to update stuff on that change register a handler here
-        PIDPage(PID *pid, std::string name, std::function<void(void)> onchange = [](){});
+        PIDPage(PID &pid, std::string name, std::function<void(void)> onchange = [](){});
+        PIDPage(PIDFF &pidff, std::string name, std::function<void(void)> onchange = [](){});
 
         /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
@@ -206,7 +209,7 @@ namespace screen
         void zero_i_f() { cfg.i = 0; }
 
         PID::pid_config_t &cfg;
-        PID *pid;
+        PID &pid;
         const std::string name;
         std::function<void(void)> onchange;
 

@@ -20,6 +20,7 @@
 
 using namespace vex;
 
+
 /**
  * a Flywheel class that handles all control of a high inertia spinning disk
  * It gives multiple options for what control system to use in order to control wheel velocity and functions alerting the user when the flywheel is up to speed.
@@ -29,105 +30,47 @@ using namespace vex;
  */
 class Flywheel
 {
-  enum FlywheelControlStyle
-  {
-    PID_Feedforward,
-    Feedforward,
-    Take_Back_Half,
-    Bang_Bang,
-  };
+  friend int spinRPMTask(void *wheelPointer);
 
 public:
   // CONSTRUCTORS, GETTERS, AND SETTERS
   /**
    * Create the Flywheel object using PID + feedforward for control.
    * @param motors      pointer to the motors on the fly wheel
-   * @param pid_config  pointer the pid config to use
-   * @param ff_config   the feedforward config to use
-   * @param ratio       ratio of the whatever just multiplies the velocity
+   * @param feedback    a feedback controleller
+   * @param ratio       ratio of the gears from the motor to the flywheel just multiplies the velocity
+   * @param moving_avg_size this size of the moving average window
    */
-  Flywheel(motor_group &motors, PID::pid_config_t &pid_config, FeedForward::ff_config_t &ff_config, const double ratio);
+  Flywheel(motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, const size_t moving_avg_size = 10);
 
   /**
-   * Create the Flywheel object using only feedforward for control
-   * @param motors    the motors on the fly wheel
-   * @param ff_config the feedforward config to use
-   * @param ratio     ratio of the whatever just multiplies the velocity
+   * Return the target_rpm that the flywheel is currently trying to achieve
+   * @return target_rpm  the target rpm
    */
-  Flywheel(motor_group &motors, FeedForward::ff_config_t &ff_config, const double ratio);
+  double getTargetRPM();
 
   /**
-   * Create the Flywheel object using Take Back Half for control
-   * @param motors   the motors on the fly wheel
-   * @param tbh_gain the TBH control paramater
-   * @param ratio    ratio of the whatever just multiplies the velocity
-   */
-  Flywheel(motor_group &motors, double tbh_gain, const double ratio);
-
-  /**
-   * Create the Flywheel object using Bang Bang for control
-   * @param motors the motors on the fly wheel
-   * @param ratio  ratio of the whatever just multiplies the velocity
-   */
-  Flywheel(motor_group &motors, const double ratio);
-
-  /**
-   * Return the RPM that the flywheel is currently trying to achieve
-   * @return RPM  the target rpm
-   */
-  double getDesiredRPM();
-
-  /**
-   * Checks if the background RPM controlling task is running
+   * Checks if the background target_rpm controlling task is running
    * @return true if the task is running
    */
   bool isTaskRunning();
 
   /**
-   * Returns a POINTER to the motors
+   * Returns the motors
    */
-  motor_group *getMotors();
+  motor_group &getMotors();
 
   /**
-   * make a measurement of the current RPM of the flywheel motor and return a smoothed version
+   * make a measurement of the current target_rpm of the flywheel motor and return a smoothed version
    */
   double measureRPM();
 
   /**
-   * return the current smoothed velocity of the flywheel motors, in RPM
+   * return the current smoothed velocity of the flywheel motors, in target_rpm
    */
   double getRPM();
-  /**
-   * Returns a POINTER to the PID.
-   */
-  PID *getPID();
 
-  /**
-   * returns the current OUT value of the PID - the value that the PID would set the motors to
-   */
-  double getPIDValue();
 
-  /**
-   * returns the current OUT value of the PID - the value that the PID would set the motors to
-   */
-  double getFeedforwardValue();
-
-  /**
-   * get the gain used for TBH control
-   */
-  double getTBHGain();
-
-  /**
-   * Sets the value of the PID target
-   * @param value - desired value of the PID
-   */
-  void setPIDTarget(double value);
-
-  /**
-   * updates the value of the PID
-   * @param value - value to update the PID with
-   */
-  void updatePID(double value);
 
   // SPINNERS AND STOPPERS
 
@@ -141,21 +84,21 @@ public:
 
   /**
    * Spin motors using voltage; defaults forward at 12 volts
-   * FOR USE BY OPCONTROL AND AUTONOMOUS - this only applies if the RPM thread is not running
+   * FOR USE BY OPCONTROL AND AUTONOMOUS - this only applies if the target_rpm thread is not running
    * @param speed - speed (between -1 and 1) to set the motor
    * @param dir - direction that the motor moves in; defaults to forward
    */
   void spin_manual(double speed, directionType dir = fwd);
 
   /**
-   * starts or sets the RPM thread at new value
+   * starts or sets the target_rpm thread at new value
    * what control scheme is dependent on control_style
-   * @param rpm - the RPM we want to spin at
+   * @param rpm - the target_rpm we want to spin at
    */
   void spinRPM(int rpm);
 
   /**
-   * stop the RPM thread and the wheel
+   * stop the target_rpm thread and the wheel
    */
   void stop();
 
@@ -172,27 +115,33 @@ public:
   AutoCommand *SpinRpmCmd(int rpm)
   {
 
-    return new FunctionCommand([this]()
-                               {spinRPM(1000); return true; });
+    return new FunctionCommand([this, rpm]()
+                               {spinRPM(rpm); return true; });
   }
 
   AutoCommand *WaitUntilUpToSpeedCmd()
   {
-    return new WaitUntilCondition(
-        new FunctionCondition([this]()
-                              { return RPM == smoothedRPM; }));
+    // return new WaitUntilCondition(
+    // new FunctionCondition([this]()
+    // { return target_rpm == smoothedRPM; }));
   }
 
 private:
-  motor_group &motors;                // motors that make up the flywheel
-  bool taskRunning = false;           // is the task (thread but not) currently running?
-  PID pid;                            // PID on the flywheel
-  FeedForward ff;                     // FF constants for the flywheel
-  double TBH_gain;                    // TBH gain parameter for the flywheel
-  double ratio;                       // multiplies the velocity by this value
-  std::atomic<double> RPM;            // Desired RPM of the flywheel.
-  task rpmTask;                       // task (thread but not) that handles spinning the wheel at a given RPM
-  FlywheelControlStyle control_style; // how the flywheel should be controlled
-  double smoothedRPM;
-  MovingAverage RPM_avger;
+
+  /**
+   * Sets the target rpm of the flywheel
+   * @param value - desired RPM
+   */
+  void setTarget(double value);
+
+
+  motor_group &motors;      // motors that make up the flywheel
+  bool taskRunning = false; // is the task (thread but not) currently running?
+  Feedback & fb;
+  FeedForward & ff;
+  vex::mutex fb_mut;
+  double ratio;                   // multiplies the velocity by this value
+  std::atomic<double> target_rpm; // Desired RPM of the flywheel.
+  task rpmTask;                   // task (thread but not) that handles spinning the wheel at a given target_rpm
+  MovingAverage avger;
 };

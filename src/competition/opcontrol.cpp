@@ -2,12 +2,21 @@
 #include "vex.h"
 #include "robot-config.h"
 
+
 /**
  * Main entrypoint for the driver control period
  */
 void opcontrol()
 {
 
+    con.ButtonUp.pressed([]()
+                         { fw.spinRPM(1000); });
+    con.ButtonLeft.pressed([]()
+                           { fw.spinRPM(500); });
+    con.ButtonRight.pressed([]()
+                            { fw.spinRPM(750); });
+    con.ButtonDown.pressed([]()
+                           { fw.spinRPM(0); });
 
     while (imu.isCalibrating())
     {

@@ -25,7 +25,7 @@ public:
      * @param start_vel Movement starting velocity
      * @param end_vel Movement ending velocity
      */
-    virtual void init(double start_pt, double set_pt, double start_vel, double end_vel) = 0;
+    virtual void init(double start_pt, double set_pt, double start_vel = 0.0, double end_vel = 0.0) = 0;
 
     /**
      * Iterate the feedback loop once with an updated sensor value
