@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include "vex.h"
-#include "../core/include/utils/feedback_base.h"
+#include "../core/include/utils/controls/feedback_base.h"
 
 using namespace vex;
 
@@ -127,7 +127,6 @@ public:
    */
   void set_target(double target);
 
-  Feedback::FeedbackType get_type() override;
 
   pid_config_t &config; ///< configuration struct for this controller. see pid_config_t for information about what this contains
 

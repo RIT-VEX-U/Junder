@@ -1,7 +1,7 @@
 #include "../core/include/utils/geometry.h"
 #include "../core/include/subsystems/tank_drive.h"
 #include "../core/include/utils/math_util.h"
-#include "../core/include/utils/pidff.h"
+#include "../core/include/utils/controls/pidff.h"
 #include "../core/include/utils/command_structure/drive_commands.h"
 
 TankDrive::TankDrive(motor_group &left_motors, motor_group &right_motors, robot_specs_t &config, OdometryBase *odom)

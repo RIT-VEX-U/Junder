@@ -6,8 +6,8 @@
 #include <cassert>
 #include "../core/include/subsystems/odometry/odometry_base.h"
 #include "../core/include/utils/graph_drawer.h"
-#include "../core/include/utils/pid.h"
-#include "../core/include/utils/pidff.h"
+#include "../core/include/utils/controls/pid.h"
+#include "../core/include/utils/controls/pidff.h"
 
 namespace screen
 {

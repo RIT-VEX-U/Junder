@@ -142,12 +142,12 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 std::vector<screen::Page *> pages;
 
-PID::pid_config_t pcfg = {.p = 0.001, 0, 0, 0, 0, PID::LINEAR};
-FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
+// PID::pid_config_t pcfg = {.p = 0.001, 0, 0, 0, 0, PID::LINEAR};
+// FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
 
 FeedForward ff = FeedForward(ffcfg);
-PID pid = PID(pcfg);
-Feedback &fb = pid;
+BangBang bb = BangBang(0.0, 1.0);
+Feedback &fb = bb;
 
 
 vex::motor flywheel_mot(vex::PORT11);
@@ -163,8 +163,7 @@ void robot_init()
 
     pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
              new screen::StatsPage(motor_names),
-             new screen::OdometryPage(odom, 12, 12, true),
-             new screen::PIDPage(pid, "Flywheel")};
+             new screen::OdometryPage(odom, 12, 12, true)};
 
     screen::start_screen(Brain.Screen, pages, 3);
     imu.calibrate();

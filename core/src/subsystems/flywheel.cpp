@@ -15,8 +15,8 @@
  *********************************************************/
 
 #include "../core/include/subsystems/flywheel.h"
-#include "../core/include/utils/feedforward.h"
-#include "../core/include/utils/pid.h"
+#include "../core/include/utils/controls/feedforward.h"
+#include "../core/include/utils/controls/pid.h"
 #include "../core/include/utils/math_util.h"
 #include "vex.h"
 

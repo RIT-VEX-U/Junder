@@ -1,8 +1,8 @@
 #pragma once
-#include "../core/include/utils/pid.h"
-#include "../core/include/utils/feedforward.h"
-#include "../core/include/utils/trapezoid_profile.h"
-#include "../core/include/utils/feedback_base.h"
+#include "../core/include/utils/controls/pid.h"
+#include "../core/include/utils/controls/feedforward.h"
+#include "../core/include/utils/controls/trapezoid_profile.h"
+#include "../core/include/utils/controls/feedback_base.h"
 #include "../core/include/subsystems/tank_drive.h"
 #include "vex.h"
 

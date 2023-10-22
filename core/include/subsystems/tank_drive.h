@@ -6,8 +6,8 @@
 
 #include "vex.h"
 #include "../core/include/subsystems/odometry/odometry_tank.h"
-#include "../core/include/utils/pid.h"
-#include "../core/include/utils/feedback_base.h"
+#include "../core/include/utils/controls/pid.h"
+#include "../core/include/utils/controls/feedback_base.h"
 #include "../core/include/robot_specs.h"
 #include "../core/include/utils/pure_pursuit.h"
 #include "../core/include/utils/command_structure/auto_command.h"

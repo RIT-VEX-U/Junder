@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/include/utils/feedback_base.h"
-#include "../core/include/utils/pid.h"
-#include "../core/include/utils/feedforward.h"
+#include "../core/include/utils/controls/feedback_base.h"
+#include "../core/include/utils/controls/pid.h"
+#include "../core/include/utils/controls/feedforward.h"
 
 class PIDFF : public Feedback
 {

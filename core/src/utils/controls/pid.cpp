@@ -1,4 +1,4 @@
-#include "../core/include/utils/pid.h"
+#include "../core/include/utils/controls/pid.h"
 #include "../core/include/subsystems/odometry/odometry_base.h"
 
 /**
@@ -149,9 +149,4 @@ bool PID::is_on_target()
   }
 
   return false;
-}
-
-Feedback::FeedbackType PID::get_type()
-{
-  return Feedback::FeedbackType::PIDType;
 }

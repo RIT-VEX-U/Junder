@@ -1,0 +1,31 @@
+#include "../core/include/utils/controls/bang_bang.h"
+#include <cmath>
+
+BangBang::BangBang(double low, double high): setpt(low), sensor_val(low), lower_bound(low), upper_bound(high){}
+
+void BangBang::init(double start_pt, double set_pt, double start_vel, double end_vel) {
+    sensor_val = start_pt;
+    setpt = set_pt;
+}
+
+void BangBang::set_limits(double lower, double upper){
+    lower_bound = lower;
+    upper_bound = upper;
+}
+double BangBang::get(){
+    return last_output;
+}
+
+double BangBang::update(double val){
+    sensor_val = val;
+    if (val > setpt){
+        return lower_bound;
+    } else {
+        return upper_bound;
+    }
+}
+
+
+bool BangBang::is_on_target(){
+    return fabs(sensor_val -  setpt) < 1.0;
+}

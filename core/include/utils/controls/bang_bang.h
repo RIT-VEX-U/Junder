@@ -1,22 +1,10 @@
-#pragma once
+#include "../core/include/utils/controls/feedback_base.h"
 
-/**
- * Interface so that subsystems can easily switch between feedback loops
- *
- * @author Ryan McGee
- * @date 9/25/2022
- *
- */
-class Feedback
+class BangBang : public Feedback
 {
-public:
-    enum FeedbackType
-    {
-        PIDType,
-        FeedforwardType,
-        OtherType,
-    };
 
+public:
+    BangBang(double low, double high);
     /**
      * Initialize the feedback controller for a movement
      *
@@ -25,7 +13,7 @@ public:
      * @param start_vel Movement starting velocity
      * @param end_vel Movement ending velocity
      */
-    virtual void init(double start_pt, double set_pt, double start_vel = 0.0, double end_vel = 0.0) = 0;
+    void init(double start_pt, double set_pt, double start_vel = 0.0, double end_vel = 0.0) override;
 
     /**
      * Iterate the feedback loop once with an updated sensor value
@@ -33,12 +21,12 @@ public:
      * @param val value from the sensor
      * @return feedback loop result
      */
-    virtual double update(double val) = 0;
+    double update(double val) override;
 
     /**
      * @return the last saved result from the feedback controller
      */
-    virtual double get() = 0;
+    double get() override;
 
     /**
      * Clamp the upper and lower limits of the output. If both are 0, no limits should be applied.
@@ -46,15 +34,17 @@ public:
      * @param lower Upper limit
      * @param upper Lower limit
      */
-    virtual void set_limits(double lower, double upper) = 0;
+    void set_limits(double lower, double upper) override;
 
     /**
      * @return true if the feedback controller has reached it's setpoint
      */
-    virtual bool is_on_target() = 0;
+    bool is_on_target() override;
 
-    virtual Feedback::FeedbackType get_type()
-    {
-        return FeedbackType::OtherType;
-    }
+private:
+    double setpt;
+    double sensor_val;
+    double lower_bound, upper_bound;
+    double last_output;
 };
+
