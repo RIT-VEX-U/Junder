@@ -10,13 +10,13 @@ void opcontrol()
 {
 
     con.ButtonUp.pressed([]()
-                         { fw.spinRPM(1000); });
+                         { fw.spin_rpm(1000); });
     con.ButtonLeft.pressed([]()
-                           { fw.spinRPM(500); });
+                           { fw.spin_rpm(500); });
     con.ButtonRight.pressed([]()
-                            { fw.spinRPM(750); });
+                            { fw.spin_rpm(750); });
     con.ButtonDown.pressed([]()
-                           { fw.spinRPM(0); });
+                           { fw.spin_rpm(0); });
 
     while (imu.isCalibrating())
     {
@@ -24,7 +24,6 @@ void opcontrol()
     }
 
     // ================ INIT ================
-    const static double target_pos = 90.0;
     while (true)
     {
 #ifdef Tank

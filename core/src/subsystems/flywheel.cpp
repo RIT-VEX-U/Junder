@@ -18,6 +18,8 @@
 #include "../core/include/utils/controls/feedforward.h"
 #include "../core/include/utils/controls/pid.h"
 #include "../core/include/utils/math_util.h"
+#include "../core/include/subsystems/screen.h"
+#include "../core/include/utils/graph_drawer.h"
 #include "vex.h"
 
 using namespace vex;
@@ -25,8 +27,6 @@ using namespace vex;
 /*********************************************************
  *         CONSTRUCTOR, GETTERS, SETTERS
  *********************************************************/
-// used when using bang bang or TBH control
-PID::pid_config_t empty_pid = PID::pid_config_t{};
 
 Flywheel::Flywheel(motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, const size_t moving_avg_size) : motors(motors),
                                                                                                                                      taskRunning(false), fb(feedback), ff(helper),
@@ -44,8 +44,7 @@ double Flywheel::getTargetRPM() { return target_rpm; }
 bool Flywheel::isTaskRunning() { return taskRunning; }
 
 /**
- * Returns a POINTER TO the motors; not currently used.
- * @return motorPointer -pointer to the motors
+ * @return the motors used to run the flywheel
  */
 motor_group &Flywheel::getMotors() { return motors; } // TODO -- Remove?
 
@@ -53,7 +52,7 @@ motor_group &Flywheel::getMotors() { return motors; } // TODO -- Remove?
  * return the current velocity of the flywheel motors, in RPM
  * @return the measured velocity of the flywheel
  */
-double Flywheel::measureRPM()
+double Flywheel::measure_RPM()
 {
   double rawRPM = ratio * motors.velocity(velocityUnits::rpm);
   avger.add_entry(rawRPM);
@@ -65,30 +64,21 @@ double Flywheel::getRPM()
   return avger.get_average();
 }
 
-/*********************************************************
- *         RPM SETTING THREADS
- * ALL OF THE FOLLOWING PROGRAMS HAVE THE SAME PARAMETERS AND RESULTS:
- * spin this flywheel at a given RPM, async; runs until stop(), stopThread(), or a new spinRPM() is called.
- * @param wheelPointer - points to the current wheel object
- *********************************************************/
-
 /**
- * Runs a Feedforward variant to control rpm
+ * Runs a thread that keeps track of updating flywheel RPM and controlling it accordingly
  */
 int spinRPMTask(void *wheelPointer)
 {
   Flywheel &wheel = *(Flywheel *)wheelPointer;
 
-  printf("starting task\n");
-
   // get the pid from the wheel and set its target to the RPM stored in the wheel.
   while (true)
   {
+    double rpm = wheel.measure_RPM();
+
     if (wheel.target_rpm != 0)
     {
       double output = wheel.ff.calculate(wheel.target_rpm, 0.0, 0.0);
-      // printf("Starting output: %f\n", output);
-      double rpm = wheel.measureRPM();
       {
         wheel.fb_mut.lock();
         wheel.fb.update(rpm); // check the current velocity and update the PID with it.
@@ -117,7 +107,7 @@ int spinRPMTask(void *wheelPointer)
 //
 // while (true)
 // {
-// wheel->measureRPM();
+// wheel->measure_RPM();
 //
 // reset if set to 0, this keeps the tbh val from screwing us up when we start up again
 // if (wheel->getTargetRPM() == 0)
@@ -174,25 +164,23 @@ void Flywheel::spin_manual(double speed, directionType dir)
  * what control scheme is dependent on control_style
  * @param inputRPM - set the current RPM
  */
-void Flywheel::spinRPM(int inputRPM)
+void Flywheel::spin_rpm(double inputRPM)
 {
   // setting to 0 is equivelent to stopping
   if (inputRPM == 0.0)
   {
-    printf("STOPPING\n");
     stop();
   }
   // only run if the RPM is different or it isn't already running
   if (!taskRunning)
   {
-    printf("starting taskRunning");
-
     rpmTask = task(spinRPMTask, this);
     taskRunning = true;
   }
-  setTarget(inputRPM);
+  // now that its running, set the target
+  set_target(inputRPM);
 }
-void Flywheel::setTarget(double value)
+void Flywheel::set_target(double value)
 {
   fb_mut.lock();
   target_rpm = (value);
@@ -205,8 +193,51 @@ void Flywheel::setTarget(double value)
  */
 void Flywheel::stop()
 {
-  rpmTask.stop();
-  taskRunning = false;
-  target_rpm = 0.0;
-  motors.stop();
+  if (isTaskRunning())
+  {
+    taskRunning = false;
+    rpmTask.stop();
+    target_rpm = 0.0;
+    motors.stop();
+  }
+}
+
+//------------------------- Screen Stuff ----------------------------
+class FlywheelPage : public screen::Page
+{
+public:
+  static const size_t window_size = 40;
+
+  FlywheelPage(Flywheel &fw) : fw(fw), gd(GraphDrawer(window_size, 0.0, 0.0, {vex::color(255, 0, 0), vex::color(0, 255, 0)}, 2)), avg_err(window_size) {}
+  /// @brief @see Page#update
+  void update(bool, int, int) override {}
+  /// @brief @see Page#draw
+  void draw(vex::brain::lcd &screen, bool,
+            unsigned int) override
+  {
+
+    double target = fw.getTargetRPM();
+    double actual = fw.getRPM();
+    double err = fabs(target - actual);
+
+    avg_err.add_entry(err);
+    gd.add_samples({target, actual});
+
+    gd.draw(screen, 200, 10, 220, 220);
+    screen.setPenColor(vex::white);
+    screen.printAt(50, 30, "set: %.2f", target);
+    screen.printAt(50, 60, "act: %.2f", actual);
+    screen.printAt(50, 90, "stddev: %.2f", avg_err.get_average());
+    screen.printAt(50, 150, "temp: %.2fc", fw.getMotors().temperature(vex::celsius));
+  }
+
+private:
+  Flywheel &fw;
+  GraphDrawer gd;
+  MovingAverage avg_err;
+};
+
+screen::Page *Flywheel::Page()
+{
+  return new FlywheelPage(*this);
 }

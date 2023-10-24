@@ -16,16 +16,16 @@
 #include "../core/include/robot_specs.h"
 #include "../core/include/utils/controls/pid.h"
 #include "../core/include/utils/command_structure/auto_command.h"
+#include "../core/include/subsystems/screen.h"
 #include <atomic>
 
 using namespace vex;
-
 
 /**
  * a Flywheel class that handles all control of a high inertia spinning disk
  * It gives multiple options for what control system to use in order to control wheel velocity and functions alerting the user when the flywheel is up to speed.
  * Flywheel is a set and forget class.
- * Once you create it you can call spinRPM or stop on it at any time and it will take all necessary steps to accomplish this
+ * Once you create it you can call spin_rpm or stop on it at any time and it will take all necessary steps to accomplish this
  *
  */
 class Flywheel
@@ -50,37 +50,16 @@ public:
   double getTargetRPM();
 
   /**
-   * Checks if the background target_rpm controlling task is running
-   * @return true if the task is running
+   * return the velocity of the flywheel
    */
-  bool isTaskRunning();
+  double getRPM();
 
   /**
    * Returns the motors
    */
   motor_group &getMotors();
 
-  /**
-   * make a measurement of the current target_rpm of the flywheel motor and return a smoothed version
-   */
-  double measureRPM();
-
-  /**
-   * return the current smoothed velocity of the flywheel motors, in target_rpm
-   */
-  double getRPM();
-
-
-
   // SPINNERS AND STOPPERS
-
-  /**
-   * Spin motors using voltage; defaults forward at 12 volts
-   * FOR USE BY TASKS ONLY
-   * @param speed - speed (between -1 and 1) to set the motor
-   * @param dir - direction that the motor moves in; defaults to forward
-   */
-  void spin_raw(double speed, directionType dir = fwd);
 
   /**
    * Spin motors using voltage; defaults forward at 12 volts
@@ -95,53 +74,67 @@ public:
    * what control scheme is dependent on control_style
    * @param rpm - the target_rpm we want to spin at
    */
-  void spinRPM(int rpm);
+  void spin_rpm(double rpm);
 
   /**
-   * stop the target_rpm thread and the wheel
-   */
+   * Stops the motors. If manually spinning, this will do nothing just call spin_mainual(0.0) to send 0 volts
+  */
   void stop();
 
-  /**
-   * stop only the motors; exclusively for BANG BANG use
-   */
-  void stopMotors();
-
-  /**
-   * Stop the motors if the task isn't running - stop manual control
-   */
-  void stopNonTasks();
+  screen::Page *Page();
 
   AutoCommand *SpinRpmCmd(int rpm)
   {
 
     return new FunctionCommand([this, rpm]()
-                               {spinRPM(rpm); return true; });
+                               {spin_rpm(rpm); return true; });
   }
 
-  AutoCommand *WaitUntilUpToSpeedCmd()
+  AutoCommand *WaitUntilUpToSpeedCmd(double threshold)
   {
-    // return new WaitUntilCondition(
-    // new FunctionCondition([this]()
-    // { return target_rpm == smoothedRPM; }));
+    return new WaitUntilCondition(
+        new FunctionCondition([this, threshold]()
+                              { return fabs(target_rpm - avger.get_average()) <= threshold; }));
   }
 
 private:
-
-  /**
-   * Sets the target rpm of the flywheel
-   * @param value - desired RPM
-   */
-  void setTarget(double value);
-
-
   motor_group &motors;      // motors that make up the flywheel
   bool taskRunning = false; // is the task (thread but not) currently running?
-  Feedback & fb;
-  FeedForward & ff;
+  Feedback &fb;
+  FeedForward &ff;
   vex::mutex fb_mut;
   double ratio;                   // multiplies the velocity by this value
   std::atomic<double> target_rpm; // Desired RPM of the flywheel.
   task rpmTask;                   // task (thread but not) that handles spinning the wheel at a given target_rpm
   MovingAverage avger;
+
+  // Functions for internal use only
+  /**
+   * Sets the target rpm of the flywheel
+   * @param value - desired RPM
+   */
+  void set_target(double value);
+  /**
+   * make a measurement of the current target_rpm of the flywheel motor and return a smoothed version
+   */
+  double measure_RPM();
+
+  /**
+   * stops controlling thread
+   */
+  void stop_background();
+
+  /**
+   * Spin motors using voltage; defaults forward at 12 volts
+   * FOR USE BY TASKS ONLY
+   * @param speed - speed (between -1 and 1) to set the motor
+   * @param dir - direction that the motor moves in; defaults to forward
+   */
+  void spin_raw(double speed, directionType dir = fwd);
+
+  /**
+   * Checks if the background target_rpm controlling task is running
+   * @return true if the task is running
+   */
+  bool isTaskRunning();
 };

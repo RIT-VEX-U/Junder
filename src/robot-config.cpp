@@ -147,13 +147,12 @@ FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
 
 FeedForward ff = FeedForward(ffcfg);
 BangBang bb = BangBang(10.0, 0.0, 0.1);
-Feedback &fb = bb;
 
 
 vex::motor flywheel_mot(vex::PORT11);
 vex::motor_group mots = {flywheel_mot};
 
-Flywheel fw(mots, fb, ff, 6.0, 10);
+Flywheel fw(mots, bb, ff, 6.0, 10);
 
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
@@ -163,7 +162,9 @@ void robot_init()
 
     pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
              new screen::StatsPage(motor_names),
-             new screen::OdometryPage(odom, 12, 12, true)};
+             new screen::OdometryPage(odom, 12, 12, true),
+             fw.Page(),
+             };
 
     screen::start_screen(Brain.Screen, pages, 3);
     imu.calibrate();

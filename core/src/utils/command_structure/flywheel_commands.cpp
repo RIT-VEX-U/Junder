@@ -11,7 +11,7 @@ SpinRPMCommand::SpinRPMCommand(Flywheel &flywheel, int rpm):
   flywheel(flywheel), rpm(rpm) {}
 
 bool SpinRPMCommand::run() {
-  flywheel.spinRPM(rpm);
+  flywheel.spin_rpm(rpm);
   return true;
 }
 
@@ -42,7 +42,7 @@ FlywheelStopMotorsCommand::FlywheelStopMotorsCommand(Flywheel &flywheel):
   flywheel(flywheel) {}
 
 bool FlywheelStopMotorsCommand::run() {
-  flywheel.stopMotors();
+  flywheel.stop();
   return true;
 }
 
@@ -51,6 +51,6 @@ FlywheelStopNonTasksCommand::FlywheelStopNonTasksCommand(Flywheel &flywheel):
   flywheel(flywheel) {}
 
 bool FlywheelStopNonTasksCommand::run() {
-  flywheel.stopNonTasks();
+  flywheel.stop();
   return true;
 }
