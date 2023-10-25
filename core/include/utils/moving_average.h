@@ -44,13 +44,13 @@ class MovingAverage {
    * Returns the average based off of all the samples collected so far
    * @return the calculated average. sum(samples)/numsamples
    */
-  double get_average();
+  double get_average() const;
 
   /**
   * How many samples the average is made from
   * @return the number of samples used to calculate this average
   */ 
-  int get_size();
+  int get_size() const;
 
 
   private:

@@ -1,19 +1,3 @@
-/*********************************************************
- *
- *     File:     Flywheel.cpp
- *     Purpose:  Generalized flywheel class for Core.
- *     Author:   Chris Nokes, Richie Sommers
- *
- **********************************************************
- * EDIT HISTORY
- **********************************************************
- * 09/16/2022  <CRN> Created file, added constructor, spins, target_rpm setting, stop.
- * 09/18/2022  <CRN> Added async functionality.
- * 09/22/2022  <CRN> Documentation improvements, fixed error if target_rpm is set but motor is stopped.
- * 09/23/2022  <CRN> Neatened up program, added getters and setters, fixed documentation and bang bang.
- * 09/29/2022  <CRN> Bug fixes, target_rpm handling. Multiplied the motor by 18.
- *********************************************************/
-
 #include "../core/include/subsystems/flywheel.h"
 #include "../core/include/utils/controls/feedforward.h"
 #include "../core/include/utils/controls/pid.h"
@@ -29,24 +13,18 @@ using namespace vex;
  *********************************************************/
 
 Flywheel::Flywheel(motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, const size_t moving_avg_size) : motors(motors),
-                                                                                                                                     taskRunning(false), fb(feedback), ff(helper),
+                                                                                                                                     task_running(false), fb(feedback), ff(helper),
                                                                                                                                      ratio(ratio), avger(moving_avg_size) {}
 
 /**
  * Return the current value that the target_rpm should be set to
  */
-double Flywheel::getTargetRPM() { return target_rpm; }
-
-/**
- * Checks if the background target_rpm controlling task is running
- * @return taskRunning - If the task is running
- */
-bool Flywheel::isTaskRunning() { return taskRunning; }
+double Flywheel::get_target() const { return target_rpm; }
 
 /**
  * @return the motors used to run the flywheel
  */
-motor_group &Flywheel::getMotors() { return motors; } // TODO -- Remove?
+motor_group &Flywheel::get_motors() const { return motors; }
 
 /**
  * return the current velocity of the flywheel motors, in RPM
@@ -59,7 +37,7 @@ double Flywheel::measure_RPM()
   return avger.get_average();
 }
 
-double Flywheel::getRPM()
+double Flywheel::getRPM() const
 {
   return avger.get_average();
 }
@@ -110,13 +88,13 @@ int spinRPMTask(void *wheelPointer)
 // wheel->measure_RPM();
 //
 // reset if set to 0, this keeps the tbh val from screwing us up when we start up again
-// if (wheel->getTargetRPM() == 0)
+// if (wheel->get_target() == 0)
 // {
 // output = 0;
 // tbh = 0;
 // }
 //
-// double error = wheel->getTargetRPM() - wheel->getRPM();
+// double error = wheel->get_target() - wheel->getRPM();
 // output += wheel->getTBHGain() * error;
 // wheel->spin_raw(clamp(output, 0, 1), fwd);
 //
@@ -155,30 +133,30 @@ void Flywheel::spin_raw(double speed, directionType dir)
  */
 void Flywheel::spin_manual(double speed, directionType dir)
 {
-  if (!taskRunning)
+  if (!task_running)
     motors.spin(dir, speed * 12, voltageUnits::volt);
 }
 
 /**
  * starts or sets the RPM thread at new value
  * what control scheme is dependent on control_style
- * @param inputRPM - set the current RPM
+ * @param input_rpm - set the current RPM
  */
-void Flywheel::spin_rpm(double inputRPM)
+void Flywheel::spin_rpm(double input_rpm)
 {
   // setting to 0 is equivelent to stopping
-  if (inputRPM == 0.0)
+  if (input_rpm == 0.0)
   {
     stop();
   }
   // only run if the RPM is different or it isn't already running
-  if (!taskRunning)
+  if (!task_running)
   {
-    rpmTask = task(spinRPMTask, this);
-    taskRunning = true;
+    rpm_task = task(spinRPMTask, this);
+    task_running = true;
   }
   // now that its running, set the target
-  set_target(inputRPM);
+  set_target(input_rpm);
 }
 void Flywheel::set_target(double value)
 {
@@ -193,10 +171,10 @@ void Flywheel::set_target(double value)
  */
 void Flywheel::stop()
 {
-  if (isTaskRunning())
+  if (task_running)
   {
-    taskRunning = false;
-    rpmTask.stop();
+    task_running = false;
+    rpm_task.stop();
     target_rpm = 0.0;
     motors.stop();
   }
@@ -208,7 +186,7 @@ class FlywheelPage : public screen::Page
 public:
   static const size_t window_size = 40;
 
-  FlywheelPage(Flywheel &fw) : fw(fw), gd(GraphDrawer(window_size, 0.0, 0.0, {vex::color(255, 0, 0), vex::color(0, 255, 0)}, 2)), avg_err(window_size) {}
+  FlywheelPage(const Flywheel &fw) : fw(fw), gd(GraphDrawer(window_size, 0.0, 0.0, {vex::color(255, 0, 0), vex::color(0, 255, 0)}, 2)), avg_err(window_size) {}
   /// @brief @see Page#update
   void update(bool, int, int) override {}
   /// @brief @see Page#draw
@@ -216,7 +194,7 @@ public:
             unsigned int) override
   {
 
-    double target = fw.getTargetRPM();
+    double target = fw.get_target();
     double actual = fw.getRPM();
     double err = fabs(target - actual);
 
@@ -228,16 +206,18 @@ public:
     screen.printAt(50, 30, "set: %.2f", target);
     screen.printAt(50, 60, "act: %.2f", actual);
     screen.printAt(50, 90, "stddev: %.2f", avg_err.get_average());
-    screen.printAt(50, 150, "temp: %.2fc", fw.getMotors().temperature(vex::celsius));
+    screen.printAt(50, 150, "temp: %.2fc", fw.get_motors().temperature(vex::celsius));
+    double volts = fw.fb.get();
+    screen.printAt(50, 180, "volt: %.2fv", volts);
   }
 
 private:
-  Flywheel &fw;
+  const Flywheel &fw;
   GraphDrawer gd;
   MovingAverage avg_err;
 };
 
-screen::Page *Flywheel::Page()
+screen::Page *Flywheel::Page() const
 {
   return new FlywheelPage(*this);
 }

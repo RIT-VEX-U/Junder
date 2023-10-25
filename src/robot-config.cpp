@@ -146,7 +146,7 @@ std::vector<screen::Page *> pages;
 FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
 
 FeedForward ff = FeedForward(ffcfg);
-BangBang bb = BangBang(10.0, 0.0, 0.1);
+BangBang bb = BangBang(5.0, 0.0, 0.051);
 
 
 vex::motor flywheel_mot(vex::PORT11);

@@ -40,6 +40,7 @@
 		"typeinfo": "cpp",
 		"algorithm": "cpp",
 		"numeric": "cpp",
-		"mutex": "cpp"
+		"mutex": "cpp",
+		"system_error": "cpp"
 	}
 }

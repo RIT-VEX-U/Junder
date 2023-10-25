@@ -1,16 +1,5 @@
 #pragma once
-/*********************************************************
- *
- *     File:     Flywheel.h
- *     Purpose:  Generalized flywheel class for Core.
- *     Author:   Chris Nokes
- *
- **********************************************************
- * EDIT HISTORY
- **********************************************************
- * 09/23/2022  <CRN> Reorganized, added documentation.
- * 09/23/2022  <CRN> Added functions elaborated on in .cpp.
- *********************************************************/
+
 #include "../core/include/utils/controls/feedforward.h"
 #include "vex.h"
 #include "../core/include/robot_specs.h"
@@ -18,8 +7,6 @@
 #include "../core/include/utils/command_structure/auto_command.h"
 #include "../core/include/subsystems/screen.h"
 #include <atomic>
-
-using namespace vex;
 
 /**
  * a Flywheel class that handles all control of a high inertia spinning disk
@@ -41,25 +28,24 @@ public:
    * @param ratio       ratio of the gears from the motor to the flywheel just multiplies the velocity
    * @param moving_avg_size this size of the moving average window
    */
-  Flywheel(motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, const size_t moving_avg_size = 10);
+  Flywheel(vex::motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, const size_t moving_avg_size = 10);
 
   /**
    * Return the target_rpm that the flywheel is currently trying to achieve
    * @return target_rpm  the target rpm
    */
-  double getTargetRPM();
+  double get_target() const;
 
   /**
    * return the velocity of the flywheel
    */
-  double getRPM();
+  double getRPM() const;
 
   /**
    * Returns the motors
    */
-  motor_group &getMotors();
+  vex::motor_group &get_motors() const;
 
-  // SPINNERS AND STOPPERS
 
   /**
    * Spin motors using voltage; defaults forward at 12 volts
@@ -78,11 +64,18 @@ public:
 
   /**
    * Stops the motors. If manually spinning, this will do nothing just call spin_mainual(0.0) to send 0 volts
-  */
+   */
   void stop();
 
-  screen::Page *Page();
+  /// @brief Creates a page displaying info about the flywheel
+  /// @return the page should be used for `screen::start_screen(screen, {fw.Page()});
+  screen::Page *Page() const;
 
+
+
+  /// @brief Creates a new auto command to spin the flywheel at the desired velocity
+  /// @param rpm the rpm to spin at
+  /// @return an auto command to add to a command controller
   AutoCommand *SpinRpmCmd(int rpm)
   {
 
@@ -90,23 +83,27 @@ public:
                                {spin_rpm(rpm); return true; });
   }
 
+  /// @brief Creates a new auto command that will hold until the flywheel has reached its target velocity +/- the threshold
+  /// @param threshold returns true if target_rpm - threshold  < RPM < target_rpm + threshold
+  /// @return an auto command to add to a command controller
   AutoCommand *WaitUntilUpToSpeedCmd(double threshold)
   {
     return new WaitUntilCondition(
         new FunctionCondition([this, threshold]()
-                              { return fabs(target_rpm - avger.get_average()) <= threshold; }));
+                              { return fabs(target_rpm - avger.get_average()) <= fabs(threshold); }));
   }
 
 private:
-  motor_group &motors;      // motors that make up the flywheel
-  bool taskRunning = false; // is the task (thread but not) currently running?
-  Feedback &fb;
-  FeedForward &ff;
-  vex::mutex fb_mut;
-  double ratio;                   // multiplies the velocity by this value
-  std::atomic<double> target_rpm; // Desired RPM of the flywheel.
-  task rpmTask;                   // task (thread but not) that handles spinning the wheel at a given target_rpm
-  MovingAverage avger;
+  friend class FlywheelPage;
+  vex::motor_group &motors;       ///< motors that make up the flywheel
+  bool task_running = false;       ///< is the task currently running?
+  Feedback &fb;                   ///< Main Feeback controller
+  FeedForward &ff;                ///< Helper Feedforward Controller
+  vex::mutex fb_mut;              ///< guard for talking to the runner thread
+  double ratio;                   ///< ratio between motor and flywheel. For accurate RPM calcualation
+  std::atomic<double> target_rpm; ///< Desired RPM of the flywheel.
+  task rpm_task;                   ///< task that handles spinning the wheel at a given target_rpm
+  MovingAverage avger;            ///< Moving average to smooth out noise from 
 
   // Functions for internal use only
   /**
@@ -120,11 +117,6 @@ private:
   double measure_RPM();
 
   /**
-   * stops controlling thread
-   */
-  void stop_background();
-
-  /**
    * Spin motors using voltage; defaults forward at 12 volts
    * FOR USE BY TASKS ONLY
    * @param speed - speed (between -1 and 1) to set the motor
@@ -132,9 +124,4 @@ private:
    */
   void spin_raw(double speed, directionType dir = fwd);
 
-  /**
-   * Checks if the background target_rpm controlling task is running
-   * @return true if the task is running
-   */
-  bool isTaskRunning();
 };

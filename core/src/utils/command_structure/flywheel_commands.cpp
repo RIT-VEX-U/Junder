@@ -20,7 +20,7 @@ WaitUntilUpToSpeedCommand::WaitUntilUpToSpeedCommand(Flywheel &flywheel, int thr
 
 bool WaitUntilUpToSpeedCommand::run() {
   // If we're withing the specified threshold, we're ready to fire
-  if (fabs(flywheel.getTargetRPM() - flywheel.getRPM()) < threshold_rpm){
+  if (fabs(flywheel.get_target() - flywheel.getRPM()) < threshold_rpm){
     return true;
   }
   // else, keep waiting

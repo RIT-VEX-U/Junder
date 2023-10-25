@@ -249,49 +249,6 @@ std::vector<point_t> PurePursuit::line_circle_intersections(point_t center, doub
   return new_path;
 }
 
-[[maybe_unused]] std::vector<point_t> PurePursuit::smooth_path_cubic(const std::vector<point_t> &path, double res) {
-  std::vector<point_t> new_path;
-  std::vector<spline> splines;
-
-  double delta_x[path.size() - 1];
-  double slope[path.size() - 1];
-  double ftt[path.size()];
-
-  for(int i = 0; i < path.size() - 1; i++) {
-    delta_x[i] = path[i+1].x - path[i].x;
-    slope[i] = (path[i+1].y - path[i].y) / delta_x[i];
-  }
-
-  ftt[0] = 0;
-  for(int i = 0; i < path.size() - 2; i++) {
-    ftt[i+1] = 3 * (slope[i+1] - slope[i]) / (delta_x[i+1] + delta_x[i]);
-  }
-  ftt[path.size() - 1] = 0;
-
-  for (int i = 0; i < path.size() - 1; i++)
-  {
-    splines.push_back({
-      .a = (ftt[i + 1] - ftt[i]) / (6 * delta_x[i]),
-      .b = ftt[i] / 2,
-      .c = slope[i] - delta_x[i] * (ftt[i + 1] + 2 * ftt[i]) / 6,
-      .d = path[i].y,
-        .x_start = path[i].x,
-        .x_end = path[i+1].x
-    });
-  }
-
-  for(spline spline: splines) {
-      printf("spline a: %f b: %f c: %f d %f start %f, %f end %f, %f\n", spline.a, spline.b, spline.c, spline.d, spline.x_start, spline.getY(spline.x_start), spline.x_end, spline.getY(spline.x_end));
-    double x = spline.x_start;
-    while(x >= fmin(spline.x_start, spline.x_end) && x <= fmax(spline.x_start, spline.x_end)) {
-      new_path.push_back({x, spline.getY(x)});
-      spline.x_start < spline.x_end ? x += res: x -= res;
-    }
-  }
-    new_path.push_back({splines.back().x_end, splines.back().getY(splines.back().x_end)});
-
-  return new_path;
-}
 
 /**
  * Estimates the remaining distance from the robot's position to the end,
