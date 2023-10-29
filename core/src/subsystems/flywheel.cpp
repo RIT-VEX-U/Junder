@@ -12,9 +12,9 @@ using namespace vex;
  *         CONSTRUCTOR, GETTERS, SETTERS
  *********************************************************/
 
-Flywheel::Flywheel(motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, const size_t moving_avg_size) : motors(motors),
-                                                                                                                                     task_running(false), fb(feedback), ff(helper),
-                                                                                                                                     ratio(ratio), avger(moving_avg_size) {}
+Flywheel::Flywheel(motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, Filter &filt) : motors(motors),
+                                                                                                                     task_running(false), fb(feedback), ff(helper),
+                                                                                                                     ratio(ratio), avger(filt) {}
 
 /**
  * Return the current value that the target_rpm should be set to
@@ -34,12 +34,12 @@ double Flywheel::measure_RPM()
 {
   double rawRPM = ratio * motors.velocity(velocityUnits::rpm);
   avger.add_entry(rawRPM);
-  return avger.get_average();
+  return avger.get_value();
 }
 
 double Flywheel::getRPM() const
 {
-  return avger.get_average();
+  return avger.get_value();
 }
 
 /**
@@ -148,7 +148,7 @@ class FlywheelPage : public screen::Page
 public:
   static const size_t window_size = 40;
 
-  FlywheelPage(const Flywheel &fw) : fw(fw), gd(GraphDrawer(window_size, 0.0, 0.0, {vex::color(255, 0, 0), vex::color(0, 255, 0), vex::color(0,0,255)}, 3)), avg_err(window_size) {}
+  FlywheelPage(const Flywheel &fw) : fw(fw), gd(GraphDrawer(window_size, 0.0, 0.0, {vex::color(255, 0, 0), vex::color(0, 255, 0), vex::color(0, 0, 255)}, 3)), avg_err(window_size) {}
   /// @brief @see Page#update
   void update(bool, int, int) override {}
   /// @brief @see Page#draw
@@ -168,7 +168,7 @@ public:
     screen.setPenColor(vex::white);
     screen.printAt(50, 30, "set: %.2f", target);
     screen.printAt(50, 60, "act: %.2f", actual);
-    screen.printAt(50, 90, "stddev: %.2f", avg_err.get_average());
+    screen.printAt(50, 90, "stddev: %.2f", avg_err.get_value());
     screen.printAt(50, 150, "temp: %.2fc", fw.get_motors().temperature(vex::celsius));
     screen.printAt(50, 180, "volt: %.2fv", volts);
   }

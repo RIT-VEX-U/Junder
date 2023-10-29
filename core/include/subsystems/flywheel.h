@@ -26,9 +26,9 @@ public:
    * @param feedback    a feedback controleller
    * @param helper      a feedforward config (only kV is used) to help the feedback controller along
    * @param ratio       ratio of the gears from the motor to the flywheel just multiplies the velocity
-   * @param moving_avg_size this size of the moving average window
+   * @param filter      the filter to use to smooth noisy motor readings
    */
-  Flywheel(vex::motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, const size_t moving_avg_size = 10);
+  Flywheel(vex::motor_group &motors, Feedback &feedback, FeedForward &helper, const double ratio, Filter &filt);
 
   /**
    * Return the target_rpm that the flywheel is currently trying to achieve
@@ -116,7 +116,7 @@ private:
   double ratio;                   ///< ratio between motor and flywheel. For accurate RPM calcualation
   std::atomic<double> target_rpm; ///< Desired RPM of the flywheel.
   task rpm_task;                  ///< task that handles spinning the wheel at a given target_rpm
-  MovingAverage avger;            ///< Moving average to smooth out noise from
+  Filter &avger;            ///< Moving average to smooth out noise from
 
   // Functions for internal use only
   /**

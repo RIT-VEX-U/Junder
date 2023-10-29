@@ -34,18 +34,7 @@ double TakeBackHalf::update(double val)
     }
 
     double error = target - val;
-    if (first_cross)
-    {
-        if (error / target < .1)
-        {
-            output += TBH_gain * error;
-            printf("Decay\n");
-        }
-    }
-    else
-    {
-        output += TBH_gain * error;
-    }
+    output += TBH_gain * error;
 
     // taking back half crossed target
     if (sign(error) != sign(prev_error))

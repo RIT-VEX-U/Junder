@@ -151,7 +151,9 @@ TakeBackHalf bb = TakeBackHalf(0.00008,0.75, 10.0);
 vex::motor flywheel_mot(vex::PORT11);
 vex::motor_group mots = {flywheel_mot};
 
-Flywheel fw(mots, bb, ff, 5.0, 10);
+MovingAverage avger(10);
+
+Flywheel fw(mots, bb, ff, 5.0, avger);
 
 screen::SliderWidget tbh(bb.TBH_gain, 0.0, 0.0005, Rect{{60, 40}, {380, 80}}, "TBH Gain");
 screen::SliderWidget split(bb.first_cross_split, 0.0, 1.0, Rect{{60, 90}, {380, 130}}, "first cross split");

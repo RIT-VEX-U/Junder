@@ -149,8 +149,8 @@ FeedForward::ff_config_t MotionController::tune_feedforward(TankDrive &drive, Od
         vel_ma.add_entry(odometry.get_speed());
         accel_ma.add_entry(odometry.get_accel());
 
-        double speed = vel_ma.get_average();
-        double accel = accel_ma.get_average();
+        double speed = vel_ma.get_value();
+        double accel = accel_ma.get_value();
 
         // For kV:
         if(speed > max_speed)

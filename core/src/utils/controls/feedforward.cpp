@@ -49,8 +49,8 @@ FeedForward::ff_config_t tune_feedforward(vex::motor_group &motor, double pct, d
         vel_ma.add_entry(motor.velocity(vex::velocityUnits::rpm));
         accel_ma.add_entry(motor.velocity(vex::velocityUnits::rpm)/dt);
 
-        double speed = vel_ma.get_average();
-        double accel = accel_ma.get_average();
+        double speed = vel_ma.get_value();
+        double accel = accel_ma.get_value();
 
         // For kV:
         if(speed > max_speed)
