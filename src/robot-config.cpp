@@ -146,12 +146,13 @@ std::vector<screen::Page *> pages;
 FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
 
 FeedForward ff = FeedForward(ffcfg);
-TakeBackHalf bb = TakeBackHalf(0.00008,0.75, 10.0);
+TakeBackHalf bb = TakeBackHalf(0.00008, 0.75, 10.0);
 
 vex::motor flywheel_mot(vex::PORT11);
 vex::motor_group mots = {flywheel_mot};
+MovingAverage avger(10, 0.0);
 
-Flywheel fw(mots, bb, ff, 5.0, 10);
+Flywheel<TakeBackHalf, MovingAverage> fw(mots, bb, avger, ff, 5.0);
 
 screen::SliderWidget tbh(bb.TBH_gain, 0.0, 0.0005, Rect{{60, 40}, {380, 80}}, "TBH Gain");
 screen::SliderWidget split(bb.first_cross_split, 0.0, 1.0, Rect{{60, 90}, {380, 130}}, "first cross split");
