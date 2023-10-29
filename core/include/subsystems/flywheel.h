@@ -100,7 +100,7 @@ public:
       rpm_task = task(spinRPMTask<Controller, Filter>, this);
       task_running = true;
     }
-    // now that its running, set the target
+    // now that its running>, set the target
     set_target(input_rpm);
   }
 
