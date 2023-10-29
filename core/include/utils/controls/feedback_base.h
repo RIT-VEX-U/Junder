@@ -10,13 +10,6 @@
 class Feedback
 {
 public:
-    enum FeedbackType
-    {
-        PIDType,
-        FeedforwardType,
-        OtherType,
-    };
-
     /**
      * Initialize the feedback controller for a movement
      *

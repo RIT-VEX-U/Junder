@@ -71,45 +71,7 @@ int spinRPMTask(void *wheelPointer)
   }
   return 0;
 }
-/**
- * Runs a Take Back Half variant to control RPM
- * https://www.vexwiki.org/programming/controls_algorithms/tbh
- */
-// int spinRPMTask_TBH(void *wheelPointer)
-// {
-// Flywheel *wheel = (Flywheel *)wheelPointer;
-//
-// double tbh = 0.0;
-// double output = 0.0;
-// double previous_error = 0.0;
-//
-// while (true)
-// {
-// wheel->measure_RPM();
-//
-// reset if set to 0, this keeps the tbh val from screwing us up when we start up again
-// if (wheel->get_target() == 0)
-// {
-// output = 0;
-// tbh = 0;
-// }
-//
-// double error = wheel->get_target() - wheel->getRPM();
-// output += wheel->getTBHGain() * error;
-// wheel->spin_raw(clamp(output, 0, 1), fwd);
-//
-// if (sign(error) != sign(previous_error))
-// {
-// output = .5 * (output + tbh);
-// tbh = output;
-// previous_error = error;
-// }
-//
-// vexDelay(1);
-// }
-//
-// return 0;
-// }
+
 /*********************************************************
  *         SPINNERS AND STOPPERS
  *********************************************************/
@@ -186,7 +148,7 @@ class FlywheelPage : public screen::Page
 public:
   static const size_t window_size = 40;
 
-  FlywheelPage(const Flywheel &fw) : fw(fw), gd(GraphDrawer(window_size, 0.0, 0.0, {vex::color(255, 0, 0), vex::color(0, 255, 0)}, 2)), avg_err(window_size) {}
+  FlywheelPage(const Flywheel &fw) : fw(fw), gd(GraphDrawer(window_size, 0.0, 0.0, {vex::color(255, 0, 0), vex::color(0, 255, 0), vex::color(0,0,255)}, 3)), avg_err(window_size) {}
   /// @brief @see Page#update
   void update(bool, int, int) override {}
   /// @brief @see Page#draw
@@ -199,7 +161,8 @@ public:
     double err = fabs(target - actual);
 
     avg_err.add_entry(err);
-    gd.add_samples({target, actual});
+    double volts = fw.fb.get() * 12.0;
+    gd.add_samples({target, actual, volts / 12.0 * 1000.0});
 
     gd.draw(screen, 200, 10, 220, 220);
     screen.setPenColor(vex::white);
@@ -207,7 +170,6 @@ public:
     screen.printAt(50, 60, "act: %.2f", actual);
     screen.printAt(50, 90, "stddev: %.2f", avg_err.get_average());
     screen.printAt(50, 150, "temp: %.2fc", fw.get_motors().temperature(vex::celsius));
-    double volts = fw.fb.get();
     screen.printAt(50, 180, "volt: %.2fv", volts);
   }
 

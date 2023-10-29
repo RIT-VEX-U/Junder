@@ -367,8 +367,8 @@ namespace screen
         const double handle_height = 4;
 
         scr.drawRectangle(vx - (handle_width / 2), y - (handle_height / 2), handle_width, handle_height);
-        int text_w = scr.getStringWidth((name + "      ").c_str());
-        scr.printAt(xmid - text_w / 2, y - 15, false, "%s: %.3f", name.c_str(), value);
+        int text_w = scr.getStringWidth((name + "        ").c_str());
+        scr.printAt(xmid - text_w / 2, y - 15, false, "%s: %.5f", name.c_str(), value);
     }
 
     bool ButtonWidget::update(bool was_pressed, int x, int y)

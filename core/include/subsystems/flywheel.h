@@ -67,6 +67,11 @@ public:
    */
   void stop();
 
+
+  bool is_on_target(){
+    return fb.is_on_target();
+  }
+
   /// @brief Creates a page displaying info about the flywheel
   /// @return the page should be used for `screen::start_screen(screen, {fw.Page()});
   screen::Page *Page() const;
@@ -83,14 +88,14 @@ public:
                                {spin_rpm(rpm); return true; });
   }
 
-  /// @brief Creates a new auto command that will hold until the flywheel has reached its target velocity +/- the threshold
-  /// @param threshold returns true if target_rpm - threshold  < RPM < target_rpm + threshold
+
+  /// @brief Creates a new auto command that will hold until the flywheel has its target as defined by its feedback controller
   /// @return an auto command to add to a command controller
-  AutoCommand *WaitUntilUpToSpeedCmd(double threshold)
+  AutoCommand *WaitUntilUpToSpeedCmd()
   {
     return new WaitUntilCondition(
-        new FunctionCondition([this, threshold]()
-                              { return fabs(target_rpm - avger.get_average()) <= fabs(threshold); }));
+        new FunctionCondition([this]()
+                              { return is_on_target(); }));
   }
 
 private:

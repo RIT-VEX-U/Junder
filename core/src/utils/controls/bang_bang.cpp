@@ -39,5 +39,5 @@ double BangBang::update(double val)
 
 bool BangBang::is_on_target()
 {
-    return fabs(sensor_val - setpt) < 1.0;
+    return fabs(sensor_val - setpt) < threshhold;
 }

@@ -32,6 +32,7 @@
 #include "../core/include/utils/controls/pid.h"
 #include "../core/include/utils/controls/pidff.h"
 #include "../core/include/utils/controls/bang_bang.h"
+#include "../core/include/utils/controls/take_back_half.h"
 
 #include "../core/include/utils/controls/motion_controller.h"
 
