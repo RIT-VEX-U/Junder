@@ -17,7 +17,6 @@
  */
 class Flywheel
 {
-  friend int spinRPMTask(void *wheelPointer);
 
 public:
   // CONSTRUCTORS, GETTERS, AND SETTERS
@@ -25,6 +24,7 @@ public:
    * Create the Flywheel object using PID + feedforward for control.
    * @param motors      pointer to the motors on the fly wheel
    * @param feedback    a feedback controleller
+   * @param helper      a feedforward config (only kV is used) to help the feedback controller along
    * @param ratio       ratio of the gears from the motor to the flywheel just multiplies the velocity
    * @param moving_avg_size this size of the moving average window
    */
@@ -46,7 +46,6 @@ public:
    */
   vex::motor_group &get_motors() const;
 
-
   /**
    * Spin motors using voltage; defaults forward at 12 volts
    * FOR USE BY OPCONTROL AND AUTONOMOUS - this only applies if the target_rpm thread is not running
@@ -67,20 +66,26 @@ public:
    */
   void stop();
 
-
-  bool is_on_target(){
+  /**
+   * @brief check if the feedback controller thinks the flywheel is on target
+   * @return true if on target
+   */
+  bool is_on_target()
+  {
     return fb.is_on_target();
   }
 
-  /// @brief Creates a page displaying info about the flywheel
-  /// @return the page should be used for `screen::start_screen(screen, {fw.Page()});
+  /**
+   *  @brief Creates a page displaying info about the flywheel
+   *  @return the page should be used for `screen::start_screen(screen, {fw.Page()});
+   */
   screen::Page *Page() const;
 
-
-
-  /// @brief Creates a new auto command to spin the flywheel at the desired velocity
-  /// @param rpm the rpm to spin at
-  /// @return an auto command to add to a command controller
+  /**
+   * @brief Creates a new auto command to spin the flywheel at the desired velocity
+   * @param rpm the rpm to spin at
+   * @return an auto command to add to a command controller
+  */
   AutoCommand *SpinRpmCmd(int rpm)
   {
 
@@ -88,9 +93,10 @@ public:
                                {spin_rpm(rpm); return true; });
   }
 
-
-  /// @brief Creates a new auto command that will hold until the flywheel has its target as defined by its feedback controller
-  /// @return an auto command to add to a command controller
+  /**
+   * @brief Creates a new auto command that will hold until the flywheel has its target as defined by its feedback controller
+   * @return an auto command to add to a command controller
+   */
   AutoCommand *WaitUntilUpToSpeedCmd()
   {
     return new WaitUntilCondition(
@@ -100,15 +106,17 @@ public:
 
 private:
   friend class FlywheelPage;
+  friend int spinRPMTask(void *wheelPointer);
+
   vex::motor_group &motors;       ///< motors that make up the flywheel
-  bool task_running = false;       ///< is the task currently running?
+  bool task_running = false;      ///< is the task currently running?
   Feedback &fb;                   ///< Main Feeback controller
   FeedForward &ff;                ///< Helper Feedforward Controller
   vex::mutex fb_mut;              ///< guard for talking to the runner thread
   double ratio;                   ///< ratio between motor and flywheel. For accurate RPM calcualation
   std::atomic<double> target_rpm; ///< Desired RPM of the flywheel.
-  task rpm_task;                   ///< task that handles spinning the wheel at a given target_rpm
-  MovingAverage avger;            ///< Moving average to smooth out noise from 
+  task rpm_task;                  ///< task that handles spinning the wheel at a given target_rpm
+  MovingAverage avger;            ///< Moving average to smooth out noise from
 
   // Functions for internal use only
   /**
@@ -128,5 +136,4 @@ private:
    * @param dir - direction that the motor moves in; defaults to forward
    */
   void spin_raw(double speed, directionType dir = fwd);
-
 };
