@@ -26,16 +26,9 @@ void opcontrol()
     // ================ INIT ================
     while (true)
     {
-#ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
-        drive_sys.drive_tank(l, r);
-#else
-
-        double f = con.Axis2.position() / 100.0;
-        double s = con.Axis1.position() / 100.0;
-        drive_sys.drive_arcade(f, s);
-#endif
+        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::TimedHold);
         vexDelay(10);
     }
 
