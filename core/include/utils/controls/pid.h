@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include "vex.h"
-#include "../core/include/utils/feedback_base.h"
+#include "../core/include/utils/controls/feedback_base.h"
 
 using namespace vex;
 
@@ -66,7 +66,7 @@ public:
    * @param start_vel completely ignored for PID. necessary to satisfy Feedback base
    * @param end_vel sets the target end velocity of the PID controller
    */
-  void init(double start_pt, double set_pt, double start_vel, double end_vel) override;
+  void init(double start_pt, double set_pt, double start_vel = 0, double end_vel = 0) override;
 
   /**
    * Update the PID loop by taking the time difference from last update,
@@ -127,7 +127,6 @@ public:
    */
   void set_target(double target);
 
-  Feedback::FeedbackType get_type() override;
 
   pid_config_t &config; ///< configuration struct for this controller. see pid_config_t for information about what this contains
 

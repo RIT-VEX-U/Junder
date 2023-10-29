@@ -1,4 +1,4 @@
-#include "../core/include/utils/trapezoid_profile.h"
+#include "../core/include/utils/controls/trapezoid_profile.h"
 #include "../core/include/utils/math_util.h"
 #include <cmath>
 #include <iostream>

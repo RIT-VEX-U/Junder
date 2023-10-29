@@ -100,8 +100,7 @@ static void add_data(std::vector<char> &data, const std::map<std::string, value_
 
 // reads data of a certain type from a file
 template <typename value_type>
-static std::vector<char>::const_iterator read_data(const std::vector<char> &data,
-                                                   std::vector<char>::const_iterator begin,
+static std::vector<char>::const_iterator read_data(std::vector<char>::const_iterator begin,
                                                    std::map<std::string, value_type> &map)
 {
     std::vector<char>::const_iterator pos = begin;
@@ -258,10 +257,10 @@ bool Serializer::read_from_disk()
     }
 
 
-    auto bool_start = read_data<int>(data, data.cbegin(), ints);
-    auto doubles_start = read_data<bool>(data, bool_start, bools);
-    auto strings_start = read_data<double>(data, doubles_start, doubles);
-    auto file_end = read_data<std::string>(data, strings_start, strings);
+    auto bool_start = read_data<int>(data.cbegin(), ints);
+    auto doubles_start = read_data<bool>(bool_start, bools);
+    auto strings_start = read_data<double>(doubles_start, doubles);
+    auto file_end = read_data<std::string>(strings_start, strings);
     (void)file_end;
 
     return true;

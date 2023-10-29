@@ -140,18 +140,50 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 #endif
 
-
 std::vector<screen::Page *> pages;
+
+// PID::pid_config_t pcfg = {.p = 0.001, 0, 0, 0, 0, PID::LINEAR};
+FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
+
+FeedForward ff = FeedForward(ffcfg);
+TakeBackHalf bb = TakeBackHalf(0.00008,0.75, 10.0);
+
+vex::motor flywheel_mot(vex::PORT11);
+vex::motor_group mots = {flywheel_mot};
+
+MovingAverage avger(10);
+
+Flywheel fw(mots, bb, ff, 5.0, avger);
+
+screen::SliderWidget tbh(bb.TBH_gain, 0.0, 0.0005, Rect{{60, 40}, {380, 80}}, "TBH Gain");
+screen::SliderWidget split(bb.first_cross_split, 0.0, 1.0, Rect{{60, 90}, {380, 130}}, "first cross split");
+
+auto update = [](bool wp, int x, int y)
+{
+    tbh.update(wp, x, y);
+    split.update(wp, x, y);
+};
+auto draw = [](vex::brain::lcd &scr, bool f, int n)
+{
+    tbh.draw(scr, f, n);
+    split.draw(scr, f, n);
+};
 
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
+    bb.set_limits(0.0, 1.0);
 
-    pages = {new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
-             new screen::StatsPage(motor_names),
-             new screen::OdometryPage(odom, 12, 12, true)};
-    screen::start_screen(Brain.Screen, pages, 0);
+    pages = {
+        new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
+        new screen::StatsPage(motor_names),
+        new screen::OdometryPage(odom, 12, 12, true),
+        new screen::FunctionPage(update, draw),
+        fw.Page(),
+    };
+
+    screen::start_screen(Brain.Screen, pages, 3);
     imu.calibrate();
 }

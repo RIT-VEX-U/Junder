@@ -39,6 +39,8 @@
 		"utility": "cpp",
 		"typeinfo": "cpp",
 		"algorithm": "cpp",
-		"numeric": "cpp"
+		"numeric": "cpp",
+		"mutex": "cpp",
+		"system_error": "cpp"
 	}
 }

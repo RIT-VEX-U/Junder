@@ -1,4 +1,4 @@
-#include "../core/include/utils/pid.h"
+#include "../core/include/utils/controls/pid.h"
 #include "../core/include/subsystems/odometry/odometry_base.h"
 
 /**
@@ -10,10 +10,11 @@ PID::PID(pid_config_t &config)
   pid_timer.reset();
 }
 
-void PID::init(double start_pt, double set_pt, double start_vel, double end_vel)
+void PID::init(double start_pt, double set_pt, double, double end_vel)
 {
   set_target(set_pt);
   target_vel = end_vel;
+  sensor_val = start_pt;
   reset();
 }
 
@@ -149,9 +150,4 @@ bool PID::is_on_target()
   }
 
   return false;
-}
-
-Feedback::FeedbackType PID::get_type()
-{
-  return Feedback::FeedbackType::PIDType;
 }

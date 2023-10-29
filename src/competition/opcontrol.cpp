@@ -2,12 +2,21 @@
 #include "vex.h"
 #include "robot-config.h"
 
+
 /**
  * Main entrypoint for the driver control period
  */
 void opcontrol()
 {
 
+    con.ButtonUp.pressed([]()
+                         { fw.spin_rpm(1000); });
+    con.ButtonLeft.pressed([]()
+                           { fw.spin_rpm(500); });
+    con.ButtonRight.pressed([]()
+                            { fw.spin_rpm(750); });
+    con.ButtonDown.pressed([]()
+                           { fw.spin_rpm(0); });
 
     while (imu.isCalibrating())
     {
@@ -15,7 +24,6 @@ void opcontrol()
     }
 
     // ================ INIT ================
-    const static double target_pos = 90.0;
     while (true)
     {
 #ifdef Tank
