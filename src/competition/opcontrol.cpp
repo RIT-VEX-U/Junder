@@ -7,7 +7,9 @@
  */
 void opcontrol()
 {
-
+    imu.orient(xaxis, yaxis, zaxis, true);
+    imu.calibrate();
+    
     // ================ INIT ================
     const static double target_pos = 90.0;
     while (true)
@@ -21,8 +23,8 @@ void opcontrol()
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s);
 #endif
-        // printf("x: %f, y: %f, z: %f\n", 
-        // imu.acceleration(xaxis), imu.acceleration(yaxis), imu.acceleration(zaxis));
+        printf("x: %f, y: %f, z: %f\n", 
+        imu.get_accel(xaxis).pos, imu.get_accel(yaxis).pos, imu.get_accel(zaxis).pos);
 
         vexDelay(10);
     }

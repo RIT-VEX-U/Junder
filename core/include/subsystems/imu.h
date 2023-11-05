@@ -4,6 +4,7 @@
 #include <atomic>
 #include <vector>
 #include "../core/include/utils/geometry.h"
+#include "../core/include/utils/moving_average.h"
 
 #define INT_PERIOD_MS 10
 
@@ -26,34 +27,28 @@ typedef struct
     int decay_threshold_factor;
 } imu_cfg_t;
 
-typedef enum
-{
-    imu_x, imu_y, imu_z, 
-    robot_x, robot_y, robot_z
-} rel_axis_t;
-
 class IMU : protected vex::inertial
 {
     public:
-    IMU(uint32_t port, axisType fwd_axis, axisType vert_axis, bool fwd_is_positive=true);
+    IMU(uint32_t port, axisType xaxis_new, axisType yaxis_new, axisType zaxis_new, bool invert);
     IMU(uint32_t port, imu_cfg_t &imu_cfg);
     IMU(uint32_t port);
  
-    void orient(axisType fwd_axis, axisType vert_axis, bool fwd_is_positive=true);
+    void orient(axisType xaxis_new, axisType yaxis_new, axisType zaxis_new, bool invert);
     void orient(std::vector<std::tuple<vex::axisType, double>> rotation_list);
 
     void calibrate(bool blocking=true);
     bool is_calibrating();
-    kinematics_t get_gyro(rel_axis_t axis);
-    kinematics_t get_accel(rel_axis_t axis);
+    kinematics_t get_gyro(axisType axis);
+    kinematics_t get_accel(axisType axis);
 
     private:
 
     friend int calibrate_thread(void* arg);
-    friend int integral_callback(void* arg);
+    friend int integral_thread(void* arg);
 
     inline static constexpr imu_cfg_t default_settings = {
-        .orientation=notransform_matrix,
+        .orientation=identity_matrix,
         .pos_mov_avg_buf=0,
         .vel_mov_avg_buf=0,
         .accel_mov_avg_buf=0,
@@ -62,11 +57,21 @@ class IMU : protected vex::inertial
     };
 
     imu_cfg_t* imu_cfg;
-    std::atomic<double> acc_cal_thresh;
+    std::atomic<double> vel_decay_acc_thresh;
     std::atomic<bool> is_calibrating_thresh;
     vex::timer integral_tmr;
+    vex::mutex mux;
 
     kinematics_t x_rot, y_rot, z_rot;
     kinematics_t x_lin, y_lin, z_lin;
-    
+
+    MovingAverage *x_acc_movavg, *y_acc_movavg, *z_acc_movavg;
+    MovingAverage *x_vel_movavg, *y_vel_movavg, *z_vel_movavg;
+    MovingAverage *x_pos_movavg, *y_pos_movavg, *z_pos_movavg;
+
+    point3_t accel_offset;
+    point3_t accel_thresh;
 };
+
+int calibrate_thread(void* arg);
+int integral_thread(void* arg);

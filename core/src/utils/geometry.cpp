@@ -51,6 +51,41 @@ bool point3_s::operator==(const point3_s &rhs)
     return x==rhs.x && y==rhs.y && z==rhs.z;
 }
 
+point3_s point3_s::operator*(const Mat3 &rhs) const
+{
+    return rhs * (*this);
+}
+
+point3_s point3_s::operator+(const point3_s &rhs) const
+{
+    return point3_s {
+        .x = x + rhs.x,
+        .y = y + rhs.y,
+        .z = z + rhs.z
+    };
+}
+
+double point3_s::dot_prod(const point3_s &rhs) const
+{
+    return (x * rhs.x) + (y * rhs.y) + (z*rhs.z);
+}
+
+point3_s point3_s::cross_prod(const point3_s &rhs) const
+{
+    const Mat3 crpr_mat = {
+        .X11=0,  .X12=-z, .X13=y,
+        .X21=z,  .X22=0,  .X23=-x,
+        .X31=-y, .X32=x,  .X33=0
+    };
+
+    return rhs * crpr_mat;
+}
+
+double point3_s::magnitude() const
+{
+    return sqrt((x*x) + (y*y) + (z*z));
+}
+
 point_t pose_t::get_point()
 {
     return point_t{.x = x, .y = y};
@@ -106,7 +141,7 @@ Mat2 Mat2::FromRotationDegrees(double degrees)
 /**
  * Multipily by a 3x1 matrix (aka point3)
  */
-point3_t Mat3::operator*(const point3_t rhs) const
+point3_s Mat3::operator*(const point3_s rhs) const
 {
     double x=rhs.x, y=rhs.y, z=rhs.z;
     return point3_t {
@@ -138,6 +173,23 @@ Mat3 Mat3::operator*(const Mat3 rhs) const
         .X32 = (X31 * rhs.X12) + (X32 * rhs.X22) + (X33 * rhs.X32),
         .X33 = (X31 * rhs.X13) + (X32 * rhs.X23) + (X33 * rhs.X33),
     };
+}
+
+Mat3 Mat3::operator+(const Mat3 rhs) const
+{
+    return Mat3 {
+        .X11=X11+rhs.X11, .X12=X12+rhs.X12, .X13=X13+rhs.X13,
+        .X21=X21+rhs.X21, .X22=X22+rhs.X22, .X23=X23+rhs.X23,
+        .X31=X31+rhs.X31, .X32=X32+rhs.X32, .X33=X33+rhs.X33
+    };
+}
+
+void Mat3::print()
+{
+    printf("%3.2f, %3.2f, %3.2f \n%3.2f, %3.2f, %3.2f \n%3.2f, %3.2f, %3.2f \n",
+    X11, X12, X13, 
+    X21, X22, X23, 
+    X31, X32, X33);
 }
 
 
@@ -181,44 +233,92 @@ Mat3 get_rotation_matrix(vex::axisType axis, double degrees)
 }
 
 /**
+ * Returns a rotation matrix that can be multiplied by a point3_t.
+ * This operation takes an original vector (v1), and creates a matrix
+ * that when multiplied will result in the other vector (v2).
+ * 
+ * Math taken from here:
+ * https://math.stackexchange.com/a/476311
+ * 
+ * @param v1 the original vector
+ * @param v2 the desired vector
+ * @return rotation matrix for multiplication
+*/
+Mat3 get_rotation_matrix(point3_t v1, point3_t v2)
+{
+    point3_t v = v1.cross_prod(v2);
+
+    // printf("cross prod: X: %f, Y: %f, Z: %f\n", v.x, v.y, v.z);
+
+    // Get skew-symmetric cross-product matrix
+    Mat3 sscpm = {
+        .X11=0,    .X12=-v.z, .X13=v.y,
+        .X21=v.z,  .X22=0,    .X23=-v.x,
+        .X31=-v.y, .X32=v.x,  .X33=0,
+    };
+
+    // printf("skew symmetric: \n");
+    // sscpm.print();
+
+    double s = v.magnitude();   // sin of angle
+    double c = v1.dot_prod(v2); // cos of angle
+
+    // printf("mag: %f, dot: %f\n", s, c);
+
+    return identity_matrix + sscpm + (sscpm*sscpm*((1 - c) / (s*s)));
+}
+
+/**
  * Get a 3 dimensional matrix, that when multiplied by a X, Y and Z
  * orientation, swaps the axis in question.
 */
 Mat3 get_swapaxis_matrix(vex::axisType a1, vex::axisType a2)
 {
-    // Swap X and Y axis
+    // Swap X and Y axis - Z flips direction
     if ((a1 == vex::axisType::xaxis && a2 == vex::axisType::yaxis) || 
         (a1 == vex::axisType::yaxis && a2 == vex::axisType::xaxis))
     {
         return Mat3 {
             .X11=0, .X12=1, .X13=0,
             .X21=1, .X22=0, .X23=0,
-            .X31=0, .X32=0, .X33=1
+            .X31=0, .X32=0, .X33=-1
         };
     }
 
-    // Swap X and Z axis
+    // Swap X and Z axis - Y flips direction
     if ((a1 == vex::axisType::xaxis && a2 == vex::axisType::zaxis) || 
         (a1 == vex::axisType::zaxis && a2 == vex::axisType::xaxis))
     {
         return Mat3 {
             .X11=0, .X12=0, .X13=1,
-            .X21=0, .X22=1, .X23=0,
+            .X21=0, .X22=-1, .X23=0,
             .X31=1, .X32=0, .X33=0
         };
     }
 
-    // Swap Y and Z axis
+    // Swap Y and Z axis - X flips direction
     if ((a1 == vex::axisType::yaxis && a2 == vex::axisType::zaxis) || 
         (a1 == vex::axisType::zaxis && a2 == vex::axisType::yaxis))
     {
         return Mat3 {
-            .X11=1, .X12=0, .X13=0,
+            .X11=-1, .X12=0, .X13=0,
             .X21=0, .X22=0, .X23=1,
             .X31=0, .X32=1, .X33=0
         };
     }
 
     // If the same axis is input twice, don't transform
-    return notransform_matrix;
+    return identity_matrix;
+}
+
+/**
+ * Multiply by a scalar
+*/
+Mat3 Mat3::operator*(const double rhs) const
+{
+    return Mat3 {
+        X11*rhs, X12*rhs, X13*rhs,
+        X21*rhs, X22*rhs, X23*rhs,
+        X31*rhs, X32*rhs, X33*rhs
+    };
 }

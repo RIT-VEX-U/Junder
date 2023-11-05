@@ -75,7 +75,7 @@ double variance(std::vector<double> const &values, double mean) {
     for (int i=0; i<values.size(); i++){
         total += (values[i]-mean) * (values[i]-mean);
     }
-    return total;
+    return fabs(total) / values.size();
 }
 
 /*

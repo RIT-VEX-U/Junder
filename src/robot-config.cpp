@@ -82,7 +82,14 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 // ================ SUBSYSTEMS ================
 
-IMU imu(PORT10);
+imu_cfg_t imu_cfg {
+    .pos_mov_avg_buf = 5,
+    .vel_mov_avg_buf = 5,
+    .accel_mov_avg_buf = 5,
+    .decay_threshold_factor = 2
+};
+IMU imu(PORT10, imu_cfg);
+
 CustomEncoder right_enc = CustomEncoder{Brain.ThreeWirePort.A, 90};
 CustomEncoder left_enc = CustomEncoder{Brain.ThreeWirePort.C, 90};
 

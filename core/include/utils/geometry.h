@@ -2,6 +2,10 @@
 #include <cmath>
 #include "../core/include/utils/math_util.h"
 
+// Forward declarations
+struct point3_s;
+struct Mat3;
+
 /**
  * Data structure representing an X,Y coordinate
  */
@@ -48,6 +52,16 @@ typedef struct point3_s
     double x, y, z;
 
     bool operator==(const point3_s &rhs);
+
+    point3_s operator*(const Mat3 &rhs) const;
+
+    point3_s operator+(const point3_s &rhs) const;
+
+    double dot_prod(const point3_s &rhs) const;
+
+    point3_s cross_prod(const point3_s &rhs) const;
+
+    double magnitude() const;
     
     // TODO Math functions, if needed in the future
 
@@ -63,7 +77,6 @@ struct pose_t
     double rot; ///< rotation in the world
 
     point_t get_point();
-
 } ;
 
 struct Rect
@@ -101,13 +114,25 @@ struct Mat3
     /**
      * Multipily by a 3x1 matrix (aka point3)
      */
-    point3_t operator*(const point3_t rhs) const;
+    point3_s operator*(const point3_s rhs) const;
 
     /**
      * Multiply by another 3X3 matrix
     */
     Mat3 operator*(const Mat3 rhs) const;
 
+    /**
+     * Multiply by a scalar
+    */
+    Mat3 operator*(const double rhs) const;
+
+    /**
+     * Add two 3D matricies together
+    */
+    Mat3 operator+(const Mat3 rhs) const;
+
+    void print();
+    
 };
 
 /**
@@ -126,9 +151,20 @@ struct Mat3
 */
 Mat3 get_rotation_matrix(vex::axisType axis, double degrees);
 
+/**
+ * Returns a rotation matrix that can be multiplied by a point3_t.
+ * This operation takes an original vector (v1), and creates a matrix
+ * that when multiplied will result in the other vector (v2).
+ * 
+ * @param v1 the original vector
+ * @param v2 the desired vector
+ * @return rotation matrix for multiplication
+*/
+Mat3 get_rotation_matrix(point3_t v1, point3_t v2);
+
 Mat3 get_swapaxis_matrix(vex::axisType a1, vex::axisType a2);
 
-inline constexpr Mat3 notransform_matrix = {
+inline constexpr Mat3 identity_matrix = {
     .X11 = 1, .X12 = 0, .X13 = 0,
     .X21 = 0, .X22 = 1, .X23 = 0,
     .X31 = 0, .X32 = 0, .X33 = 1
