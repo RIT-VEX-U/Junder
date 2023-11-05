@@ -7,6 +7,6 @@
 	remote = git@github.com:RIT-VEX-U/Core.git
 	branch = main
 	commit = d3cf9b7e913760a5046eeec3d0f296c301176b54
-	parent = 26ece0ed93f609d024bcb13c85368b33343cc6f4
+	parent = 7e80979f23026d0c3b48cfdad327d4bf28fc1731
 	method = merge
 	cmdver = 0.4.6
