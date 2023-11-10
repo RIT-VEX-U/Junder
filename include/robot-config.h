@@ -15,7 +15,7 @@ extern vex::motor_group cata_motors;
 // Digital sensors
 
 // Analog sensors
-
+extern vex::gps gps_sensor;
 
 // ================ OUTPUTS ================
 // Motors
