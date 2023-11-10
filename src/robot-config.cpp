@@ -76,6 +76,7 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 // Digital sensors
 
 // Analog sensors
+gps gps_sensor(PORT11, 0, 0, distanceUnits::in, -90, turnType::left);
 
 // ================ OUTPUTS ================
 // Motors
@@ -181,9 +182,19 @@ void robot_init()
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
         new screen::FunctionPage(update, draw),
+        new screen::FunctionPage([](bool, int, int){
+            
+        },
+        [](vex::brain::lcd lcd, bool f, int n){
+            lcd.printAt(80, 80, "X: %f Y: %f",
+            gps_sensor.xPosition(distanceUnits::in) + 72, gps_sensor.yPosition(distanceUnits::in) + 72);
+            lcd.printAt(80, 100, "Rot: %f, Qual: %d", 
+            gps_sensor.heading(), gps_sensor.quality());
+        }),
         fw.Page(),
     };
 
     screen::start_screen(Brain.Screen, pages, 3);
     imu.calibrate();
+    gps_sensor.calibrate();
 }
