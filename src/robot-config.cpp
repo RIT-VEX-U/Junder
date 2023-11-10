@@ -76,7 +76,8 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 // Digital sensors
 
 // Analog sensors
-gps gps_sensor(PORT11, 0, 0, distanceUnits::in, -90, turnType::left);
+vex::gps gps_sensor(PORT11, 0, 0, distanceUnits::in, -90, turnType::left);
+vex::motor gps_spinner(vex::PORT20, true);
 
 // ================ OUTPUTS ================
 // Motors
