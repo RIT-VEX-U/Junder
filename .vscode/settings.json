@@ -42,5 +42,6 @@
 		"numeric": "cpp",
 		"mutex": "cpp",
 		"system_error": "cpp"
-	}
+	},
+	"ros.distro": "noetic"
 }
