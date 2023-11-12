@@ -38,10 +38,11 @@ void CommandController::add(std::vector<AutoCommand *> cmds)
  * @param cmds the AutoCommands we want to add to our list
  * @param timeout timeout in seconds to apply to all commands if they are still the default
  */
-void CommandController::add(std::vector<AutoCommand *> cmds, double timeout_sec)
+void CommandController::add(std::vector<const AutoCommand const *> cmds, double timeout_sec)
 {
-  for (AutoCommand *cmd : cmds)
+  for (const AutoCommand *cmd : cmds)
   {
+    AutoCommand *mod_cmd
     if (cmd->timeout_seconds == AutoCommand::default_timeout)
     {
       cmd->timeout_seconds = timeout_sec;
