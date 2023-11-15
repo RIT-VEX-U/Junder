@@ -16,4 +16,6 @@
 #define TURN_DEGREES(dir) (new TurnDegreesCommand(drive_sys, *robot_cfg.turn_feedback, dir, TURN_SPEED))
 #define TURN_TO_POINT(pt) (new TurnToPointCommand(drive_sys, odom, *config.turn_feedback, pt))
 
+#define SPIN_TO_HEADING(dir) ()
+
 void autonomous();

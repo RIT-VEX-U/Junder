@@ -110,12 +110,22 @@ robot_specs_t robot_cfg = {
     .odom_wheel_diam = 2.84,       // inches
     .odom_gear_ratio = 1.03,       // inches
     .dist_between_wheels = 9.18,   // inches
-    .drive_correction_cutoff = 12, // inches
+    .drive_correction_cutoff = 4, // inches
     .drive_feedback = new PID(drive_pid_cfg),
     .turn_feedback = new PID(turn_pid_cfg),
     .correction_pid = (PID::pid_config_t){
-        .p = .03,
+        .p = .06,
     }};
+
+PID::pid_config_t spinnyConfig = {
+        .p = 0.05,
+        .i = 0,
+        .d = 0,
+        .deadband = 3,
+        .on_target_time = 0.2,
+    };
+
+PID spinnyPID(spinnyConfig);
 
 vex::motor left_front(vex::PORT1, true);
 vex::motor left_back(vex::PORT2, true);
@@ -183,8 +193,9 @@ void robot_init()
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
         new screen::FunctionPage(update, draw),
+        new screen::PIDPage(spinnyPID, "spinny pid"),
         new screen::FunctionPage([](bool, int, int){
-            
+        
         },
         [](vex::brain::lcd lcd, bool f, int n){
             lcd.printAt(80, 80, "X: %f Y: %f",
@@ -195,7 +206,10 @@ void robot_init()
         fw.Page(),
     };
 
-    screen::start_screen(Brain.Screen, pages, 3);
+    screen::start_screen(Brain.Screen, pages, 2);
     imu.calibrate();
+
+    
+
     gps_sensor.calibrate();
 }
