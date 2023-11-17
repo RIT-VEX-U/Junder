@@ -1,7 +1,7 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
-#define COMP_BOT
+// #define COMP_BOT
 
 using namespace vex;
 
