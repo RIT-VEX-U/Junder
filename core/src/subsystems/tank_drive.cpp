@@ -122,7 +122,6 @@ void TankDrive::drive_tank(double left, double right, int power, BrakeType bt)
 
     zero_vel_pid.set_target(0);
     double vel = odometry->get_speed();
-    printf("vel: %.2f, %d\n", vel, captured_position);
     if (fabs(vel) <= 0.01 && !captured_position)
     {
       target_pose = odometry->get_position();
@@ -135,7 +134,6 @@ void TankDrive::drive_tank(double left, double right, int power, BrakeType bt)
       {
         drive_to_point(target_pose.x, target_pose.y, vex::fwd);
       } else {
-        // printf("giving up\n");
         target_pose = odometry->get_position();
         reset_auto();
       }
