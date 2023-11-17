@@ -114,8 +114,7 @@ namespace screen
     /// @brief  type of function needed for draw
     using draw_func_t = std::function<void(vex::brain::lcd &screen, bool, unsigned int)>;
 
-
-    /// @brief Draws motor stats and battery stats to the screen 
+    /// @brief Draws motor stats and battery stats to the screen
     class StatsPage : public Page
     {
     public:
@@ -147,7 +146,7 @@ namespace screen
         /// @param odom the odometry system to monitor
         /// @param robot_width the width (side to side) of the robot in inches. Used for visualization
         /// @param robot_height the robot_height (front to back) of the robot in inches. Used for visualization
-        /// @param do_trail whether or not to calculate and draw the trail. Drawing and storing takes a very *slight* extra amount of processing power 
+        /// @param do_trail whether or not to calculate and draw the trail. Drawing and storing takes a very *slight* extra amount of processing power
         OdometryPage(OdometryBase &odom, double robot_width, double robot_height, bool do_trail);
         /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
@@ -166,6 +165,7 @@ namespace screen
         pose_t path[path_len];
         int path_index = 0;
         bool do_trail;
+        GraphDrawer velocity_graph;
     };
 
     /// @brief Simple page that stores no internal data. the draw and update functions use only global data rather than storing anything
@@ -194,8 +194,10 @@ namespace screen
         /// @param pid the pid controller we're changing
         /// @param name a name to recognize this pid controller if we've got multiple pid screens
         /// @param onchange a function that is called when a tuning parameter is changed. If you need to update stuff on that change register a handler here
-        PIDPage(PID &pid, std::string name, std::function<void(void)> onchange = [](){});
-        PIDPage(PIDFF &pidff, std::string name, std::function<void(void)> onchange = [](){});
+        PIDPage(
+            PID &pid, std::string name, std::function<void(void)> onchange = []() {});
+        PIDPage(
+            PIDFF &pidff, std::string name, std::function<void(void)> onchange = []() {});
 
         /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;

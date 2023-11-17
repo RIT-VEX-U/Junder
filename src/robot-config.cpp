@@ -236,7 +236,7 @@ void robot_init()
         }), 
     };
 
-    screen::start_screen(Brain.Screen, pages, 4);
+    screen::start_screen(Brain.Screen, pages, 2);
     imu.calibrate();
     // gps_sensor.calibrate();
 }
