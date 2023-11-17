@@ -184,6 +184,6 @@ void robot_init()
         fw.Page(),
     };
 
-    screen::start_screen(Brain.Screen, pages, 3);
+    screen::start_screen(Brain.Screen, pages, 2);
     imu.calibrate();
 }

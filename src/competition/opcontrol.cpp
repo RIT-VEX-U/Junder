@@ -28,7 +28,7 @@ void opcontrol()
     {
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
-        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::TimedHold);
+        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::Smart);
         vexDelay(10);
     }
 

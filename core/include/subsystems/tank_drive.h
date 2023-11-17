@@ -27,6 +27,7 @@ public:
     None,
     ZeroVelocity,
     TimedHold,
+    Smart,
   };
   /**
    * Create the TankDrive object
@@ -68,6 +69,7 @@ public:
    * @param bt  breaktype. What to do if the driver lets go of the sticks
    */
   void drive_tank(double left, double right, int power = 1, BrakeType bt = BrakeType::None);
+  void drive_tank_raw(double left, double right);
 
   /**
    * Drive the robot using arcade style controls. forward_back controls the linear motion,
