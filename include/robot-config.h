@@ -1,24 +1,27 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
-// #define COMP_BOT
+#define COMP_BOT
 
+using namespace vex;
 
-extern vex::brain Brain;
-extern vex::controller con;
-extern vex::inertial imu;
+extern brain Brain;
+extern controller con;
+
 #ifdef COMP_BOT
-extern vex::motor_group cata_motors;
-#endif
 
 // ================ INPUTS ================
 // Digital sensors
 
 // Analog sensors
-
+extern inertial imu;
 
 // ================ OUTPUTS ================
 // Motors
+extern motor intake_combine;
+extern motor intake_roller;
+
+extern motor_group cata_motors;
 
 // ================ SUBSYSTEMS ================
 extern robot_specs_t robot_cfg;
@@ -27,10 +30,30 @@ extern TankDrive drive_sys;
 
 extern PID::pid_config_t pcfg;
 // extern FeedForward::ff_config_t ffcfg;
-extern Flywheel fw;
 
-extern Serializer *serializer;
+
+#else
+// ================ INPUTS ================
+// Digital sensors
+
+// Analog sensors
+extern inertial imu;
+extern gps gps_sensor;
+
+
+// ================ OUTPUTS ================
+// Motors
+extern motor intake_combine;
+extern motor intake_roller;
+
+// ================ SUBSYSTEMS ================
+extern OdometryTank odom;
+extern TankDrive drive_sys;
+#endif
 
 // ================ UTILS ================
 
+extern Serializer *serializer;
+
+extern double combine_testing_volt, roller_testing_volt;
 void robot_init();
