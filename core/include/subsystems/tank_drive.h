@@ -24,10 +24,9 @@ class TankDrive
 public:
   enum class BrakeType
   {
-    None,
-    ZeroVelocity,
-    TimedHold,
-    Smart,
+    None, ///< just send 0 volts to the motors
+    ZeroVelocity, ///< try to bring the robot to rest. But don't try to hold position
+    Smart, ///< bring the robot to rest and once it's stopped, try to hold that position
   };
   /**
    * Create the TankDrive object
@@ -69,6 +68,11 @@ public:
    * @param bt  breaktype. What to do if the driver lets go of the sticks
    */
   void drive_tank(double left, double right, int power = 1, BrakeType bt = BrakeType::None);
+  /**
+   * Drive the robot raw-ly
+   * @param left the percent to run the left motors (-1, 1)
+   * @param right the percent to run the right motors (-1, 1)
+  */
   void drive_tank_raw(double left, double right);
 
   /**
