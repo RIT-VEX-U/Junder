@@ -20,7 +20,7 @@ public:
 
   /// @brief Create a CommandController with commands pre added. More can be added with CommandController::add()
   /// @param cmds
-  CommandController(std::initializer_list<const AutoCommand const *> cmds) : command_queue(cmds) {}
+  CommandController(std::initializer_list<AutoCommand *> cmds) : command_queue(cmds) {}
   /**
    * Adds a command to the queue
    * @param cmd the AutoCommand we want to add to our list
@@ -40,7 +40,7 @@ public:
    * @param timeout_sec timeout in seconds to apply to all commands if they are still the default
    */
   [[deprecated("Use list constructor instead. If you need to make a decision before adding new commands, use Branch (https://github.com/RIT-VEX-U/Core/wiki/3-%7C-Utilites#commandcontroller)")]] void
-  add(std::vector<const AutoCommand const *> cmds, double timeout_sec);
+  add(std::vector<AutoCommand *> cmds, double timeout_sec);
   /**
    * Adds a command that will delay progression
    * of the queue
@@ -67,7 +67,7 @@ public:
   bool last_command_timed_out();
 
 private:
-  std::queue<const AutoCommand const *> command_queue;
+  std::queue<AutoCommand *> command_queue;
   bool command_timed_out = false;
   std::function<bool()> should_cancel = []()
   { return false; };
