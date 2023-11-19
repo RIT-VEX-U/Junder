@@ -3,8 +3,6 @@
 int thread_func(void *void_cata)
 {
     CataSys &cata = *(CataSys *)void_cata;
-
-    CataSys::Command last_cmd = CataSys::Command::StopIntake;
     cata.state = {
         .ball_in_intake = false,
         .ball_in_cata = false,
@@ -27,16 +25,19 @@ int thread_func(void *void_cata)
         {
             printf("DQed! ball in intake and catapault (or a sensor got funny)\n");
         }
-        cata.state = st;
 
-        // get command
-        const CataSys::Command this_command = cata.cmd;
+        // SYNCHRONIZE
+        cata.control_mut.lock();
+        cata.state = st;
+        bool firing_requested = cata.firing_requested;
+        bool intaking_requested = cata.intaking_requested;
+        CataSys::IntakeType intake_type = cata.intake_type;
+        cata.control_mut.unlock();
 
         // decide accordingly
         if (!st.cata_in_position)
         {
             // spin cata in the right direction
-            // don't even read that command
             cata.cata_motor.spin(vex::fwd, 3.0, vex::volt);
             continue;
         }
@@ -45,25 +46,33 @@ int thread_func(void *void_cata)
             cata.cata_motor.stop();
         }
 
-        if (this_command == CataSys::Command::Fire)
+        // fire if we should be firing
+        if (firing_requested && st.ball_in_cata)
         {
-            if (st.ball_in_cata)
-            {
-                // spin cata to fire
-                cata.cata_motor.spin(vex::fwd, 5.0, vex::volt);
-            }
-        }
-        else if (this_command == CataSys::Command::StopIntake)
-        {
+            cata.cata_motor.spin(vex::fwd, 3.0, vex::volt);
             cata.intake_motor.stop();
         }
         else
         {
-            // until i get acess to a robot
-            cata.intake_motor.spin(vex::fwd, 8.0, vex::volt);
+            cata.cata_motor.stop();
         }
 
-        last_cmd = this_command;
+        if (intaking_requested)
+        {
+            // intake if we should be intaking and if we won't jam cata
+            if (st.cata_in_position && intake_type == CataSys::IntakeType::In) // DOESNT HANDLE INTAKE HOLD YET, JUST INTAKE ALL THE WAY
+            {
+                cata.intake_motor.spin(vex::fwd, 4.0, vex::volt);
+            }
+            else if (intaking_requested && intake_type == CataSys::IntakeType::Out)
+            {
+                cata.intake_motor.spin(vex::fwd, -4.0, vex::volt);
+            }
+        }
+        else
+        {
+            cata.intake_motor.stop();
+        }
 
         vexDelay(20);
     }
@@ -78,14 +87,39 @@ CataSys::CataSys(vex::optical &intake_watcher,
                                                    cata_enc(cata_enc),
                                                    cata_watcher(cata_watcher),
                                                    cata_motor(cata_motor),
-                                                   intake_motor(intake_motor)
+                                                   intake_motor(intake_motor),
+                                                   firing_requested(false),
+                                                   intaking_requested(false),
+                                                   intake_type(CataSys::IntakeType::In)
 {
     runner = vex::task(thread_func, (void *)this);
 }
 
 void CataSys::send_command(Command next_cmd)
 {
-    cmd = next_cmd;
+    control_mut.lock();
+    switch (next_cmd)
+    {
+    case CataSys::Command::StartFiring:
+        firing_requested = true;
+        break;
+    case CataSys::Command::StopFiring:
+        firing_requested = false;
+    case CataSys::Command::IntakeIn:
+    case CataSys::Command::IntakeHold: // not handled
+        intaking_requested = true;
+        intake_type = CataSys::IntakeType::In;
+        break;
+    case CataSys::Command::IntakeOut:
+        intaking_requested = true;
+        intake_type = CataSys::IntakeType::Out;
+    case CataSys::Command::StopIntake:
+        intaking_requested = false;
+        break;
+    default:
+        break;
+    }
+    control_mut.unlock();
 }
 
 CataSys::State CataSys::get_state() const

@@ -1,6 +1,7 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
+#include "cata_system.h"
 #define COMP_BOT
 
 using namespace vex;
@@ -28,8 +29,7 @@ extern robot_specs_t robot_cfg;
 extern OdometryTank odom;
 extern TankDrive drive_sys;
 
-extern PID::pid_config_t pcfg;
-// extern FeedForward::ff_config_t ffcfg;
+extern CataSys cata_sys;
 
 
 #else

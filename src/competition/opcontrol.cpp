@@ -25,10 +25,22 @@ void opcontrol()
 
     // SUBJECT TO CHANGE!
     // Wings: DOWN
-
+    
+    con.ButtonL1.pressed([]()
+                         {  cata_sys.send_command(CataSys::Command::StartFiring); });
+    con.ButtonL1.released([]()
+                          {  cata_sys.send_command(CataSys::Command::StopFiring); });
+    con.ButtonR1.pressed([]()
+                         {  cata_sys.send_command(CataSys::Command::IntakeIn); });
+    con.ButtonR2.pressed([]()
+                         {  cata_sys.send_command(CataSys::Command::IntakeOut); });
     // ================ INIT ================
     while (true)
     {
+        if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing())
+        {
+            cata_sys.send_command(CataSys::Command::StopIntake);
+        }
 #ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;

@@ -20,7 +20,6 @@ motor left_back(PORT15, gearSetting::ratio6_1, true);
 // motor left_raised(PORT8, gearSetting::ratio6_1, false);
 motor left_raised(PORT1, gearSetting::ratio6_1, false);
 
-
 motor right_front(PORT6, gearSetting::ratio6_1, false);
 motor right_middle(PORT3, gearSetting::ratio6_1, false);
 motor right_back(PORT11, gearSetting::ratio6_1, false);
@@ -37,6 +36,8 @@ motor_group cata_motors(cata_l, cata_r);
 motor intake_combine(PORT8, gearSetting::ratio18_1, false);
 motor intake_roller(PORT10, gearSetting::ratio18_1, false);
 
+motor_group intake_motors = {intake_combine, intake_roller};
+
 std::map<std::string, motor &> motor_names = {
     {"left f", left_front},
     {"left m", left_middle},
@@ -50,6 +51,10 @@ std::map<std::string, motor &> motor_names = {
 
     {"cata L", cata_l},
     {"cata R", cata_r},
+
+    {"intake low", intake_combine},
+    {"intake high", intake_roller},
+
 };
 
 // ================ SUBSYSTEMS ================
@@ -83,6 +88,12 @@ robot_specs_t robot_cfg = {
 
 OdometryTank odom{left_motors, right_motors, robot_cfg};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
+
+vex::optical intake_watcher(vex::PORT10);
+vex::optical cata_watcher(vex::PORT11);
+CustomEncoder cata_enc(Brain.ThreeWirePort.A, 2048);
+
+CataSys cata_sys(intake_watcher, cata_enc, cata_watcher, cata_motors, intake_motors);
 
 #else
 
@@ -158,15 +169,11 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 // ================ UTILS ================
 std::vector<screen::Page *> pages;
 
-
-
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
-
-
 
     pages = {
         new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),

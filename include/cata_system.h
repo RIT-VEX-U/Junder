@@ -1,6 +1,4 @@
 #include "vex.h"
-#include <mutex>
-#include <atomic>
 #include "../core/include/subsystems/custom_encoder.h"
 #include "../core/include/utils/command_structure/auto_command.h"
 #include "../core/include/subsystems/screen.h"
@@ -10,11 +8,19 @@ class CataSys
 public:
     enum class Command
     {
-        Intake,       // all mutually exclusive or else we get DQed or jam the cata
-        IntakeToHold, // all mutually exclusive or else we get DQed or jam the cata
-        Fire,         // all mutually exclusive or else we get DQed or jam the cata
-        StopIntake
+        IntakeIn,       // all mutually exclusive or else we get DQed or jam the cata
+        IntakeHold, // all mutually exclusive or else we get DQed or jam the cata
+        StartFiring,  // all mutually exclusive or else we get DQed or jam the cata
+        StopFiring,
+        StopIntake,
+        IntakeOut,
     };
+    enum class IntakeType{
+        In,
+        Out,
+        Hold,
+    };
+
     struct State
     {
         bool ball_in_intake;
@@ -44,7 +50,11 @@ private:
 
     // running
     vex::task runner;
-    std::atomic<Command> cmd;
-    std::atomic<State> state;
+    vex::mutex control_mut;
+    // THESE SHOULD ONLY BE ACCESSED BEHIND THE MUTEX
+    State state;
+    bool firing_requested;
+    bool intaking_requested;
+    IntakeType intake_type;
     friend int thread_func(void *void_cata);
 };
