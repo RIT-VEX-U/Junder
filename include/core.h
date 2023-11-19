@@ -4,6 +4,7 @@
 #include "../core/include/subsystems/odometry/odometry_3wheel.h"
 #include "../core/include/subsystems/odometry/odometry_base.h"
 #include "../core/include/subsystems/odometry/odometry_tank.h"
+#include "../core/include/subsystems/odometry/npod.h"
 #include "../core/include/subsystems/custom_encoder.h"
 #include "../core/include/subsystems/flywheel.h"
 #include "../core/include/subsystems/lift.h"

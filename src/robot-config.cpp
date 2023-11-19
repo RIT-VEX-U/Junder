@@ -182,11 +182,15 @@ auto draw = [](brain::lcd &scr, bool f, int n)
 
 double combine_testing_volt = 12, roller_testing_volt = 12;
 
+
+NPod<2> tank_odom{{}};
+
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
+    // printf("")
     bb.set_limits(0.0, 1.0);
 
     static Rect com_slider_rect = {
