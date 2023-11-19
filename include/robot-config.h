@@ -1,7 +1,7 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
-// #define COMP_BOT
+#define COMP_BOT
 
 using namespace vex;
 
@@ -14,7 +14,7 @@ extern controller con;
 // Digital sensors
 
 // Analog sensors
-extern inertial imu;
+// extern inertial imu;
 
 // ================ OUTPUTS ================
 // Motors
@@ -28,8 +28,6 @@ extern robot_specs_t robot_cfg;
 extern OdometryTank odom;
 extern TankDrive drive_sys;
 
-extern PID::pid_config_t pcfg;
-// extern FeedForward::ff_config_t ffcfg;
 
 
 #else
@@ -53,7 +51,4 @@ extern TankDrive drive_sys;
 
 // ================ UTILS ================
 
-extern Serializer *serializer;
-
-extern double combine_testing_volt, roller_testing_volt;
 void robot_init();

@@ -10,10 +10,10 @@
  */
 void opcontrol()
 {
-    while (imu.isCalibrating())// || gps_sensor.isCalibrating())
-    {
-        vexDelay(20);
-    }
+    // while (imu.isCalibrating())// || gps_sensor.isCalibrating())
+    // {
+    //     vexDelay(20);
+    // }
 
     // Controls:
     // Cata: Hold L1 (Not on rising edge)
@@ -46,12 +46,12 @@ void opcontrol()
         // Intake
         if(con.ButtonR1.pressing())
         {
-            intake_combine.spin(directionType::fwd, combine_testing_volt, volt);
-            intake_roller.spin(directionType::fwd, roller_testing_volt, volt);
+            intake_combine.spin(directionType::fwd, 12, volt);
+            intake_roller.spin(directionType::fwd, 12, volt);
         } else if(con.ButtonR2.pressing())
         {
-            intake_combine.spin(directionType::rev, combine_testing_volt, volt);
-            intake_roller.spin(directionType::rev, roller_testing_volt, volt);
+            intake_combine.spin(directionType::rev, 12, volt);
+            intake_roller.spin(directionType::rev, 12, volt);
         } else
         {
             intake_combine.stop();
