@@ -14,7 +14,7 @@ int thread_func(void *void_cata)
     while (true)
     {
         // read sensors
-        const double cata_pos = cata.cata_enc.position(vex::degrees);
+        const double cata_pos = cata.cata_pot.angle(vex::degrees);
 
         const CataSys::State st = {
             .ball_in_intake = cata.intake_watcher.isNearObject(),
@@ -80,11 +80,11 @@ int thread_func(void *void_cata)
 }
 
 CataSys::CataSys(vex::optical &intake_watcher,
-                 CustomEncoder &cata_enc,
+                 vex::pot &cata_pot,
                  vex::optical &cata_watcher,
                  vex::motor_group &cata_motor,
                  vex::motor_group &intake_motor) : intake_watcher(intake_watcher),
-                                                   cata_enc(cata_enc),
+                                                   cata_pot(cata_pot),
                                                    cata_watcher(cata_watcher),
                                                    cata_motor(cata_motor),
                                                    intake_motor(intake_motor),
@@ -140,6 +140,7 @@ public:
         scr.printAt(40, 40, true, "Ball in Cata: %s", state.ball_in_cata ? "yes" : "no");
         scr.printAt(40, 60, true, "Ball in Intake: %s", state.ball_in_intake ? "yes" : "no");
         scr.printAt(40, 80, true, "Cata In Position: %s", state.cata_in_position ? "yes" : "no");
+        
     }
     const CataSys &cs;
 };

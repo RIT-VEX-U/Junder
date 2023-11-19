@@ -90,12 +90,11 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 vex::optical intake_watcher(vex::PORT10);
 vex::optical cata_watcher(vex::PORT15); // Final Port
-CustomEncoder cata_enc(Brain.ThreeWirePort.A, 2048); // TEST
-// TODO change encoder to potentiometer
+vex::pot cata_pot(Brain.ThreeWirePort.A);
 
 // VISION PORT 16 Final Port
 
-CataSys cata_sys(intake_watcher, cata_enc, cata_watcher, cata_motors, intake_motors);
+CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors, intake_motors);
 
 #else
 
@@ -181,9 +180,10 @@ void robot_init()
         new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
+        cata_sys.Page(),
     };
 
-    screen::start_screen(Brain.Screen, pages, 4);
+    screen::start_screen(Brain.Screen, pages, 3);
     // imu.calibrate();
     // gps_sensor.calibrate();
 }
