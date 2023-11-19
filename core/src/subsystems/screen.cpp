@@ -2,6 +2,31 @@
 #include "../core/include/utils/math_util.h"
 namespace screen
 {
+    void draw_label(vex::brain::lcd &scr, std::string lbl, ScreenRect rect)
+    {
+        uint32_t height = scr.getStringHeight(lbl.c_str());
+        scr.printAt(rect.x1+1, rect.y1+height, true, "%s", lbl.c_str());
+    }
+    void draw_widget(vex::brain::lcd &scr, WidgetConfig &widget, ScreenRect rect)
+    {
+        switch (widget.type)
+        {
+        case WidgetConfig::Type::Col:
+        case WidgetConfig::Type::Row:
+        case WidgetConfig::Type::Slider:
+        case WidgetConfig::Type::Button:
+        case WidgetConfig::Type::Checkbox:
+        case WidgetConfig::Type::Graph:
+            printf("unimplemented\n");
+            break;
+        case WidgetConfig::Type::Text:
+            draw_label(scr, widget.config.text.text(), rect);
+            break;
+        case WidgetConfig::Type::Label:
+            draw_label(scr, widget.config.label.label, rect);
+            break;
+        }
+    }
     /// @brief Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
     class SliderWidget
     {
@@ -104,7 +129,7 @@ namespace screen
             printf("THERE IS ALREADY A SCREEN THREAD RUNNING\n");
             return;
         }
-        
+
         ScreenData *data = new ScreenData{pages, first_page, screen};
 
         screen_thread = new vex::thread(screen_thread_func, static_cast<void *>(data));

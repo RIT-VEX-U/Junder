@@ -29,7 +29,7 @@ namespace screen
     };
     struct LabelConfig
     {
-        std::function<std::string()> label;
+        std::string label;
     };
 
     struct TextConfig
@@ -37,7 +37,8 @@ namespace screen
         std::function<std::string()> text;
     };
 
-    struct SizedWidget{
+    struct SizedWidget
+    {
         int size;
         WidgetConfig widget;
     };
@@ -52,19 +53,21 @@ namespace screen
             Checkbox,
             Label,
             Text,
+            Graph,
         };
         Type type;
         union
         {
-            std::vector<WidgetConfig> widgets;
+            std::vector<SizedWidget> widgets;
             SliderConfig slider;
             ButtonConfig button;
             CheckboxConfig button;
             LabelConfig label;
             TextConfig text;
+            GraphDrawer *graph;
         } config;
     };
-
+    class Page;
     /// @brief Page describes one part of the screen slideshow
     class Page
     {
@@ -87,6 +90,30 @@ namespace screen
          */
         virtual void draw(vex::brain::lcd &screen, bool first_draw,
                           unsigned int frame_number);
+    };
+
+    struct ScreenRect
+    {
+        uint32_t x1;
+        uint32_t y1;
+        uint32_t x2;
+        uint32_t y2;
+    };
+    void draw_widget(WidgetConfig &widget, ScreenRect rect);
+
+    class WidgetPage : public Page
+    {
+    public:
+        WidgetPage(WidgetConfig &cfg) : base_widget(cfg) {}
+        void update(bool was_pressed, int x, int y) override;
+
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override
+        {
+            draw_widget(base_widget, {.x1 = 20, .y1 = 0, .x2 = 440, .y2 = 240});
+        }
+
+    private:
+        WidgetConfig &base_widget;
     };
 
     /**
