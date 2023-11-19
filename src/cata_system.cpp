@@ -1,5 +1,20 @@
 #include "cata_system.h"
 
+const double cata_lower_threshold = 325.0;
+const double cata_upper_threshold = 345.0;
+
+bool intake_can_be_enabled(double cata_pos)
+{
+    return cata_pos > cata_lower_threshold && cata_pos < cata_upper_threshold;
+}
+
+bool cata_ready(double cata_pos)
+{
+    return cata_pos > 320 && cata_pos < 330;
+}
+
+
+const double intake_volts = 12.0;
 int thread_func(void *void_cata)
 {
     CataSys &cata = *(CataSys *)void_cata;
@@ -7,9 +22,6 @@ int thread_func(void *void_cata)
         .ball_in_intake = false,
         .ball_in_cata = false,
         .cata_in_position = false};
-
-    const double cata_lower_threshold = 0.0;
-    const double cata_upper_threshold = 1.0;
 
     while (true)
     {
@@ -19,7 +31,7 @@ int thread_func(void *void_cata)
         const CataSys::State st = {
             .ball_in_intake = cata.intake_watcher.isNearObject(),
             .ball_in_cata = cata.cata_watcher.isNearObject(),
-            .cata_in_position = cata_pos > cata_lower_threshold && cata_pos < cata_upper_threshold};
+            .cata_in_position = cata_ready(cata_pos)};
 
         if (st.ball_in_cata && st.ball_in_intake)
         {
@@ -34,44 +46,53 @@ int thread_func(void *void_cata)
         CataSys::IntakeType intake_type = cata.intake_type;
         cata.control_mut.unlock();
 
-        // decide accordingly
-        if (!st.cata_in_position)
-        {
-            // spin cata in the right direction
-            cata.cata_motor.spin(vex::fwd, 3.0, vex::volt);
-            continue;
-        }
-        else
-        {
-            cata.cata_motor.stop();
-        }
-
-        // fire if we should be firing
-        if (firing_requested && st.ball_in_cata)
-        {
-            cata.cata_motor.spin(vex::fwd, 3.0, vex::volt);
-            cata.intake_motor.stop();
-        }
-        else
-        {
-            cata.cata_motor.stop();
-        }
-
+        // decide
         if (intaking_requested)
         {
             // intake if we should be intaking and if we won't jam cata
-            if (st.cata_in_position && intake_type == CataSys::IntakeType::In) // DOESNT HANDLE INTAKE HOLD YET, JUST INTAKE ALL THE WAY
+            if (intake_can_be_enabled(cata_pos) && intake_type == CataSys::IntakeType::In)
             {
-                cata.intake_motor.spin(vex::fwd, 4.0, vex::volt);
+                cata.intake_upper.spin(vex::fwd, intake_volts, vex::volt);
+                cata.intake_lower.spin(vex::fwd, intake_volts, vex::volt);
             }
-            else if (intaking_requested && intake_type == CataSys::IntakeType::Out)
+            else if (!intake_can_be_enabled(cata_pos) && intake_type == CataSys::IntakeType::In)
             {
-                cata.intake_motor.spin(vex::fwd, -4.0, vex::volt);
+                cata.intake_lower.stop(vex::brakeType::coast);
+                cata.intake_upper.stop(vex::brakeType::coast);
+            }
+            else if (intake_type == CataSys::IntakeType::Out)
+            {
+                cata.intake_upper.spin(vex::fwd, -intake_volts, vex::volt);
+                cata.intake_lower.spin(vex::fwd, -intake_volts, vex::volt);
+            }
+            else if (intake_type == CataSys::IntakeType::Hold)
+            {
+                cata.intake_upper.spin(vex::fwd, -intake_volts, vex::volt);
+                cata.intake_lower.spin(vex::fwd, intake_volts, vex::volt);
             }
         }
         else
         {
-            cata.intake_motor.stop();
+            cata.intake_lower.stop(vex::brakeType::coast);
+            cata.intake_upper.stop(vex::brakeType::coast);
+        }
+
+        // fire if we should be firing
+        if (!st.cata_in_position)
+        {
+            printf("spubbubg caa\n");
+
+            cata.cata_motor.spin(vex::fwd, 8.0, vex::volt);
+        }
+        else if (firing_requested && st.ball_in_cata)
+        {
+            cata.cata_motor.spin(vex::fwd, 8.0, vex::volt);
+            cata.intake_upper.stop(vex::brakeType::coast);
+            cata.intake_lower.stop(vex::brakeType::coast);
+        }
+        else
+        {
+            cata.cata_motor.stop(vex::brakeType::coast);
         }
 
         vexDelay(20);
@@ -80,17 +101,19 @@ int thread_func(void *void_cata)
 }
 
 CataSys::CataSys(vex::optical &intake_watcher,
-                 vex::pot &cata_pot,
+                 vex::rotation &cata_pot,
                  vex::optical &cata_watcher,
                  vex::motor_group &cata_motor,
-                 vex::motor_group &intake_motor) : intake_watcher(intake_watcher),
-                                                   cata_pot(cata_pot),
-                                                   cata_watcher(cata_watcher),
-                                                   cata_motor(cata_motor),
-                                                   intake_motor(intake_motor),
-                                                   firing_requested(false),
-                                                   intaking_requested(false),
-                                                   intake_type(CataSys::IntakeType::In)
+                 vex::motor &intake_upper,
+                 vex::motor &intake_lower) : intake_watcher(intake_watcher),
+                                             cata_pot(cata_pot),
+                                             cata_watcher(cata_watcher),
+                                             cata_motor(cata_motor),
+                                             intake_upper(intake_upper),
+                                             intake_lower(intake_lower),
+                                             firing_requested(false),
+                                             intaking_requested(false),
+                                             intake_type(CataSys::IntakeType::In)
 {
     runner = vex::task(thread_func, (void *)this);
 }
@@ -105,14 +128,19 @@ void CataSys::send_command(Command next_cmd)
         break;
     case CataSys::Command::StopFiring:
         firing_requested = false;
+        break;
     case CataSys::Command::IntakeIn:
-    case CataSys::Command::IntakeHold: // not handled
         intaking_requested = true;
         intake_type = CataSys::IntakeType::In;
         break;
     case CataSys::Command::IntakeOut:
         intaking_requested = true;
         intake_type = CataSys::IntakeType::Out;
+        break;
+    case CataSys::Command::IntakeHold: // not handled
+        intaking_requested = true;
+        intake_type = CataSys::IntakeType::Hold;
+        break;
     case CataSys::Command::StopIntake:
         intaking_requested = false;
         break;
@@ -140,7 +168,6 @@ public:
         scr.printAt(40, 40, true, "Ball in Cata: %s", state.ball_in_cata ? "yes" : "no");
         scr.printAt(40, 60, true, "Ball in Intake: %s", state.ball_in_intake ? "yes" : "no");
         scr.printAt(40, 80, true, "Cata In Position: %s", state.cata_in_position ? "yes" : "no");
-        
     }
     const CataSys &cs;
 };

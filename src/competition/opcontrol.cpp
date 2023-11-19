@@ -9,39 +9,42 @@
  */
 void opcontrol()
 {
-    // while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
-    // {
-    //     vexDelay(20);
-    // }
+// while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+// {
+//     vexDelay(20);
+// }
 
-    // Controls:
-    // Cata: Hold L1 (Not on rising edge)
-    // -- Don't shoot until there's a ball
-    // -- Preload
-    // Intake:
-    // -- R1 IN
-    // -- R2 OUT
-    // -- B - 2 intake pistons
+// Controls:
+// Cata: Hold L1 (Not on rising edge)
+// -- Don't shoot until there's a ball
+// -- Preload
+// Intake:
+// -- R1 IN
+// -- R2 OUT
+// -- B - 2 intake pistons
 
-    // SUBJECT TO CHANGE!
-    // Wings: DOWN
-    #ifdef COMP_BOT
+// SUBJECT TO CHANGE!
+// Wings: DOWN
+#ifdef COMP_BOT
     con.ButtonL1.pressed([]()
-                         {  cata_sys.send_command(CataSys::Command::StartFiring); });
+                         { cata_sys.send_command(CataSys::Command::StartFiring); });
     con.ButtonL1.released([]()
-                          {  cata_sys.send_command(CataSys::Command::StopFiring); });
+                          { cata_sys.send_command(CataSys::Command::StopFiring); });
     con.ButtonR1.pressed([]()
-                         {  cata_sys.send_command(CataSys::Command::IntakeIn); });
+                         { cata_sys.send_command(CataSys::Command::IntakeIn); });
     con.ButtonR2.pressed([]()
-                         {  cata_sys.send_command(CataSys::Command::IntakeOut); });
-    #endif
+                         { cata_sys.send_command(CataSys::Command::IntakeOut); });
+    con.ButtonL2.pressed([]()
+                         { cata_sys.send_command(CataSys::Command::IntakeHold); });
+
+#endif
     // ================ INIT ================
     while (true)
     {
-        // if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing())
-        // {
-            // cata_sys.send_command(CataSys::Command::StopIntake);
-        // }
+        if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() && !con.ButtonL2.pressing())
+        {
+            cata_sys.send_command(CataSys::Command::StopIntake);
+        }
 #ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;

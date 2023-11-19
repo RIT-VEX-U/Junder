@@ -51,8 +51,8 @@ std::map<std::string, motor &> motor_names = {
     {"cata L", cata_l},
     {"cata R", cata_r},
 
-    {"intake low", intake_combine},
-    {"intake high", intake_roller},
+    {"intake H", intake_combine},
+    {"intake L", intake_roller},
 
 };
 
@@ -90,11 +90,11 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 vex::optical intake_watcher(vex::PORT10);
 vex::optical cata_watcher(vex::PORT15); // Final Port
-vex::pot cata_pot(Brain.ThreeWirePort.A);
+vex::rotation cata_pot(vex::PORT8);
 
 // VISION PORT 16 Final Port
 
-CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors, intake_motors);
+CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors, intake_roller, intake_combine);
 
 #else
 
@@ -180,7 +180,7 @@ void robot_init()
         new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
-        // cata_sys.Page(),
+        cata_sys.Page(),
     };
 
     screen::start_screen(Brain.Screen, pages, 3);

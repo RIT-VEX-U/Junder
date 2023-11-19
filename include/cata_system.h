@@ -1,3 +1,5 @@
+
+#pragma once
 #include "vex.h"
 #include "../core/include/subsystems/custom_encoder.h"
 #include "../core/include/utils/command_structure/auto_command.h"
@@ -8,14 +10,15 @@ class CataSys
 public:
     enum class Command
     {
-        IntakeIn,       // all mutually exclusive or else we get DQed or jam the cata
-        IntakeHold, // all mutually exclusive or else we get DQed or jam the cata
-        StartFiring,  // all mutually exclusive or else we get DQed or jam the cata
+        IntakeIn,    // all mutually exclusive or else we get DQed or jam the cata
+        IntakeHold,  // all mutually exclusive or else we get DQed or jam the cata
+        StartFiring, // all mutually exclusive or else we get DQed or jam the cata
         StopFiring,
         StopIntake,
         IntakeOut,
     };
-    enum class IntakeType{
+    enum class IntakeType
+    {
         In,
         Out,
         Hold,
@@ -28,7 +31,7 @@ public:
         bool cata_in_position;
     };
 
-    CataSys(vex::optical &intake_watcher, vex::pot &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor_group &intake_motor);
+    CataSys(vex::optical &intake_watcher, vex::rotation &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor &intake_upper, vex::motor &intake_lower);
     void send_command(Command cmd);
     State get_state() const;
 
@@ -43,10 +46,11 @@ public:
 private:
     // configuration
     vex::optical &intake_watcher;
-    vex::pot &cata_pot;
+    vex::rotation &cata_pot;
     vex::optical &cata_watcher;
     vex::motor_group &cata_motor;
-    vex::motor_group &intake_motor;
+    vex::motor &intake_upper;
+    vex::motor &intake_lower;
 
     // running
     vex::task runner;
