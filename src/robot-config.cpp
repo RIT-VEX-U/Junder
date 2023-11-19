@@ -10,44 +10,43 @@ using namespace vex;
 // Digital sensors
 
 // Analog sensors
-inertial imu(PORT12);
+// inertial imu(PORT12);
 
 // ================ OUTPUTS ================
 // Motors
-motor left_front(PORT14, gearSetting::ratio6_1, true);
-motor left_middle(PORT20, gearSetting::ratio6_1, true);
-motor left_back(PORT15, gearSetting::ratio6_1, true);
-// motor left_raised(PORT8, gearSetting::ratio6_1, false);
-motor left_raised(PORT1, gearSetting::ratio6_1, false);
+motor left_front_front(PORT17, gearSetting::ratio6_1, false); // Final Port
+motor left_front_back(PORT18, gearSetting::ratio6_1, true); // Final Port
+motor left_back_front(PORT19, gearSetting::ratio6_1, true); // Final Port
+motor left_back_back(PORT20, gearSetting::ratio6_1, false); // Final Port
 
-motor right_front(PORT6, gearSetting::ratio6_1, false);
-motor right_middle(PORT3, gearSetting::ratio6_1, false);
-motor right_back(PORT11, gearSetting::ratio6_1, false);
-motor right_raised(PORT5, gearSetting::ratio6_1, true);
+motor right_front_front(PORT14, gearSetting::ratio6_1, true); // Final Port
+motor right_front_back(PORT13, gearSetting::ratio6_1, false); // Final Port
+motor right_back_front(PORT12, gearSetting::ratio6_1, false); // Final Port
+motor right_back_back(PORT11, gearSetting::ratio6_1, true); // Final Port
 
-motor_group left_motors(left_front, left_middle, left_back, left_raised);
-motor_group right_motors(right_front, right_middle, right_back, right_raised);
+motor_group left_motors(left_front_front, left_front_back, left_back_front, left_back_back);
+motor_group right_motors(right_front_front, right_front_back, right_back_front, right_back_back);
 
-motor cata_r(PORT4, gearSetting::ratio36_1, false);
-motor cata_l(PORT5, gearSetting::ratio36_1, true);
+motor cata_r(PORT2, gearSetting::ratio36_1, false); // Final Port
+motor cata_l(PORT10, gearSetting::ratio36_1, true); // Final Port
 
 motor_group cata_motors(cata_l, cata_r);
 
-motor intake_combine(PORT8, gearSetting::ratio18_1, false);
-motor intake_roller(PORT10, gearSetting::ratio18_1, false);
+motor intake_combine(PORT1, gearSetting::ratio18_1, false); // Final Port
+motor intake_roller(PORT9, gearSetting::ratio18_1, false); // Final Port
 
 motor_group intake_motors = {intake_combine, intake_roller};
 
 std::map<std::string, motor &> motor_names = {
-    {"left f", left_front},
-    {"left m", left_middle},
-    {"left b", left_back},
-    {"left r", left_raised},
+    {"left ff", left_front_front},
+    {"left fb", left_front_back},
+    {"left bf", left_back_front},
+    {"left bb", left_back_back},
 
-    {"right f", right_front},
-    {"right m", right_middle},
-    {"right b", right_back},
-    {"right r", right_raised},
+    {"right ff", right_front_front},
+    {"right fb", right_front_back},
+    {"right bf", right_back_front},
+    {"right bb", right_back_back},
 
     {"cata L", cata_l},
     {"cata R", cata_r},
@@ -90,8 +89,11 @@ OdometryTank odom{left_motors, right_motors, robot_cfg};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 vex::optical intake_watcher(vex::PORT10);
-vex::optical cata_watcher(vex::PORT11);
-CustomEncoder cata_enc(Brain.ThreeWirePort.A, 2048);
+vex::optical cata_watcher(vex::PORT15); // Final Port
+CustomEncoder cata_enc(Brain.ThreeWirePort.A, 2048); // TEST
+// TODO change encoder to potentiometer
+
+// VISION PORT 16 Final Port
 
 CataSys cata_sys(intake_watcher, cata_enc, cata_watcher, cata_motors, intake_motors);
 
@@ -182,6 +184,6 @@ void robot_init()
     };
 
     screen::start_screen(Brain.Screen, pages, 4);
-    imu.calibrate();
+    // imu.calibrate();
     // gps_sensor.calibrate();
 }

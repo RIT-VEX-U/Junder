@@ -9,10 +9,10 @@
  */
 void opcontrol()
 {
-    while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
-    {
-        vexDelay(20);
-    }
+    // while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+    // {
+    //     vexDelay(20);
+    // }
 
     // Controls:
     // Cata: Hold L1 (Not on rising edge)
