@@ -53,7 +53,4 @@ extern TankDrive drive_sys;
 
 // ================ UTILS ================
 
-extern Serializer *serializer;
-
-extern double combine_testing_volt, roller_testing_volt;
 void robot_init();

@@ -158,82 +158,20 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 // ================ UTILS ================
 std::vector<screen::Page *> pages;
 
-// PID::pid_config_t pcfg = {.p = 0.001, 0, 0, 0, 0, PID::LINEAR};
-FeedForward::ff_config_t ffcfg = {.kS = 0.0, .kV = 0.0007, .kA = 0, .kG = 0};
 
-FeedForward ff = FeedForward(ffcfg);
-TakeBackHalf bb = TakeBackHalf(0.00008,0.75, 10.0);
-
-MovingAverage avger(10);
-
-screen::SliderWidget tbh(bb.TBH_gain, 0.0, 0.0005, Rect{{60, 40}, {380, 80}}, "TBH Gain");
-screen::SliderWidget split(bb.first_cross_split, 0.0, 1.0, Rect{{60, 90}, {380, 130}}, "first cross split");
-
-auto update = [](bool wp, int x, int y)
-{
-    tbh.update(wp, x, y);
-    split.update(wp, x, y);
-};
-auto draw = [](brain::lcd &scr, bool f, int n)
-{
-    tbh.draw(scr, f, n);
-    split.draw(scr, f, n);
-};
-
-double combine_testing_volt = 12, roller_testing_volt = 12;
 
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous are started.
  */
 void robot_init()
 {
-    bb.set_limits(0.0, 1.0);
 
-    static Rect com_slider_rect = {
-        .min = {60, 80}, // X=60, Y=80
-        .max = {60 + 200, 80 + 30} // Width=200, Height=30
-    };
-    static screen::SliderWidget combine_slider(combine_testing_volt, 0.0, 12.0, com_slider_rect, "Combine Voltage");
 
-    static Rect rol_slider_rect = {
-        .min = {com_slider_rect.min.x, com_slider_rect.max.y + 20},
-        .max = {com_slider_rect.min.x + 200, com_slider_rect.max.y + 50}
-    };
-    static screen::SliderWidget roller_slider(roller_testing_volt, 0.0, 12.0, rol_slider_rect, "Roller Voltage");
-
-    static screen::ButtonWidget combine_rev_btn([&](){
-        static bool is_com_rev = true;
-        intake_combine.setReversed(is_com_rev = !is_com_rev);
-        }, {
-            {com_slider_rect.max.x + 20, com_slider_rect.min.y}, 
-            {com_slider_rect.max.x + 20 + 40, com_slider_rect.min.y + 40}
-        }, "Rev");
-
-    static screen::ButtonWidget roller_rev_btn([&](){
-        static bool is_rol_rev = true;
-        intake_roller.setReversed(is_rol_rev = !is_rol_rev);
-        }, {
-            {rol_slider_rect.max.x + 20, rol_slider_rect.min.y}, 
-            {rol_slider_rect.max.x + 20 + 40, rol_slider_rect.min.y + 40}
-        }, "Rev");
 
     pages = {
         new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
-        new screen::FunctionPage(update, draw),
-        new screen::FunctionPage([&](bool wp, int x, int y){
-            combine_slider.update(wp, x, y);
-            roller_slider.update(wp, x, y);
-            combine_rev_btn.update(wp, x, y);
-            roller_rev_btn.update(wp, x, y);
-        },
-        [&](brain::lcd lcd, bool f, int n){
-            combine_slider.draw(lcd, f, n);
-            roller_slider.draw(lcd, f, n);
-            combine_rev_btn.draw(lcd, f, n);
-            roller_rev_btn.draw(lcd, f, n);
-        }), 
     };
 
     screen::start_screen(Brain.Screen, pages, 4);
