@@ -1,7 +1,6 @@
 #include "robot-config.h"
 brain Brain;
 controller con;
-
 using namespace vex;
 
 #ifdef COMP_BOT

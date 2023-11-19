@@ -27,13 +27,15 @@ void opcontrol()
     // SUBJECT TO CHANGE!
     // Wings: DOWN
 
+    con.ButtonA.pressed([](){cata_motors.spin(vex::fwd, 12.0, vex::volt);});
+    con.ButtonA.released([](){cata_motors.stop(vex::brakeType::hold);});
     // ================ INIT ================
     while (true)
     {
 #ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
-        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::Smart);
+        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::None);
 
 #else
 
