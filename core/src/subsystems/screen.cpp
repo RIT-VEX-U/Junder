@@ -2,6 +2,68 @@
 #include "../core/include/utils/math_util.h"
 namespace screen
 {
+    /// @brief Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
+    class SliderWidget
+    {
+    public:
+        /// @brief Creates a slider widget
+        /// @param val reference to the value to modify
+        /// @param low minimum value to go to
+        /// @param high maximum value to go to
+        /// @param rect rect to draw it
+        /// @param name name of the value
+        SliderWidget(double &val, double low, double high, Rect rect, std::string name) : value(val), low(low), high(high), rect(rect), name(name) {}
+
+        /// @brief responds to user input
+        /// @param was_pressed if the screen is pressed
+        /// @param x x position if the screen was pressed
+        /// @param y y position if the screen was pressed
+        /// @return true if the value updated
+        bool update(bool was_pressed, int x, int y);
+        /// @brief @ref Page::draws the slide to the screen
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+
+    private:
+        double &value;
+
+        double low;
+        double high;
+
+        Rect rect;
+        std::string name = "";
+    };
+
+    /// @brief Widget that does something when you tap it. The function is only called once when you first tap it
+    class ButtonWidget
+    {
+    public:
+        /// @brief Create a Button widget
+        /// @param onpress the function to be called when the button is tapped
+        /// @param rect the area the button should take up on the screen
+        /// @param name the label put on the button
+        ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+        /// @brief Create a Button widget
+        /// @param onpress the function to be called when the button is tapped
+        /// @param rect the area the button should take up on the screen
+        /// @param name the label put on the button
+        ButtonWidget(void (*onpress)(), Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+
+        /// @brief responds to user input
+        /// @param was_pressed if the screen is pressed
+        /// @param x x position if the screen was pressed
+        /// @param y y position if the screen was pressed
+        /// @return true if the button was pressed
+        bool update(bool was_pressed, int x, int y);
+        /// @brief draws the button to the screen
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+
+    private:
+        std::function<void(void)> onpress;
+        Rect rect;
+        std::string name = "";
+        bool was_pressed_last = false;
+    };
+
     /**
      * @brief The ScreenData class holds the data that will be passed to the
      * screen thread
@@ -42,6 +104,7 @@ namespace screen
             printf("THERE IS ALREADY A SCREEN THREAD RUNNING\n");
             return;
         }
+        
         ScreenData *data = new ScreenData{pages, first_page, screen};
 
         screen_thread = new vex::thread(screen_thread_func, static_cast<void *>(data));

@@ -11,6 +11,60 @@
 
 namespace screen
 {
+    struct WidgetConfig;
+
+    struct SliderConfig
+    {
+        double &val;
+        double low;
+        double high;
+    };
+    struct ButtonConfig
+    {
+        std::function<void()> onclick;
+    };
+    struct CheckboxConfig
+    {
+        std::function<void(bool)> onupdate;
+    };
+    struct LabelConfig
+    {
+        std::function<std::string()> label;
+    };
+
+    struct TextConfig
+    {
+        std::function<std::string()> text;
+    };
+
+    struct SizedWidget{
+        int size;
+        WidgetConfig widget;
+    };
+    struct WidgetConfig
+    {
+        enum Type
+        {
+            Col,
+            Row,
+            Slider,
+            Button,
+            Checkbox,
+            Label,
+            Text,
+        };
+        Type type;
+        union
+        {
+            std::vector<WidgetConfig> widgets;
+            SliderConfig slider;
+            ButtonConfig button;
+            CheckboxConfig button;
+            LabelConfig label;
+            TextConfig text;
+        } config;
+    };
+
     /// @brief Page describes one part of the screen slideshow
     class Page
     {
@@ -35,68 +89,6 @@ namespace screen
                           unsigned int frame_number);
     };
 
-    /// @brief Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
-    class SliderWidget
-    {
-    public:
-        /// @brief Creates a slider widget
-        /// @param val reference to the value to modify
-        /// @param low minimum value to go to
-        /// @param high maximum value to go to
-        /// @param rect rect to draw it
-        /// @param name name of the value
-        SliderWidget(double &val, double low, double high, Rect rect, std::string name) : value(val), low(low), high(high), rect(rect), name(name) {}
-
-        /// @brief responds to user input
-        /// @param was_pressed if the screen is pressed
-        /// @param x x position if the screen was pressed
-        /// @param y y position if the screen was pressed
-        /// @return true if the value updated
-        bool update(bool was_pressed, int x, int y);
-        /// @brief @ref Page::draws the slide to the screen
-        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
-
-    private:
-        double &value;
-
-        double low;
-        double high;
-
-        Rect rect;
-        std::string name = "";
-    };
-
-    /// @brief Widget that does something when you tap it. The function is only called once when you first tap it
-    class ButtonWidget
-    {
-    public:
-        /// @brief Create a Button widget
-        /// @param onpress the function to be called when the button is tapped
-        /// @param rect the area the button should take up on the screen
-        /// @param name the label put on the button
-        ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
-        /// @brief Create a Button widget
-        /// @param onpress the function to be called when the button is tapped
-        /// @param rect the area the button should take up on the screen
-        /// @param name the label put on the button
-        ButtonWidget(void (*onpress)(), Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
-
-        /// @brief responds to user input
-        /// @param was_pressed if the screen is pressed
-        /// @param x x position if the screen was pressed
-        /// @param y y position if the screen was pressed
-        /// @return true if the button was pressed
-        bool update(bool was_pressed, int x, int y);
-        /// @brief draws the button to the screen
-        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
-
-    private:
-        std::function<void(void)> onpress;
-        Rect rect;
-        std::string name = "";
-        bool was_pressed_last = false;
-    };
-
     /**
      * @brief Start the screen background task. Once you start this, no need to draw to the screen manually elsewhere
      * @param screen reference to the vex screen
@@ -114,8 +106,7 @@ namespace screen
     /// @brief  type of function needed for draw
     using draw_func_t = std::function<void(vex::brain::lcd &screen, bool, unsigned int)>;
 
-
-    /// @brief Draws motor stats and battery stats to the screen 
+    /// @brief Draws motor stats and battery stats to the screen
     class StatsPage : public Page
     {
     public:
@@ -147,7 +138,7 @@ namespace screen
         /// @param odom the odometry system to monitor
         /// @param robot_width the width (side to side) of the robot in inches. Used for visualization
         /// @param robot_height the robot_height (front to back) of the robot in inches. Used for visualization
-        /// @param do_trail whether or not to calculate and draw the trail. Drawing and storing takes a very *slight* extra amount of processing power 
+        /// @param do_trail whether or not to calculate and draw the trail. Drawing and storing takes a very *slight* extra amount of processing power
         OdometryPage(OdometryBase &odom, double robot_width, double robot_height, bool do_trail);
         /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
@@ -194,8 +185,10 @@ namespace screen
         /// @param pid the pid controller we're changing
         /// @param name a name to recognize this pid controller if we've got multiple pid screens
         /// @param onchange a function that is called when a tuning parameter is changed. If you need to update stuff on that change register a handler here
-        PIDPage(PID &pid, std::string name, std::function<void(void)> onchange = [](){});
-        PIDPage(PIDFF &pidff, std::string name, std::function<void(void)> onchange = [](){});
+        PIDPage(
+            PID &pid, std::string name, std::function<void(void)> onchange = []() {});
+        PIDPage(
+            PIDFF &pidff, std::string name, std::function<void(void)> onchange = []() {});
 
         /// @brief @see Page#update
         void update(bool was_pressed, int x, int y) override;
