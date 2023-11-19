@@ -1,45 +1,30 @@
 #include "vex.h"
+#include <mutex>
+#include <atomic>
+#include "../core/include/subsystems/custom_encoder.h"
 
-enum class IntakeCapacity
+enum class CataCommand
 {
-    Full,
-    Empty
-};
-
-enum class IntakeState
-{
-    Retracted,
-    Extended,
-};
-
-enum class CataCapacity
-{
-    Full,
-    Empty,
-};
-
-enum class BallPosition{
-    None,
-    Intake,
-    Cata,
-    Both, // ah heck
+    Intake,       // all mutually exclusive or else we get DQed or jam the cata
+    IntakeToHold, // all mutually exclusive or else we get DQed or jam the cata
+    Fire,          // all mutually exclusive or else we get DQed or jam the cata
+    StopIntake
 };
 
 class CataSys
-{   
-    friend int thread_func(void * void_cata);
+{
+    public:
+    friend int thread_func(void *void_cata);
 
-    CataSys(vex::optical &intake_watcher, vex::encoder &cata_enc, vex::optical &cata_watcher);
-
-
-    // auto commands
-    bool fire();
-    bool intake_to_cata();
-    bool intake_hold();
-
-    private:
+    CataSys(vex::optical &intake_watcher, CustomEncoder &cata_enc, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor_group &intake_motor);
+    void SendCommand(CataCommand cmd);
+private:
     vex::optical &intake_watcher;
-    vex::encoder &cata_enc;
+    CustomEncoder &cata_enc;
     vex::optical &cata_watcher;
+    vex::motor_group &cata_motor;
+    vex::motor_group &intake_motor;
+
     vex::task runner;
+    std::atomic<CataCommand> cmd;
 };
