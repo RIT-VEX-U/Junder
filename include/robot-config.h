@@ -2,7 +2,7 @@
 #include "vex.h"
 #include "core.h"
 #include "cata_system.h"
-#define COMP_BOT
+// #define COMP_BOT
 
 using namespace vex;
 

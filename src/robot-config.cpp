@@ -180,7 +180,7 @@ void robot_init()
         new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
-        cata_sys.Page(),
+        // cata_sys.Page(),
     };
 
     screen::start_screen(Brain.Screen, pages, 3);
