@@ -1,4 +1,5 @@
 #include "cata_system.h"
+#include "robot-config.h"
 
 const double cata_lower_threshold = 325.0;
 const double cata_upper_threshold = 345.0;
@@ -10,7 +11,7 @@ bool intake_can_be_enabled(double cata_pos)
 
 bool cata_ready(double cata_pos)
 {
-    return cata_pos > 320 && cata_pos < 330;
+    return cata_pos > 315 && cata_pos < 325;
 }
 
 
@@ -36,6 +37,7 @@ int thread_func(void *void_cata)
         if (st.ball_in_cata && st.ball_in_intake)
         {
             printf("DQed! ball in intake and catapault (or a sensor got funny)\n");
+            con.rumble("-");
         }
 
         // SYNCHRONIZE
@@ -80,13 +82,11 @@ int thread_func(void *void_cata)
         // fire if we should be firing
         if (!st.cata_in_position)
         {
-            printf("spubbubg caa\n");
-
-            cata.cata_motor.spin(vex::fwd, 8.0, vex::volt);
+            // cata.cata_motor.spin(vex::fwd, 5.0, vex::volt);
         }
         else if (firing_requested && st.ball_in_cata)
         {
-            cata.cata_motor.spin(vex::fwd, 8.0, vex::volt);
+            // cata.cata_motor.spin(vex::fwd, 5.0, vex::volt);
             cata.intake_upper.stop(vex::brakeType::coast);
             cata.intake_lower.stop(vex::brakeType::coast);
         }

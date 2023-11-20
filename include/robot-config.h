@@ -30,6 +30,8 @@ extern OdometryTank odom;
 extern TankDrive drive_sys;
 
 extern CataSys cata_sys;
+extern vex::digital_out left_wing;
+extern vex::digital_out right_wing;
 
 
 #else

@@ -94,6 +94,9 @@ vex::rotation cata_pot(vex::PORT8);
 
 // VISION PORT 16 Final Port
 
+vex::digital_out left_wing(Brain.ThreeWirePort.G);
+vex::digital_out right_wing(Brain.ThreeWirePort.H);
+
 CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors, intake_roller, intake_combine);
 
 #else

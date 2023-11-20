@@ -36,6 +36,12 @@ void opcontrol()
                          { cata_sys.send_command(CataSys::Command::IntakeOut); });
     con.ButtonL2.pressed([]()
                          { cata_sys.send_command(CataSys::Command::IntakeHold); });
+    con.ButtonDown.pressed([](){
+        left_wing.set(!left_wing.value());
+    });
+    con.ButtonB.pressed([](){
+        right_wing.set(!right_wing.value());
+    });
 
 #endif
     // ================ INIT ================
@@ -46,8 +52,8 @@ void opcontrol()
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
 #ifdef Tank
-        double l = con.Axis3.position() / 100.0;
-        double r = con.Axis2.position() / 100.0;
+        double l = -con.Axis3.position() / 100.0;
+        double r = -con.Axis2.position() / 100.0;
         drive_sys.drive_tank(l, r);
 #else
 
