@@ -7,9 +7,10 @@ const double intake_enable_upper_threshold = 95.0;
 const double cata_ready_lower_threshold = 86;
 const double cata_ready_upper_threshold = 95;
 
-// const double cata_volts = 7.0;
+const double cata_target = 89.0;
 
-PID::pid_config_t pc = PID::pid_config_t{.p = 2.2};
+
+PID::pid_config_t pc = PID::pid_config_t{.p = 2.4};
 PID cata_pid(pc);
 
 bool intake_can_be_enabled(double cata_pos)
@@ -31,7 +32,8 @@ int thread_func(void *void_cata)
         .ball_in_cata = false,
         .cata_in_position = false};
 
-    cata_pid.set_target(89.0);
+    bool is_firing = false;
+    cata_pid.set_target(cata_target);
     while (true)
     {
         // read sensors
@@ -57,6 +59,14 @@ int thread_func(void *void_cata)
         cata.control_mut.unlock();
 
         // decide
+        if (firing_requested){
+            // should fire
+            is_firing == true;
+        }
+        if (!firing_requested && !is_firing && !st.cata_in_position){
+            // cata cleared ready zone (it fired) so we can start cranking it back down instead of firing again
+            is_firing = false;
+        }
         if (intaking_requested)
         {
             // intake if we should be intaking and if we won't jam cata
@@ -95,7 +105,7 @@ int thread_func(void *void_cata)
         {
             cata.cata_motor.spin(vex::fwd, cata_volts, vex::volt);
         }
-        else if (firing_requested && st.ball_in_cata)
+        else if ((is_firing  || firing_requested) && st.ball_in_cata)
         {
             cata.cata_motor.spin(vex::fwd, 12.0, vex::volt);
             cata.intake_upper.stop(vex::brakeType::coast);
@@ -103,7 +113,7 @@ int thread_func(void *void_cata)
         }
         else
         {
-            cata.cata_motor.stop(vex::brakeType::brake);
+            cata.cata_motor.stop(vex::brakeType::coast);
         }
 
         vexDelay(5);
