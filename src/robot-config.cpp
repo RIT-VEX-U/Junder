@@ -90,7 +90,7 @@ TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 vex::optical intake_watcher(vex::PORT10);
 vex::optical cata_watcher(vex::PORT15); // Final Port
-vex::rotation cata_pot(vex::PORT8);
+vex::pot cata_pot(Brain.ThreeWirePort.E);
 
 // VISION PORT 16 Final Port
 

@@ -1,19 +1,26 @@
 #include "cata_system.h"
 #include "robot-config.h"
 
-const double cata_lower_threshold = 325.0;
-const double cata_upper_threshold = 345.0;
+const double inake_enable_lower_threshold = 70.0;
+const double intake_enable_upper_threshold = 95.0;
+
+const double cata_ready_lower_threshold = 86;
+const double cata_ready_upper_threshold = 95;
+
+// const double cata_volts = 7.0;
+
+PID::pid_config_t pc = PID::pid_config_t{.p = 2.2};
+PID cata_pid(pc);
 
 bool intake_can_be_enabled(double cata_pos)
 {
-    return cata_pos > cata_lower_threshold && cata_pos < cata_upper_threshold;
+    return cata_pos > inake_enable_lower_threshold && cata_pos < intake_enable_upper_threshold;
 }
 
 bool cata_ready(double cata_pos)
 {
-    return cata_pos > 315 && cata_pos < 325;
+    return cata_pos > cata_ready_lower_threshold && cata_pos < cata_ready_upper_threshold;
 }
-
 
 const double intake_volts = 12.0;
 int thread_func(void *void_cata)
@@ -24,6 +31,7 @@ int thread_func(void *void_cata)
         .ball_in_cata = false,
         .cata_in_position = false};
 
+    cata_pid.set_target(89.0);
     while (true)
     {
         // read sensors
@@ -78,30 +86,33 @@ int thread_func(void *void_cata)
             cata.intake_lower.stop(vex::brakeType::coast);
             cata.intake_upper.stop(vex::brakeType::coast);
         }
+        cata_pid.update(cata_pos);
+        double cata_volts = cata_pid.get();
+        printf("cata pos%.2f, %.2f\n", cata_pos, cata_volts);
 
         // fire if we should be firing
         if (!st.cata_in_position)
         {
-            // cata.cata_motor.spin(vex::fwd, 5.0, vex::volt);
+            cata.cata_motor.spin(vex::fwd, cata_volts, vex::volt);
         }
         else if (firing_requested && st.ball_in_cata)
         {
-            // cata.cata_motor.spin(vex::fwd, 5.0, vex::volt);
+            cata.cata_motor.spin(vex::fwd, 12.0, vex::volt);
             cata.intake_upper.stop(vex::brakeType::coast);
             cata.intake_lower.stop(vex::brakeType::coast);
         }
         else
         {
-            cata.cata_motor.stop(vex::brakeType::coast);
+            cata.cata_motor.stop(vex::brakeType::brake);
         }
 
-        vexDelay(20);
+        vexDelay(5);
     }
     return 0;
 }
 
 CataSys::CataSys(vex::optical &intake_watcher,
-                 vex::rotation &cata_pot,
+                 vex::pot &cata_pot,
                  vex::optical &cata_watcher,
                  vex::motor_group &cata_motor,
                  vex::motor &intake_upper,

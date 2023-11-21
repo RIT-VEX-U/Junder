@@ -31,7 +31,7 @@ public:
         bool cata_in_position;
     };
 
-    CataSys(vex::optical &intake_watcher, vex::rotation &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor &intake_upper, vex::motor &intake_lower);
+    CataSys(vex::optical &intake_watcher, vex::pot &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor &intake_upper, vex::motor &intake_lower);
     void send_command(Command cmd);
     State get_state() const;
 
@@ -46,7 +46,7 @@ public:
 private:
     // configuration
     vex::optical &intake_watcher;
-    vex::rotation &cata_pot;
+    vex::pot &cata_pot;
     vex::optical &cata_watcher;
     vex::motor_group &cata_motor;
     vex::motor &intake_upper;
