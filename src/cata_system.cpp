@@ -61,7 +61,7 @@ int thread_func(void *void_cata)
         // decide
         if (firing_requested){
             // should fire
-            is_firing == true;
+            is_firing = true;
         }
         if (!firing_requested && !is_firing && !st.cata_in_position){
             // cata cleared ready zone (it fired) so we can start cranking it back down instead of firing again

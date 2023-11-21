@@ -2,6 +2,8 @@
 
 # show compiler output
 VERBOSE = 0
+# run clang tidy
+CLANG_TIDY = 0
 
 # include toolchain options
 include vex/mkenv.mk
