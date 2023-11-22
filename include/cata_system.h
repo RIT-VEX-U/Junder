@@ -24,16 +24,14 @@ public:
         Hold,
     };
 
-    struct State
+    enum CataState
     {
-        bool ball_in_intake;
-        bool ball_in_cata;
-        bool cata_in_position;
+        CHARGING, READY, FIRING
     };
 
     CataSys(vex::optical &intake_watcher, vex::pot &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor &intake_upper, vex::motor &intake_lower);
     void send_command(Command cmd);
-    State get_state() const;
+    CataState get_state() const;
 
     // Autocommands
     AutoCommand *Fire();
@@ -56,7 +54,7 @@ private:
     vex::task runner;
     vex::mutex control_mut;
     // THESE SHOULD ONLY BE ACCESSED BEHIND THE MUTEX
-    State state;
+    CataState state;
     bool firing_requested;
     bool intaking_requested;
     IntakeType intake_type;

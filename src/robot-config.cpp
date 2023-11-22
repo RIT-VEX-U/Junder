@@ -27,8 +27,8 @@ motor right_back_back(PORT11, gearSetting::ratio6_1, true); // Final Port
 motor_group left_motors(left_front_front, left_front_back, left_back_front, left_back_back);
 motor_group right_motors(right_front_front, right_front_back, right_back_front, right_back_back);
 
-motor cata_r(PORT2, gearSetting::ratio36_1, false); // Final Port
-motor cata_l(PORT10, gearSetting::ratio36_1, true); // Final Port
+motor cata_r(PORT2, gearSetting::ratio36_1, true); // Final Port
+motor cata_l(PORT10, gearSetting::ratio36_1, false); // Final Port
 
 motor_group cata_motors(cata_l, cata_r);
 
