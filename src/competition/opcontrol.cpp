@@ -62,10 +62,27 @@ void opcontrol()
         drive_sys.drive_tank(l, r);
 #else
 
-        double f = con.Axis2.position() / 100.0;
+        double f = con.Axis3.position() / 100.0;
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s);
 #endif
+
+        pose_t robot_pose = {gps_sensor.xPosition(distanceUnits::in) + 72, 
+            gps_sensor.yPosition(distanceUnits::in) + 72, 
+            gps_sensor.heading()};
+
+        // Part 1 - relative angle to the center of the field (as a scalar)
+        Vector2D position_vec({.x=72-robot_pose.x, .y=72-robot_pose.y});
+        position_vec = position_vec.normalize();
+        Vector2D rotation_vec(deg2rad(robot_pose.rot), 1);
+        double dot_prod = position_vec.dot(rotation_vec);
+
+        // Part 2 - Distance to center of field
+        double dist_scalar = robot_pose.get_point().dist({72, 72}) / 101.8; // (0 to 1)
+        
+        double alpha = ((dist_scalar * dot_prod) + 1) / 2.0;
+
+        printf("X: %f, Y: %f, Rot: %f, alpha: %f\n",robot_pose.x, robot_pose.y, robot_pose.rot, alpha);
         
         vexDelay(10);
     }

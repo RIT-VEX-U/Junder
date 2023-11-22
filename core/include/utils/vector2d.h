@@ -55,6 +55,12 @@ public:
     double get_y() const;
 
     /**
+     * @param rhs Second vector
+     * @return the two dot products of the input vectors
+    */
+    double dot(const Vector2D &rhs);
+
+    /**
      * Changes the magnitude of the vector to 1
      * @return the normalized vector
     */

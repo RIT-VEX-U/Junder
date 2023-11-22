@@ -14,15 +14,28 @@ cfg(cfg), enc_odom(enc_odom), OdometryBase(is_async), gps_sensor(gps_sensor)
 
 double OdometryGPS::get_alpha()
 {
+    pose_t robot_pose = get_position();
+
+    // Part 1 - relative angle to the center of the field (as a scalar)
+    Vector2D position_vec({.x=72-robot_pose.x, .y=72-robot_pose.y});
+    position_vec = position_vec.normalize();
+    Vector2D rotation_vec(deg2rad(robot_pose.rot), 1);
+    double dot_prod = position_vec.dot(rotation_vec);
+
+    // Part 2 - Distance to center of field
+    double dist_scalar = robot_pose.get_point().dist({72, 72}) / 101.8; // (0 to 1)
     
+    double alpha = ((dist_scalar * dot_prod) + 1) / 2.0;
+
+    return alpha;
 }
 
 pose_t OdometryGPS::update()
 {
     pose_t enc_pose = OdometryBase::update();
     pose_t gps_pose = {
-        .x = gps_sensor.xPosition(distanceUnits::in),
-        .y = gps_sensor.yPosition(distanceUnits::in),
+        .x = gps_sensor.xPosition(distanceUnits::in) + 72,
+        .y = gps_sensor.yPosition(distanceUnits::in) + 72,
         .rot = gps_sensor.heading(rotationUnits::deg)
     };
     
@@ -67,4 +80,6 @@ pose_t OdometryGPS::update()
 
     enc_odom.set_position(out);
     set_position(out);
+
+    return out;
 }

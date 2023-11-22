@@ -53,6 +53,15 @@ return mag * sin(dir);
 }
 
 /**
+ * @param rhs Second vector
+ * @return the two dot products of the input vectors
+*/
+double Vector2D::dot(const Vector2D &rhs)
+{
+  return (get_x() * rhs.get_x()) + (get_y() * rhs.get_y());
+}
+
+/**
  * Changes the magnetude of the vector to 1
 */
 Vector2D Vector2D::normalize()
