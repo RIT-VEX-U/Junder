@@ -95,6 +95,14 @@ CFLAGS_V7 = -march=armv7-a -mfpu=neon -mfloat-abi=softfp
 CFLAGS    = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Werror=return-type -ansi -std=gnu99 $(DEFINES)
 CXX_FLAGS = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Werror=return-type -fno-rtti -fno-threadsafe-statics -fno-exceptions  -std=gnu++11 -ffunction-sections -fdata-sections $(DEFINES)
 
+
+
+CXX_TIDY_CHECKS = readability-*,-readability-magic-numbers,-readability-identifier-length,
+CXX_TIDY_CHECKS +=bugprone-*,performance-*,misc-*
+# bugprone-narrowing-conversions,bugprone-branch-clone,bugprone-integer-division,performance-unnecessary-value-param,performance-*
+CXX_TIDY = clang-tidy --use-color -checks="${CXX_TIDY_CHECKS}"
+
+
 # linker flags
 LNK_FLAGS = -nostdlib -T "$(VEX_SDK_PATH)/$(PLATFORM)/lscript.ld" -R "$(VEX_SDK_PATH)/$(PLATFORM)/stdlib_0.lib" -Map="$(BUILD)/$(PROJECT).map" --gc-section -L"$(VEX_SDK_PATH)/$(PLATFORM)" ${TOOL_LIB}
 

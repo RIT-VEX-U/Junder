@@ -11,28 +11,35 @@
 
 namespace screen
 {
-    /// @brief Page describes one part of the screen slideshow
-    class Page
+    /// @brief Widget that does something when you tap it. The function is only called once when you first tap it
+    class ButtonWidget
     {
     public:
-        /**
-         * @brief collect data, respond to screen input, do fast things (runs at
-         * 50hz even if you're not focused on this Page (only drawn page gets
-         * touch updates))
-         * @param was_pressed true if the screen has been pressed
-         * @param x x position of screen press (if the screen was pressed)
-         * @param y y position of screen press (if the screen was pressed)
-         */
-        virtual void update(bool was_pressed, int x, int y);
-        /**
-         * @brief draw stored data to the screen (runs at 10 hz and only runs if
-         * this page is in front)
-         * @param first_draw true if we just switched to this page
-         * @param frame_number frame of drawing we are on (basically an animation
-         * tick)
-         */
-        virtual void draw(vex::brain::lcd &screen, bool first_draw,
-                          unsigned int frame_number);
+        /// @brief Create a Button widget
+        /// @param onpress the function to be called when the button is tapped
+        /// @param rect the area the button should take up on the screen
+        /// @param name the label put on the button
+        ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+        /// @brief Create a Button widget
+        /// @param onpress the function to be called when the button is tapped
+        /// @param rect the area the button should take up on the screen
+        /// @param name the label put on the button
+        ButtonWidget(void (*onpress)(), Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+
+        /// @brief responds to user input
+        /// @param was_pressed if the screen is pressed
+        /// @param x x position if the screen was pressed
+        /// @param y y position if the screen was pressed
+        /// @return true if the button was pressed
+        bool update(bool was_pressed, int x, int y);
+        /// @brief draws the button to the screen
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+
+    private:
+        std::function<void(void)> onpress;
+        Rect rect;
+        std::string name = "";
+        bool was_pressed_last = false;
     };
 
     /// @brief Widget that updates a double value. Updates by reference so watch out for race conditions cuz the screen stuff lives on another thread
@@ -66,35 +73,109 @@ namespace screen
         std::string name = "";
     };
 
-    /// @brief Widget that does something when you tap it. The function is only called once when you first tap it
-    class ButtonWidget
+    struct WidgetConfig;
+
+    struct SliderConfig
+    {
+        double &val;
+        double low;
+        double high;
+    };
+    struct ButtonConfig
+    {
+        std::function<void()> onclick;
+    };
+    struct CheckboxConfig
+    {
+        std::function<void(bool)> onupdate;
+    };
+    struct LabelConfig
+    {
+        std::string label;
+    };
+
+    struct TextConfig
+    {
+        std::function<std::string()> text;
+    };
+    struct SizedWidget
+    {
+        int size;
+        WidgetConfig &widget;
+    };
+    struct WidgetConfig
+    {
+        enum Type
+        {
+            Col,
+            Row,
+            Slider,
+            Button,
+            Checkbox,
+            Label,
+            Text,
+            Graph,
+        };
+        Type type;
+        union
+        {
+            std::vector<SizedWidget> widgets;
+            SliderConfig slider;
+            ButtonConfig button;
+            CheckboxConfig checkbox;
+            LabelConfig label;
+            TextConfig text;
+            GraphDrawer *graph;
+        } config;
+    };
+
+    class Page;
+    /// @brief Page describes one part of the screen slideshow
+    class Page
     {
     public:
-        /// @brief Create a Button widget
-        /// @param onpress the function to be called when the button is tapped
-        /// @param rect the area the button should take up on the screen
-        /// @param name the label put on the button
-        ButtonWidget(std::function<void(void)> onpress, Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
-        /// @brief Create a Button widget
-        /// @param onpress the function to be called when the button is tapped
-        /// @param rect the area the button should take up on the screen
-        /// @param name the label put on the button
-        ButtonWidget(void (*onpress)(), Rect rect, std::string name) : onpress(onpress), rect(rect), name(name) {}
+        /**
+         * @brief collect data, respond to screen input, do fast things (runs at
+         * 50hz even if you're not focused on this Page (only drawn page gets
+         * touch updates))
+         * @param was_pressed true if the screen has been pressed
+         * @param x x position of screen press (if the screen was pressed)
+         * @param y y position of screen press (if the screen was pressed)
+         */
+        virtual void update(bool was_pressed, int x, int y);
+        /**
+         * @brief draw stored data to the screen (runs at 10 hz and only runs if
+         * this page is in front)
+         * @param first_draw true if we just switched to this page
+         * @param frame_number frame of drawing we are on (basically an animation
+         * tick)
+         */
+        virtual void draw(vex::brain::lcd &screen, bool first_draw,
+                          unsigned int frame_number);
+    };
 
-        /// @brief responds to user input
-        /// @param was_pressed if the screen is pressed
-        /// @param x x position if the screen was pressed
-        /// @param y y position if the screen was pressed
-        /// @return true if the button was pressed
-        bool update(bool was_pressed, int x, int y);
-        /// @brief draws the button to the screen
-        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number);
+    struct ScreenRect
+    {
+        uint32_t x1;
+        uint32_t y1;
+        uint32_t x2;
+        uint32_t y2;
+    };
+    void draw_widget(WidgetConfig &widget, ScreenRect rect);
+
+    class WidgetPage : public Page
+    {
+    public:
+        WidgetPage(WidgetConfig &cfg) : base_widget(cfg) {}
+        void update(bool was_pressed, int x, int y) override;
+
+        void draw(vex::brain::lcd &, bool first_draw, unsigned int frame_number) override
+        {
+            draw_widget(base_widget, {.x1 = 20, .y1 = 0, .x2 = 440, .y2 = 240});
+        }
 
     private:
-        std::function<void(void)> onpress;
-        Rect rect;
-        std::string name = "";
-        bool was_pressed_last = false;
+        WidgetConfig &base_widget;
     };
 
     /**

@@ -4,38 +4,74 @@
 
 #define Tank
 
-
 /**
  * Main entrypoint for the driver control period
  */
 void opcontrol()
 {
-    // while (imu.isCalibrating())// || gps_sensor.isCalibrating())
-    // {
-    //     vexDelay(20);
-    // }
+    vexDelay(1000);
 
-    // Controls:
-    // Cata: Hold L1 (Not on rising edge)
-    // -- Don't shoot until there's a ball
-    // -- Preload
-    // Intake:
-    // -- R1 IN
-    // -- R2 OUT
-    // -- B - 2 intake pistons
+    while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+    {
+        vexDelay(20);
+    }
 
-    // SUBJECT TO CHANGE!
-    // Wings: DOWN
+    // odom.set_position({.x = 16, .y = 144-16, .rot = 135});
+    // CommandController cc{
+        // 
+        // drive_sys.DriveForwardCmd(36, vex::directionType::rev, 0.9),
+        // drive_sys.TurnToHeadingCmd(-90),
+        // drive_sys.DriveToPointCmd({.x = 27, .y = 18}, vex::fwd)
+    // };
+    // cc.add_cancel_func([]()
+                    //    {  return con.ButtonA.pressing(); });
+    // cc.run();
+    // return;
 
-    con.ButtonA.pressed([](){cata_motors.spin(vex::fwd, 12.0, vex::volt);});
-    con.ButtonA.released([](){cata_motors.stop(vex::brakeType::hold);});
+// while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+// {
+//     vexDelay(20);
+// }
+
+// Controls:
+// Cata: Hold L1 (Not on rising edge)
+// -- Don't shoot until there's a ball
+// -- Preload
+// Intake:
+// -- R1 IN
+// -- R2 OUT
+// -- B - 2 intake pistons
+
+// SUBJECT TO CHANGE!
+// Wings: DOWN
+#ifdef COMP_BOT
+    con.ButtonL1.pressed([]()
+                         { cata_sys.send_command(CataSys::Command::StartFiring); });
+    con.ButtonL1.released([]()
+                          { cata_sys.send_command(CataSys::Command::StopFiring); });
+    con.ButtonR1.pressed([]()
+                         { cata_sys.send_command(CataSys::Command::IntakeIn); });
+    con.ButtonR2.pressed([]()
+                         { cata_sys.send_command(CataSys::Command::IntakeOut); });
+    // con.ButtonL2.pressed([]()
+    //                      { cata_sys.send_command(CataSys::Command::IntakeHold); });
+    con.ButtonDown.pressed([]()
+                           { left_wing.set(!left_wing.value()); });
+    con.ButtonB.pressed([]()
+                        { right_wing.set(!right_wing.value()); });
+
+#endif
     // ================ INIT ================
     while (true)
     {
+        if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() && !con.ButtonL2.pressing())
+        {
+            cata_sys.send_command(CataSys::Command::StopIntake);
+        }
 #ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
-        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::None);
+        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::Smart);
 
 #else
 
@@ -46,20 +82,6 @@ void opcontrol()
 
         // Controls
         // Intake
-        if(con.ButtonR1.pressing())
-        {
-            intake_combine.spin(directionType::fwd, 12, volt);
-            intake_roller.spin(directionType::fwd, 12, volt);
-        } else if(con.ButtonR2.pressing())
-        {
-            intake_combine.spin(directionType::rev, 12, volt);
-            intake_roller.spin(directionType::rev, 12, volt);
-        } else
-        {
-            intake_combine.stop();
-            intake_roller.stop();
-        }
-        
 
         vexDelay(10);
     }

@@ -1,6 +1,7 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
+#include "cata_system.h"
 #define COMP_BOT
 
 using namespace vex;
@@ -14,7 +15,7 @@ extern controller con;
 // Digital sensors
 
 // Analog sensors
-// extern inertial imu;
+extern inertial imu;
 
 // ================ OUTPUTS ================
 // Motors
@@ -28,6 +29,9 @@ extern robot_specs_t robot_cfg;
 extern OdometryTank odom;
 extern TankDrive drive_sys;
 
+extern CataSys cata_sys;
+extern vex::digital_out left_wing;
+extern vex::digital_out right_wing;
 
 
 #else
