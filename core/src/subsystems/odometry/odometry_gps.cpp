@@ -32,7 +32,7 @@ double OdometryGPS::get_alpha()
 
 pose_t OdometryGPS::update()
 {
-    pose_t enc_pose = OdometryBase::update();
+    pose_t enc_pose = enc_odom.update();
     pose_t gps_pose = {
         .x = gps_sensor.xPosition(distanceUnits::in) + 72,
         .y = gps_sensor.yPosition(distanceUnits::in) + 72,
@@ -48,12 +48,39 @@ pose_t OdometryGPS::update()
         return enc_pose;
     }
 
-    double alpha_adjusted = get_alpha() * tmr.time(sec);
+    double alpha_adjusted = get_alpha() * tmr.time(sec) 
+        * cfg.alpha_scalar * gps_sensor.quality() / 100.0;
     tmr.reset();
 
-    double x = (alpha_adjusted * gps_pose.x) + ((1-alpha_adjusted) * enc_pose.x);
-    double y = (alpha_adjusted * gps_pose.y) + ((1-alpha_adjusted) * enc_pose.y);
-    double rot;
+    double x, y, rot;
+
+    // Check if the point is within a reasonable distance to the encoder odometry.
+    // If not, ignore the data since it's probably bad.
+    if (enc_pose.get_point().dist(gps_pose.get_point()) < cfg.cutoff_radius)
+    {
+        x = (alpha_adjusted * gps_pose.x) + ((1-alpha_adjusted) * enc_pose.x);
+        y = (alpha_adjusted * gps_pose.y) + ((1-alpha_adjusted) * enc_pose.y);
+
+        // Handle the issue of averageing when crossing the 360/0 threshold
+        if ( fabs(gps_pose.rot - enc_pose.rot) > 180 )
+        {
+            if (gps_pose.rot < enc_pose.rot)
+                gps_pose.rot += 360;
+            else
+                enc_pose.rot += 360;
+        }
+
+        rot = (alpha_adjusted * gps_pose.rot) + ((1-alpha_adjusted) * enc_pose.rot);
+        rot = fmod(rot, 360.0);
+        if(rot < 0)
+            rot += 360;
+
+    } else
+    {
+        x = enc_pose.x;
+        y = enc_pose.y;
+        rot = enc_pose.rot;
+    }
 
     // Handle the issue of averageing when crossing the 360/0 threshold
     if ( fabs(gps_pose.rot - enc_pose.rot) > 180 )

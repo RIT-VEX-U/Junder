@@ -135,6 +135,11 @@ std::map<std::string, vex::motor &> motor_names = {
 };
 
 OdometryTank odom{left_enc, right_enc, robot_cfg, &imu};
+odom_gps_cfg_t odom_gps_cfg = {
+    .alpha_scalar = 1,
+    .cutoff_radius = 48
+};
+OdometryGPS odom_gps(odom_gps_cfg, odom, gps_sensor);
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
 // ================ UTILS ================
@@ -180,7 +185,7 @@ void robot_init()
     pages = {
         new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
         new screen::StatsPage(motor_names),
-        new screen::OdometryPage(odom, 12, 12, true),
+        new screen::OdometryPage(odom_gps, 12, 12, true),
         new screen::FunctionPage(update, draw),
         new screen::FunctionPage([](bool, int, int){
             

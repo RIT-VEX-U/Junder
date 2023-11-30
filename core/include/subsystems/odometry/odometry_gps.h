@@ -8,10 +8,11 @@
 typedef struct
 {
     double cutoff_radius;
+    double alpha_scalar;
 
 } odom_gps_cfg_t;
 
-class OdometryGPS : OdometryBase
+class OdometryGPS : public OdometryBase
 {
     public:
 
@@ -24,9 +25,9 @@ class OdometryGPS : OdometryBase
      */
     pose_t update() override;
 
-    private:
-
     double get_alpha();
+
+    private:
 
     odom_gps_cfg_t &cfg;
     OdometryBase &enc_odom;

@@ -23,6 +23,7 @@ extern vex::gps gps_sensor;
 // ================ SUBSYSTEMS ================
 extern robot_specs_t robot_cfg;
 extern OdometryTank odom;
+extern OdometryGPS odom_gps;
 extern TankDrive drive_sys;
 
 extern PID::pid_config_t pcfg;
