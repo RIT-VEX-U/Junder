@@ -9,6 +9,25 @@
  */
 void opcontrol()
 {
+    vexDelay(1000);
+
+    while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+    {
+        vexDelay(20);
+    }
+
+    // odom.set_position({.x = 16, .y = 144-16, .rot = 135});
+    // CommandController cc{
+        // 
+        // drive_sys.DriveForwardCmd(36, vex::directionType::rev, 0.9),
+        // drive_sys.TurnToHeadingCmd(-90),
+        // drive_sys.DriveToPointCmd({.x = 27, .y = 18}, vex::fwd)
+    // };
+    // cc.add_cancel_func([]()
+                    //    {  return con.ButtonA.pressing(); });
+    // cc.run();
+    // return;
+
 // while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
 // {
 //     vexDelay(20);
@@ -36,12 +55,10 @@ void opcontrol()
                          { cata_sys.send_command(CataSys::Command::IntakeOut); });
     // con.ButtonL2.pressed([]()
     //                      { cata_sys.send_command(CataSys::Command::IntakeHold); });
-    con.ButtonDown.pressed([](){
-        left_wing.set(!left_wing.value());
-    });
-    con.ButtonB.pressed([](){
-        right_wing.set(!right_wing.value());
-    });
+    con.ButtonDown.pressed([]()
+                           { left_wing.set(!left_wing.value()); });
+    con.ButtonB.pressed([]()
+                        { right_wing.set(!right_wing.value()); });
 
 #endif
     // ================ INIT ================
@@ -52,8 +69,8 @@ void opcontrol()
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
 #ifdef Tank
-        double l = -con.Axis3.position() / 100.0;
-        double r = -con.Axis2.position() / 100.0;
+        double l = con.Axis3.position() / 100.0;
+        double r = con.Axis2.position() / 100.0;
         drive_sys.drive_tank(l, r);
 #else
 

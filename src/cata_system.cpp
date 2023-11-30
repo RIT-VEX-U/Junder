@@ -168,8 +168,6 @@ int thread_func(void *void_cata)
         cata.state = cur_state;
         cata.control_mut.unlock();
 
-        // printf("cata pos%.2f\n", cata_pos);
-        std::cout << "State:" << cur_state << ", pos: " << cata_pos << std::endl;
 
         vexDelay(5);
     }
