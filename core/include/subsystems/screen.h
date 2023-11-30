@@ -246,6 +246,7 @@ namespace screen
         pose_t path[path_len];
         int path_index = 0;
         bool do_trail;
+        GraphDrawer velocity_graph;
     };
 
     /// @brief Simple page that stores no internal data. the draw and update functions use only global data rather than storing anything

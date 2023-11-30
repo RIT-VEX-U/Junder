@@ -74,19 +74,78 @@ void TankDrive::stop()
   right_motors.stop();
 }
 
+void TankDrive::drive_tank_raw(double left_norm, double right_norm)
+{
+  left_motors.spin(directionType::fwd, left_norm * 12, voltageUnits::volt);
+  right_motors.spin(directionType::fwd, right_norm * 12, voltageUnits::volt);
+}
 /**
  * Drive the robot using differential style controls. left_motors controls the left motors,
  * right_motors controls the right motors.
  *
  * left_motors and right_motors are in "percent": -1.0 -> 1.0
  */
-void TankDrive::drive_tank(double left, double right, int power)
+bool captured_position = false;
+bool was_breaking = false;
+void TankDrive::drive_tank(double left, double right, int power, BrakeType bt)
 {
+
   left = modify_inputs(left, power);
   right = modify_inputs(right, power);
+  double brake_threshold = 0.05;
+  bool should_brake = (bt != BrakeType::None) && fabs(left) < brake_threshold && fabs(right) < brake_threshold;
 
-  left_motors.spin(directionType::fwd, left * 12, voltageUnits::volt);
-  right_motors.spin(directionType::fwd, right * 12, voltageUnits::volt);
+  if (!should_brake)
+  {
+    drive_tank_raw(left, right);
+    was_breaking = false;
+    return;
+  }
+  if (should_brake && !was_breaking)
+  {
+    captured_position = false;
+  }
+  static PID::pid_config_t zero_vel_cfg = {.p = 0.005, .d = 0.0005};
+  static PID zero_vel_pid = PID(zero_vel_cfg);
+
+  if (bt == BrakeType::ZeroVelocity)
+  {
+    zero_vel_pid.set_target(0);
+    double vel = left_motors.velocity(vex::velocityUnits::pct) + right_motors.velocity(vex::velocityUnits::pct);
+    double outp = zero_vel_pid.update(vel);
+    left_motors.spin(directionType::fwd, outp, voltageUnits::volt);
+    right_motors.spin(directionType::fwd, outp, voltageUnits::volt);
+  }
+  else if (bt == BrakeType::Smart)
+  {
+    static pose_t target_pose = {.x = 0.0, .y = 0.0, .rot = 0.0};
+
+    zero_vel_pid.set_target(0);
+    double vel = odometry->get_speed();
+    if (fabs(vel) <= 0.01 && !captured_position)
+    {
+      target_pose = odometry->get_position();
+      captured_position = true;
+    }
+    else if (captured_position)
+    {
+      double dist_to_target = odometry->pos_diff(target_pose, odometry->get_position());
+      if (dist_to_target < 12.0)
+      {
+        drive_to_point(target_pose.x, target_pose.y, vex::fwd);
+      } else {
+        target_pose = odometry->get_position();
+        reset_auto();
+      }
+    }
+    else
+    {
+      double outp = zero_vel_pid.update(vel);
+      left_motors.spin(directionType::fwd, outp, voltageUnits::volt);
+      right_motors.spin(directionType::fwd, outp, voltageUnits::volt);
+    }
+  }
+  was_breaking = should_brake;
 }
 
 /**
@@ -95,7 +154,7 @@ void TankDrive::drive_tank(double left, double right, int power)
  *
  * left_motors and right_motors are in "percent": -1.0 -> 1.0
  */
-void TankDrive::drive_arcade(double forward_back, double left_right, int power)
+void TankDrive::drive_arcade(double forward_back, double left_right, int power, BrakeType bt)
 {
   forward_back = modify_inputs(forward_back, power);
   left_right = modify_inputs(left_right, power);
@@ -103,8 +162,7 @@ void TankDrive::drive_arcade(double forward_back, double left_right, int power)
   double left = forward_back + left_right;
   double right = forward_back - left_right;
 
-  left_motors.spin(directionType::fwd, left * 12, voltageUnits::volt);
-  right_motors.spin(directionType::fwd, right * 12, voltageUnits::volt);
+  drive_tank(left, right, 1, bt);
 }
 
 /**
@@ -275,11 +333,10 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   pose_t end_pos = {.x = x, .y = y};
 
   // Create a point (and vector) to get the direction
-  point_t pos_diff_pt = 
-  {
-    .x = x - current_pos.x,
-    .y = y - current_pos.y
-  };
+  point_t pos_diff_pt =
+      {
+          .x = x - current_pos.x,
+          .y = y - current_pos.y};
 
   Vector2D point_vec(pos_diff_pt);
 
@@ -353,10 +410,9 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   // Check if the robot has reached it's destination
   if (feedback.is_on_target())
   {
-    if (end_speed == 0) stop();
+    if (end_speed == 0)
+      stop();
     func_initialized = false;
-    printf("Func unitililized\n");
-    if (end_speed == 0) stop();
     return true;
   }
 
@@ -478,7 +534,8 @@ double TankDrive::modify_inputs(double input, int power)
 bool TankDrive::pure_pursuit(PurePursuit::Path path, directionType dir, Feedback &feedback, double max_speed, double end_speed)
 {
   std::vector<point_t> points = path.get_points();
-  if (!path.is_valid()) {
+  if (!path.is_valid())
+  {
     printf("WARNING: Unexpected pure pursuit path - some segments intersect or are too close\n");
   }
   pose_t robot_pose = odometry->get_position();

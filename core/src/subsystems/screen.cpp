@@ -251,7 +251,7 @@ namespace screen
         scr.printAt(50, 220, "Battery: %2.1fv  %2.0fC %d%%", b.Battery.voltage(), b.Battery.temperature(vex::temperatureUnits::celsius), b.Battery.capacity());
     }
 
-    OdometryPage::OdometryPage(OdometryBase &odom, double width, double height, bool do_trail) : odom(odom), robot_width(width), robot_height(height), do_trail(do_trail)
+    OdometryPage::OdometryPage(OdometryBase &odom, double width, double height, bool do_trail) : odom(odom), robot_width(width), robot_height(height), do_trail(do_trail), velocity_graph(30, 0.0, 0.0, {vex::green}, 1)
     {
         vex::brain b;
         if (b.SDcard.exists(field_filename))
@@ -298,6 +298,11 @@ namespace screen
         fflush(stdout);
         scr.printAt(45, 30, "(%.2f, %.2f)", pose.x, pose.y);
         scr.printAt(45, 50, "%.2f deg", pose.rot);
+
+        double speed = odom.get_speed();
+        scr.printAt(45, 80, "%.2f speed", speed);
+        velocity_graph.add_samples({speed});
+        velocity_graph.draw(scr, 30, 100, 170, 120);
 
         if (buf == nullptr)
         {

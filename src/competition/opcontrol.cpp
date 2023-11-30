@@ -71,10 +71,11 @@ void opcontrol()
 #ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
-        drive_sys.drive_tank(l, r);
+        drive_sys.drive_tank(l, r, 1, TankDrive::BrakeType::None);
+
 #else
 
-        double f = con.Axis2.position() / 100.0;
+        double f = con.Axis3.position() / 100.0;
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s);
 #endif

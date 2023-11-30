@@ -15,7 +15,7 @@ extern controller con;
 // Digital sensors
 
 // Analog sensors
-extern inertial imu;
+// extern inertial imu;
 
 // ================ OUTPUTS ================
 // Motors
