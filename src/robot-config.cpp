@@ -1,6 +1,7 @@
 #include "robot-config.h"
 brain Brain;
 controller con;
+
 using namespace vex;
 
 #ifdef COMP_BOT
@@ -13,17 +14,16 @@ inertial imu(PORT8);
 
 // ================ OUTPUTS ================
 // Motors
-motor left_front(PORT14, gearSetting::ratio6_1, true);
-motor left_middle(PORT20, gearSetting::ratio6_1, true);
-motor left_back(PORT15, gearSetting::ratio6_1, true);
-// motor left_raised(PORT8, gearSetting::ratio6_1, false);
-motor left_raised(PORT1, gearSetting::ratio6_1, false);
+constexpr gearSetting drive_gears = gearSetting::ratio18_1;
+motor left_front_front(PORT17, drive_gears, true); // Final Port
+motor left_front_back(PORT18, drive_gears, false); // Final Port
+motor left_back_front(PORT19, drive_gears, false); // Final Port
+motor left_back_back(PORT20, drive_gears, true); // Final Port
 
-
-motor right_front(PORT6, gearSetting::ratio6_1, false);
-motor right_middle(PORT3, gearSetting::ratio6_1, false);
-motor right_back(PORT11, gearSetting::ratio6_1, false);
-motor right_raised(PORT5, gearSetting::ratio6_1, true);
+motor right_front_front(PORT14, drive_gears, false); // Final Port
+motor right_front_back(PORT13, drive_gears, true); // Final Port
+motor right_back_front(PORT12, drive_gears, true); // Final Port
+motor right_back_back(PORT11, drive_gears, false); // Final Port
 
 motor_group left_motors(left_front_front, left_front_back, left_back_front, left_back_back);
 motor_group right_motors(right_front_front, right_front_back, right_back_front, right_back_back);
@@ -39,10 +39,6 @@ motor intake_roller(PORT9, gearSetting::ratio18_1, false); // Final Port
 motor_group intake_motors = {intake_combine, intake_roller};
 
 std::map<std::string, motor &> motor_names = {
-    {"left ff", left_front_front},
-    {"left fb", left_front_back},
-    {"left bf", left_back_front},
-    {"left bb", left_back_back},
     {"left ff", left_front_front},
     {"left fb", left_front_back},
     {"left bf", left_back_front},
@@ -66,7 +62,7 @@ PID::pid_config_t drive_pid_cfg =
     {
         .p = .2,
         .i = 0.0,
-        .d = .023,
+        .d = .021,
         .deadband = 0.1,
         .on_target_time = 0};
 
@@ -205,7 +201,7 @@ void robot_init()
         cata_sys.Page(),
     };
 
-    screen::start_screen(Brain.Screen, pages, 4);
-    imu.calibrate();
+    screen::start_screen(Brain.Screen, pages, 2);
+    // imu.calibrate();
     // gps_sensor.calibrate();
 }
