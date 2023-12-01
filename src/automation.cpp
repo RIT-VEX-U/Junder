@@ -6,7 +6,6 @@
 
 // ================ Autonomous Abstractions ================
 
-
 // ================ Driver Assist Automations ================
 
 void matchload_1(bool &enable)
@@ -34,7 +33,7 @@ void matchload_1(std::function<bool()> enable)
         drive_sys.TurnDegreesCmd(10, .5),
         cata_sys.IntakeFully()
     };
-    
+
     // Cancel the operation if the button is ever released
     cmd.add_cancel_func([&](){return !enable(); });
     

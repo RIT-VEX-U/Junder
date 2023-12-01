@@ -40,6 +40,30 @@ void opcontrol()
     con.ButtonDown.pressed( [](){ left_wing.set(!left_wing.value()); });
     con.ButtonB.pressed(    [](){ right_wing.set(!right_wing.value()); });
     con.ButtonA.pressed(    [](){ enable_matchload = !enable_matchload; });
+    pose_t start_pose = {.x = 16, .y = 144 - 16, .rot = 135};
+
+    // CommandController cc{
+    //     new RepeatUntil(
+    //         {
+    //             odom.SetPositionCmd(start_pose),
+    //             cata_sys.IntakeFully(),
+    //             drive_sys.DriveForwardCmd(4, directionType::rev),
+    //             cata_sys.Fire(),
+    //             drive_sys.DriveForwardCmd(4, directionType::fwd),
+
+    //         },
+    //         10),
+    //     // drive_sys.DriveForwardCmd(36, vex::directionType::rev, 0.9),
+    //     // drive_sys.TurnToHeadingCmd(-90),
+    //     // drive_sys.DriveToPointCmd({.x = 27, .y = 18}, vex::fwd)
+    // };
+    // cc.add_cancel_func([]()
+    //                    { return con.ButtonA.pressing(); });
+    // cc.run();
+    // while(true){
+    // vexDelay(1000);
+    // }
+    // return;
 
 #endif
     // ================ INIT ================
@@ -58,7 +82,7 @@ void opcontrol()
 
         double f = con.Axis3.position() / 100.0;
         double s = con.Axis1.position() / 100.0;
-        drive_sys.drive_arcade(f, s);
+        drive_sys.drive_arcade(f, s, 1, TankDrive::BrakeType::Smart);
 #endif
 
         // matchload_1(enable_matchload); // Toggle
