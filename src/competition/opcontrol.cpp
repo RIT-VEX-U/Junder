@@ -17,10 +17,19 @@ void opcontrol()
         vexDelay(20);
     }
 
-    odom.set_position({.x = 16, .y = 144 - 16, .rot = 135});
+    pose_t start_pose = {.x = 16, .y = 144 - 16, .rot = 135};
+
     CommandController cc{
-        cata_sys.IntakeFully(),
-        cata_sys.Fire(),
+        new RepeatUntil(
+            {
+                odom.SetPositionCmd(start_pose),
+                cata_sys.IntakeFully(),
+                drive_sys.DriveForwardCmd(4, directionType::rev),
+                cata_sys.Fire(),
+                drive_sys.DriveForwardCmd(4, directionType::fwd),
+
+            },
+            10),
         // drive_sys.DriveForwardCmd(36, vex::directionType::rev, 0.9),
         // drive_sys.TurnToHeadingCmd(-90),
         // drive_sys.DriveToPointCmd({.x = 27, .y = 18}, vex::fwd)
@@ -29,7 +38,7 @@ void opcontrol()
                        { return con.ButtonA.pressing(); });
     cc.run();
     // while(true){
-        // vexDelay(1000);
+    // vexDelay(1000);
     // }
     // return;
 

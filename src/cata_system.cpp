@@ -321,7 +321,7 @@ screen::Page *CataSys::Page()
 
 AutoCommand *CataSys::Fire()
 {
-    return new FunctionCommand([&]()
+    return new FunctionCommand([&, func_initialized = false]() mutable
                                { 
                                                     send_command(Command::StartFiring);
                                                     printf("sent command to fire\n");
@@ -331,7 +331,7 @@ AutoCommand *CataSys::Fire()
 AutoCommand *CataSys::IntakeFully()
 {
     return new FunctionCommand([&, func_initialized = false]() mutable
-        { 
+                               { 
             if (!func_initialized){
                 send_command(Command::IntakeIn);
                 func_initialized = true;
@@ -342,7 +342,5 @@ AutoCommand *CataSys::IntakeFully()
                 return true;
             }
 
-            return false; 
-        }
-        );
+            return false; });
 }

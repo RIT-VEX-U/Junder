@@ -27,16 +27,5 @@ void matchload_1(vex::controller::button &button)
     
     cmd.run();
 
-    // CommandController cmd{
-    // cata_sys.IntakeFully()->run();
-    // while(!waitForIntake.run() && button) {vexDelay(10);}
-    // while(!drive_sys.drive_forward(6, vex::directionType::rev, .5) && button ){ vexDelay(10); }
-    // while(!drive_sys.turn_degrees(-10, .5) && button) { vexDelay(10); }
-    // cata_sys.Fire()->run();
-    // vexDelay(300);
-    // while(!drive_sys.turn_degrees(10, .5) && button) {vexDelay(10);}
-    // while(!drive_sys.drive_forward(6, vex::directionType::fwd, .5) && button) {vexDelay(10);}
-        
-    // };
 
 }
