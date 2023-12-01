@@ -1,8 +1,10 @@
 #pragma once
 #include "core.h"
+#include <functional>
 
 // ================ Autonomous Abstractions ================
 
 
 // ================ Driver Assist Automations ================
-void matchload_1(vex::controller::button &button);
+void matchload_1(bool &enable);
+void matchload_1(std::function<bool()> enable);

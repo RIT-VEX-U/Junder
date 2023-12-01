@@ -2,6 +2,7 @@
 #include "vex.h"
 #include "robot-config.h"
 #include "automation.h"
+#include <atomic>
 
 // #define Tank
 
@@ -17,42 +18,19 @@ void opcontrol()
         vexDelay(20);
     }
 
-    pose_t start_pose = {.x = 16, .y = 144 - 16, .rot = 135};
+    static bool enable_matchload = false;
 
-    CommandController cc{
-        new RepeatUntil(
-            {
-                odom.SetPositionCmd(start_pose),
-                cata_sys.IntakeFully(),
-                drive_sys.DriveForwardCmd(4, directionType::rev),
-                cata_sys.Fire(),
-                drive_sys.DriveForwardCmd(4, directionType::fwd),
+    // Controls:
+    // Cata: Hold L1 (Not on rising edge)
+    // -- Don't shoot until there's a ball
+    // -- Preload
+    // Intake:
+    // -- R1 IN
+    // -- R2 OUT
+    // -- B - 2 intake pistons
 
-            },
-            10),
-        // drive_sys.DriveForwardCmd(36, vex::directionType::rev, 0.9),
-        // drive_sys.TurnToHeadingCmd(-90),
-        // drive_sys.DriveToPointCmd({.x = 27, .y = 18}, vex::fwd)
-    };
-    cc.add_cancel_func([]()
-                       { return con.ButtonA.pressing(); });
-    // cc.run();
-    // while(true){
-    // vexDelay(1000);
-    // }
-    // return;
-
-// Controls:
-// Cata: Hold L1 (Not on rising edge)
-// -- Don't shoot until there's a ball
-// -- Preload
-// Intake:
-// -- R1 IN
-// -- R2 OUT
-// -- B - 2 intake pistons
-
-// SUBJECT TO CHANGE!
-// Wings: DOWN
+    // SUBJECT TO CHANGE!
+    // Wings: DOWN
 #ifdef COMP_BOT
     con.ButtonL1.pressed([]()
                          { cata_sys.send_command(CataSys::Command::StartFiring); });
@@ -95,7 +73,8 @@ void opcontrol()
         drive_sys.drive_arcade(f, s, 1, TankDrive::BrakeType::Smart);
 #endif
 
-        // matchload_1(con.ButtonA.pressing());
+        // matchload_1(enable_matchload); // Toggle
+        matchload_1([](){ return con.ButtonA.pressing();}); // Hold
         // Controls
         // Intake
 
