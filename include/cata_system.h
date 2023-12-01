@@ -62,4 +62,5 @@ private:
     bool matchload_requested;
     IntakeType intake_type;
     friend int thread_func(void *void_cata);
+    friend class CataSysPage;
 };

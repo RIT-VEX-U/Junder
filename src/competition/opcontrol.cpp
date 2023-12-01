@@ -29,10 +29,6 @@ void opcontrol()
     // cc.run();
     // return;
 
-// while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
-// {
-//     vexDelay(20);
-// }
 
 // Controls:
 // Cata: Hold L1 (Not on rising edge)
@@ -78,7 +74,7 @@ void opcontrol()
 
         double f = con.Axis3.position() / 100.0;
         double s = con.Axis1.position() / 100.0;
-        drive_sys.drive_arcade(f, s);
+        drive_sys.drive_arcade(f, s, 1, TankDrive::BrakeType::Smart);
 #endif
 
         // matchload_1(con.ButtonA.pressing());
