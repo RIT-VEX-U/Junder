@@ -1,15 +1,16 @@
 #include "competition/opcontrol.h"
 #include "vex.h"
 #include "robot-config.h"
+#include "automation.h"
 
-#define Tank
+// #define Tank
 
 /**
  * Main entrypoint for the driver control period
  */
 void opcontrol()
 {
-    vexDelay(1000);
+    // vexDelay(1000);
 
     while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
     {
@@ -53,8 +54,8 @@ void opcontrol()
                          { cata_sys.send_command(CataSys::Command::IntakeIn); });
     con.ButtonR2.pressed([]()
                          { cata_sys.send_command(CataSys::Command::IntakeOut); });
-    // con.ButtonL2.pressed([]()
-    //                      { cata_sys.send_command(CataSys::Command::IntakeHold); });
+    con.ButtonL2.pressed([]()
+                         { cata_sys.send_command(CataSys::Command::IntakeHold); });
     con.ButtonDown.pressed([]()
                            { left_wing.set(!left_wing.value()); });
     con.ButtonB.pressed([]()
@@ -80,6 +81,7 @@ void opcontrol()
         drive_sys.drive_arcade(f, s);
 #endif
 
+        matchload_1(con.ButtonA.pressing());
         // Controls
         // Intake
 

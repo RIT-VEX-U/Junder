@@ -41,7 +41,8 @@
 		"algorithm": "cpp",
 		"numeric": "cpp",
 		"mutex": "cpp",
-		"system_error": "cpp"
+		"system_error": "cpp",
+		"random": "cpp"
 	},
 	"ros.distro": "noetic"
 }

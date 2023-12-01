@@ -16,6 +16,8 @@ public:
         StopFiring,
         StopIntake,
         IntakeOut,
+        StartMatchLoad,
+        StopMatchLoad
     };
     enum class IntakeType
     {
@@ -29,7 +31,7 @@ public:
         CHARGING, READY, FIRING
     };
 
-    CataSys(vex::optical &intake_watcher, vex::pot &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor &intake_upper, vex::motor &intake_lower);
+    CataSys(vex::distance &intake_watcher, vex::pot &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor &intake_upper, vex::motor &intake_lower);
     void send_command(Command cmd);
     CataState get_state() const;
 
@@ -43,7 +45,7 @@ public:
 
 private:
     // configuration
-    vex::optical &intake_watcher;
+    vex::distance &intake_watcher;
     vex::pot &cata_pot;
     vex::optical &cata_watcher;
     vex::motor_group &cata_motor;
@@ -57,6 +59,7 @@ private:
     CataState state;
     bool firing_requested;
     bool intaking_requested;
+    bool matchload_requested;
     IntakeType intake_type;
     friend int thread_func(void *void_cata);
 };

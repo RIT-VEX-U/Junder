@@ -28,8 +28,8 @@ motor right_back_back(PORT11, drive_gears, false); // Final Port
 motor_group left_motors(left_front_front, left_front_back, left_back_front, left_back_back);
 motor_group right_motors(right_front_front, right_front_back, right_back_front, right_back_back);
 
-motor cata_r(PORT2, gearSetting::ratio36_1, false); // Final Port
-motor cata_l(PORT10, gearSetting::ratio36_1, true); // Final Port
+motor cata_r(PORT2, gearSetting::ratio36_1, true); // Final Port
+motor cata_l(PORT10, gearSetting::ratio36_1, false); // Final Port
 
 motor_group cata_motors(cata_l, cata_r);
 
@@ -63,15 +63,15 @@ PID::pid_config_t drive_pid_cfg =
         .p = .2,
         .i = 0.0,
         .d = .021,
-        .deadband = 0.1,
-        .on_target_time = 0};
+        .deadband = 0.5,
+        .on_target_time = .1};
 
 PID::pid_config_t turn_pid_cfg =
     {
-        .p = 0.03,
+        .p = 0.05,
         .i = 0.00,
         .d = 0.0020,
-        .deadband = 1,
+        .deadband = 3,
         .on_target_time = 0.1};
 
 
@@ -93,7 +93,7 @@ robot_specs_t robot_cfg = {
     .odom_wheel_diam = 3.15,          // inches
     .odom_gear_ratio = .5,        
     .dist_between_wheels = 10.6,    // inches
-    .drive_correction_cutoff = 12, // inches
+    .drive_correction_cutoff = 4, // inches
     .drive_feedback = new PID(drive_pid_cfg),//&drive_mc,
     .turn_feedback = new PID(turn_pid_cfg),
     .correction_pid = (PID::pid_config_t){
@@ -103,7 +103,7 @@ robot_specs_t robot_cfg = {
 OdometryTank odom{left_motors, right_motors, robot_cfg,&imu};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
 
-vex::optical intake_watcher(vex::PORT4);
+vex::distance intake_watcher(vex::PORT3);
 vex::optical cata_watcher(vex::PORT15); // Final Port
 vex::pot cata_pot(Brain.ThreeWirePort.E);
 

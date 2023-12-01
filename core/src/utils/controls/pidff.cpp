@@ -34,7 +34,7 @@ void PIDFF::set_target(double set_pt)
 double PIDFF::update(double val)
 {
     double pid_out = pid.update(val);
-    double ff_out = ff_cfg.kS * sign(pid_out);
+    double ff_out = ff_cfg.kG + (ff_cfg.kS * sign(pid_out));
     out = pid_out + ff_out;
     if (lower_lim != upper_lim)
         out = clamp(out, lower_lim, upper_lim);
@@ -88,4 +88,9 @@ void PIDFF::set_limits(double lower, double upper)
 bool PIDFF::is_on_target()
 {
     return pid.is_on_target();
+}
+
+void PIDFF::reset()
+{
+    pid.reset();
 }

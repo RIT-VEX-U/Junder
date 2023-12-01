@@ -62,6 +62,8 @@ class PIDFF : public Feedback
      */
     bool is_on_target() override;
 
+    void reset();
+
     PID pid;
 
 

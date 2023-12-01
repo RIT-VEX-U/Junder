@@ -16,6 +16,7 @@ extern controller con;
 
 // Analog sensors
 extern inertial imu;
+extern vex::distance intake_watcher;
 
 // ================ OUTPUTS ================
 // Motors
@@ -28,6 +29,9 @@ extern motor_group cata_motors;
 extern robot_specs_t robot_cfg;
 extern OdometryTank odom;
 extern TankDrive drive_sys;
+
+// extern MotionController turn_mc;
+extern MotionController drive_mc;
 
 extern CataSys cata_sys;
 extern vex::digital_out left_wing;

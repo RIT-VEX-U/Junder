@@ -1,26 +1,45 @@
 #include "cata_system.h"
 #include "robot-config.h"
 
-const double inake_enable_lower_threshold = 70.0;
-const double intake_enable_upper_threshold = 110;
+// const double inake_enable_lower_threshold = 70.0;
+// const double intake_enable_upper_threshold = 120;
+const double inake_enable_lower_threshold = 150;
+const double intake_enable_upper_threshold = 200;
+
+const double intake_upper_volt = 12;
+const double intake_upper_volt_hold = 6;
+const double intake_lower_volt = 10.0;
+const double intake_sensor_dist_mm = 150;
 
 // const double cata_ready_lower_threshold = 85; // UNUSED - see cata_ready()
 // const double cata_ready_upper_threshold = 98;
 
-const double cata_target_charge = 98;
-const double cata_target_intake = 96;
+// const double cata_target_charge = 96.5;
+// const double cata_target_intake = 96.5;
+const double cata_target_charge = 177;
+const double cata_target_intake = 177;
+// const double cata_target_charge = 105;
+// const double cata_target_intake = 105;
+
 
 
 PID::pid_config_t pc = PID::pid_config_t{
-    .p = 3,
-    .deadband = 1,
+    .p = 1,
+    // .i = 2,
+    .deadband = 2,
     .on_target_time = 0.3
 };
-PID cata_pid(pc);
+
+FeedForward::ff_config_t ffc = 
+{
+    .kG = -2
+};
+
+PIDFF cata_pid(pc, ffc);
 
 bool intake_can_be_enabled(double cata_pos)
 {
-    return cata_pos > inake_enable_lower_threshold && cata_pos < intake_enable_upper_threshold;
+    return (cata_pos == 0.0) ||  (cata_pos > inake_enable_lower_threshold && cata_pos < intake_enable_upper_threshold);
 }
 
 // bool cata_ready(double cata_pos)
@@ -30,30 +49,93 @@ bool intake_can_be_enabled(double cata_pos)
 //     return cata_pos < cata_ready_upper_threshold;
 // }
 
-const double intake_volts = 12.0;
 int thread_func(void *void_cata)
 {
     CataSys &cata = *(CataSys *)void_cata;
     cata.state = CataSys::CataState::CHARGING;
+
+    cata_pid.set_limits(-12.0, 0);
+
+    vex::timer intake_tmr;
 
     while (true)
     {
         // read sensors
         const double cata_pos = cata.cata_pot.angle(vex::degrees);
 
-        const bool ball_in_intake = cata.intake_watcher.isNearObject();
+        if (cata.intake_watcher.objectDistance(distanceUnits::mm) < intake_sensor_dist_mm)
+            intake_tmr.reset();
+
+        const bool ball_in_intake = 
+            cata.intake_watcher.objectDistance(distanceUnits::mm) < intake_sensor_dist_mm 
+            || intake_tmr.time(timeUnits::msec) < 500;
+
         const bool ball_in_cata = cata.cata_watcher.isNearObject();
-        // const bool cata_in_position = cata_ready(cata_pos);
 
         // SYNCHRONIZE (READ)
         cata.control_mut.lock();
         CataSys::CataState cur_state = cata.state;
         bool firing_requested = cata.firing_requested;
         bool intaking_requested = cata.intaking_requested;
+        bool matchload_requested = cata.matchload_requested;
         CataSys::IntakeType intake_type = cata.intake_type;
         cata.control_mut.unlock();
 
         bool intake_cata_enabled = false;
+        double cata_pid_out = 0;
+
+        // Main Intake State Machine
+        switch(cur_state)
+        {
+            case CataSys::CataState::FIRING:
+                cata.intake_upper.stop();
+                cata.intake_lower.stop();
+            break;
+            case CataSys::CataState::CHARGING:
+            case CataSys::CataState::READY:
+                // Charging & Ready: Base off of cata position
+                // ==== INTAKE ====
+                // Run based on requested action
+                // Make sure the cata is in a good position
+
+                if (intaking_requested && intake_can_be_enabled(cata_pos) 
+                    && intake_type == CataSys::IntakeType::In && !ball_in_cata)
+                {
+                    // Intake triball
+                    cata.intake_upper.spin(vex::fwd, intake_upper_volt, vex::volt);
+                    cata.intake_lower.spin(vex::fwd, intake_lower_volt, vex::volt);
+                    
+                } else if (intaking_requested && intake_can_be_enabled(cata_pos) 
+                    && intake_type == CataSys::IntakeType::Hold)
+                {
+                    // Intake until ball is sensed in intake, then stop
+                    // timer to make sure it doesn't go straight through
+                    if(ball_in_intake)
+                    {
+                        cata.intake_upper.stop(brakeType::hold);
+                        cata.intake_lower.stop(brakeType::hold);
+                    } else
+                    {
+                        cata.intake_upper.spin(vex::fwd, intake_upper_volt_hold, vex::volt);
+                        cata.intake_lower.spin(vex::fwd, intake_lower_volt, vex::volt);
+                    }
+                } else if (intaking_requested && intake_type == CataSys::IntakeType::Out)
+                {
+                    cata.intake_upper.spin(vex::fwd, -intake_upper_volt, vex::volt);
+                    cata.intake_lower.spin(vex::fwd, -intake_lower_volt, vex::volt);
+                } else
+                {
+                    cata.intake_upper.stop();
+                    cata.intake_lower.stop();
+                }
+
+                // Reset requests from AutoCommands
+                if ((intake_type == CataSys::IntakeType::Hold && ball_in_intake) ||
+                    (intake_type == CataSys::IntakeType::In && ball_in_cata))
+                {
+                    // intaking_requested = false;
+                }
+        }
 
         // Main catapult state machine
         switch(cur_state)
@@ -63,70 +145,29 @@ int thread_func(void *void_cata)
                 // ==== CATAPULT === 
                 // Run via PID
                 cata_pid.set_target(cata_target_charge);
-                cata_pid.update(cata_pos);
-                cata.cata_motor.spin(vex::fwd, cata_pid.get(), vex::volt);
-
-                // ==== INTAKE ==== 
-                // Disable while charging
-                cata.intake_lower.stop();
-                cata.intake_upper.stop();
+                cata_pid_out = cata_pid.update(cata_pos);
+                cata.cata_motor.spin(vex::fwd, cata_pid_out, vex::volt);
                 
                 // ==== EXIT STATE ==== 
                 // Ratchet engaged, we are READY
-                if(cata_pid.is_on_target())
+                if(cata_pid.is_on_target() || cata_pos < cata_target_charge - pc.deadband)
                 {
                     cur_state = CataSys::CataState::READY;
                 }
             break;
             case CataSys::CataState::READY:
 
-                
-
-                // ==== INTAKE ====
-                // Run based on requested action
-                // Make sure the cata is in a good position
-
-                if (intaking_requested && intake_can_be_enabled(cata_pos) 
-                    && intake_type == CataSys::IntakeType::In && !cata.cata_watcher.isNearObject())
-                {
-                    // Intake triball
-                    cata.intake_upper.spin(vex::fwd, intake_volts, vex::volt);
-                    cata.intake_lower.spin(vex::fwd, intake_volts, vex::volt);
-
-                    cata_pid.set_target(cata_target_intake);
-                    cata_pid.update(cata_pos);
-                    cata.cata_motor.spin(vex::fwd, cata_pid.get(), vex::volt);
-                    intake_cata_enabled = true;
-                    
-                } else if (intaking_requested && intake_can_be_enabled(cata_pos) 
-                    && intake_type == CataSys::IntakeType::Hold)
-                {
-                    // Intake until ball is sensed in intake, then stop
-                    if(cata.intake_watcher.isNearObject())
-                    {
-                        cata.intake_upper.stop(brakeType::hold);
-                        cata.intake_lower.stop(brakeType::hold);
-                    } else
-                    {
-                        cata.intake_upper.spin(vex::fwd, intake_volts, vex::volt);
-                        cata.intake_lower.spin(vex::fwd, intake_volts, vex::volt);
-                    }
-                } else if (intaking_requested && intake_type == CataSys::IntakeType::Out)
-                {
-                    cata.intake_upper.spin(vex::fwd, -intake_volts, vex::volt);
-                    cata.intake_lower.spin(vex::fwd, -intake_volts, vex::volt);
-                } else
-                {
-                    cata.intake_upper.stop();
-                    cata.intake_lower.stop();
-                }
-
                 // ==== CATAPULT ====
                 // Disable, rely on ratchet
 
                 if(intake_cata_enabled == false)
                 {
-                    cata.cata_motor.stop(brakeType::coast);
+                    // cata.cata_motor.stop(brakeType::coast);
+
+                    // REMOVE IF RATCHETING
+                    cata_pid.set_target(cata_target_charge);
+                    cata_pid_out = cata_pid.update(cata_pos);
+                    cata.cata_motor.spin(vex::fwd, cata_pid_out, vex::volt);
                 }
                 
                 // When firing is requested, FIRE!
@@ -136,28 +177,31 @@ int thread_func(void *void_cata)
                 }
 
                 // Check if position is too high, go back to charging.
-                if (cata_pos > 110)
+                if (cata_pos > cata_target_charge + 30)
                 {
                     cur_state = CataSys::CataState::CHARGING;
                 }
             break;
             case CataSys::CataState::FIRING:
-                // ==== INTAKE ====
-                // Disable while firing
-                cata.intake_upper.stop();
-                cata.intake_lower.stop();
 
                 // ==== CATAPULT ====
                 cata.cata_motor.spinFor(directionType::rev, 500, timeUnits::msec);
+                cata_pid.reset(); //reset integral
 
                 if(cata.cata_motor.isDone())
                 {
                     cur_state = CataSys::CataState::CHARGING;
+                    firing_requested = false;
                 }
             break;
         }
 
-        if (ball_in_cata && ball_in_intake)
+        
+
+        printf("in cata? %d, in intake? %d, intake_dist: %f, pot: %.2f, pid: %.2f\n",
+            ball_in_cata, ball_in_intake, intake_watcher.objectDistance(distanceUnits::mm), cata_pos, cata_pid.get());
+
+        if (cata.cata_watcher.isNearObject() && cata.intake_watcher.objectDistance(distanceUnits::mm) < 150)
         {
             printf("DQed! ball in intake and catapault (or a sensor got funny)\n");
             con.rumble("-");
@@ -166,6 +210,8 @@ int thread_func(void *void_cata)
         // SYNCHRONIZE
         cata.control_mut.lock();
         cata.state = cur_state;
+        cata.firing_requested = firing_requested;
+        cata.intaking_requested = intaking_requested;
         cata.control_mut.unlock();
 
 
@@ -174,7 +220,7 @@ int thread_func(void *void_cata)
     return 0;
 }
 
-CataSys::CataSys(vex::optical &intake_watcher,
+CataSys::CataSys(vex::distance &intake_watcher,
                  vex::pot &cata_pot,
                  vex::optical &cata_watcher,
                  vex::motor_group &cata_motor,
@@ -218,6 +264,12 @@ void CataSys::send_command(Command next_cmd)
     case CataSys::Command::StopIntake:
         intaking_requested = false;
         break;
+    case CataSys::Command::StartMatchLoad:
+        matchload_requested = true;
+        break;
+    case CataSys::Command::StopMatchLoad:
+        matchload_requested = false;
+        break;
     default:
         break;
     }
@@ -249,4 +301,29 @@ public:
 screen::Page *CataSys::Page()
 {
     return new CataSysPage(*this);
+}
+
+AutoCommand *CataSys::Fire()
+{
+    FunctionCommand *retval = new FunctionCommand([&](){
+        control_mut.lock();
+        firing_requested = true;
+        control_mut.unlock();        
+        return true;
+    });
+
+    return retval;
+}
+
+AutoCommand *CataSys::IntakeFully()
+{
+    FunctionCommand *retval = new FunctionCommand([&](){
+        control_mut.lock();
+        intaking_requested = true;
+        intake_type = IntakeType::In;
+        control_mut.unlock();
+        return true;
+    });
+
+    return retval;
 }
