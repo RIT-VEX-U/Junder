@@ -42,6 +42,7 @@ public:
     AutoCommand *Fire();
     AutoCommand *IntakeToHold();
     AutoCommand *IntakeFully();
+    AutoCommand *WaitForIntake();
 
     // Page
     screen::Page *Page();
