@@ -36,7 +36,7 @@ void opcontrol()
     };
     cc.add_cancel_func([]()
                        { return con.ButtonA.pressing(); });
-    cc.run();
+    // cc.run();
     // while(true){
     // vexDelay(1000);
     // }
@@ -66,9 +66,9 @@ void opcontrol()
                          { cata_sys.send_command(CataSys::Command::IntakeHold); });
 
     con.ButtonRight.pressed([]()
-                            { cata_sys.send_command(CataSys::Command::StartMatchLoad); });
+                            { screen::next_page(); });
     con.ButtonLeft.pressed([]()
-                           { cata_sys.send_command(CataSys::Command::StopMatchLoad); });
+                            { screen::prev_page(); });
 
     con.ButtonDown.pressed([]()
                            { left_wing.set(!left_wing.value()); });

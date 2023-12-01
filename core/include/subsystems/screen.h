@@ -186,6 +186,10 @@ namespace screen
      */
     void start_screen(vex::brain::lcd &screen, std::vector<Page *> pages, int first_page = 0);
 
+
+    void next_page();
+    void prev_page();
+
     /// @brief stops the screen. If you have a drive team that hates fun call this at the start of opcontrol
     void stop_screen();
 
