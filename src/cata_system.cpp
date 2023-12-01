@@ -11,7 +11,6 @@ const double intake_upper_volt_hold = 6;
 const double intake_lower_volt = 10.0;
 const double intake_sensor_dist_mm = 150;
 
-
 const double cata_target_charge = 177;
 const double cata_target_intake = 177;
 
@@ -154,7 +153,7 @@ int thread_func(void *void_cata)
             }
 
             // When firing is requested, FIRE!
-            if (firing_requested && cata.cata_watcher.isNearObject())
+            if (firing_requested && cata.can_fire())
             {
                 cur_state = CataSys::CataState::FIRING;
             }
@@ -168,7 +167,7 @@ int thread_func(void *void_cata)
         case CataSys::CataState::FIRING:
 
             // ==== CATAPULT ====
-            cata.cata_motor.spinFor(directionType::rev, 500, timeUnits::msec);
+            cata.cata_motor.spinFor(directionType::rev, 500, timeUnits::msec, 100.0, velocityUnits::pct);
             cata_pid.reset(); // reset integral
 
             if (cata.cata_motor.isDone())
@@ -179,8 +178,8 @@ int thread_func(void *void_cata)
             break;
         }
 
-        printf("intake_dist: %f, pot: %.2f, pid: %.2f\n",
-               intake_watcher.objectDistance(distanceUnits::mm), cata_pos, cata_pid.get());
+        // printf("intake_dist: %f, pot: %.2f, pid: %.2f\n",
+        //    intake_watcher.objectDistance(distanceUnits::mm), cata_pos, cata_pid.get());
 
         if (cata.cata_watcher.isNearObject() && cata.intake_watcher.objectDistance(distanceUnits::mm) < 150)
         {
@@ -258,7 +257,15 @@ void CataSys::send_command(Command next_cmd)
 
 CataSys::CataState CataSys::get_state() const
 {
-    return state;
+    control_mut.lock();
+    auto s = state;
+    control_mut.unlock();
+    return s;
+}
+
+bool CataSys::can_fire() const
+{
+    return cata_watcher.isNearObject() && get_state() == CataState::READY;
 }
 
 class CataSysPage : public screen::Page
@@ -300,12 +307,10 @@ public:
 
         scr.printAt(40, 140, true, "Ball in Cata: %s", ball_in_cata ? "yes" : "no");
         scr.printAt(40, 160, true, "Ball in Intake: %s", ball_in_intake ? "yes" : "no");
-
-
-
-
+        scr.printAt(40, 180, true, "Can Fire: %s", cs.can_fire() ? "yes" : "no");
     }
-    private:
+
+private:
     const CataSys &cs;
 };
 
@@ -316,25 +321,28 @@ screen::Page *CataSys::Page()
 
 AutoCommand *CataSys::Fire()
 {
-    FunctionCommand *retval = new FunctionCommand([&]()
-                                                  {
-        control_mut.lock();
-        firing_requested = true;
-        control_mut.unlock();        
-        return true; });
-
-    return retval;
+    return new FunctionCommand([&]()
+                               { 
+                                                    send_command(Command::StartFiring);
+                                                    printf("sent command to fire\n");
+                                                    return true; });
 }
 
 AutoCommand *CataSys::IntakeFully()
 {
-    FunctionCommand *retval = new FunctionCommand([&]()
-                                                  {
-        control_mut.lock();
-        intaking_requested = true;
-        intake_type = IntakeType::In;
-        control_mut.unlock();
-        return true; });
+    return new FunctionCommand([&, func_initialized = false]() mutable
+        { 
+            if (!func_initialized){
+                send_command(Command::IntakeIn);
+                func_initialized = true;
+            }
 
-    return retval;
+
+            if (get_state() == READY && cata_watcher.isNearObject()){
+                return true;
+            }
+
+            return false; 
+        }
+        );
 }

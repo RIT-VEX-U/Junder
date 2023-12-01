@@ -17,18 +17,21 @@ void opcontrol()
         vexDelay(20);
     }
 
-    // odom.set_position({.x = 16, .y = 144-16, .rot = 135});
-    // CommandController cc{
-        // 
+    odom.set_position({.x = 16, .y = 144 - 16, .rot = 135});
+    CommandController cc{
+        cata_sys.IntakeFully(),
+        cata_sys.Fire(),
         // drive_sys.DriveForwardCmd(36, vex::directionType::rev, 0.9),
         // drive_sys.TurnToHeadingCmd(-90),
         // drive_sys.DriveToPointCmd({.x = 27, .y = 18}, vex::fwd)
-    // };
-    // cc.add_cancel_func([]()
-                    //    {  return con.ButtonA.pressing(); });
-    // cc.run();
+    };
+    cc.add_cancel_func([]()
+                       { return con.ButtonA.pressing(); });
+    cc.run();
+    // while(true){
+        // vexDelay(1000);
+    // }
     // return;
-
 
 // Controls:
 // Cata: Hold L1 (Not on rising edge)
@@ -52,6 +55,12 @@ void opcontrol()
                          { cata_sys.send_command(CataSys::Command::IntakeOut); });
     con.ButtonL2.pressed([]()
                          { cata_sys.send_command(CataSys::Command::IntakeHold); });
+
+    con.ButtonRight.pressed([]()
+                            { cata_sys.send_command(CataSys::Command::StartMatchLoad); });
+    con.ButtonLeft.pressed([]()
+                           { cata_sys.send_command(CataSys::Command::StopMatchLoad); });
+
     con.ButtonDown.pressed([]()
                            { left_wing.set(!left_wing.value()); });
     con.ButtonB.pressed([]()
