@@ -41,8 +41,9 @@ int thread_func(void *void_cata) {
     const double cata_pos = cata.cata_pot.angle(vex::degrees);
 
     if (cata.intake_watcher.objectDistance(distanceUnits::mm) <
-        intake_sensor_dist_mm)
+        intake_sensor_dist_mm) {
       intake_tmr.reset();
+}
 
     const bool ball_in_intake =
         cata.intake_watcher.objectDistance(distanceUnits::mm) <
@@ -242,7 +243,7 @@ bool CataSys::can_fire() const {
 class CataSysPage : public screen::Page {
 public:
   CataSysPage(const CataSys &cs)
-      : cs(cs), gd(30, 0.0, 0.0, {vex::green, vex::red}, 2) {}
+      : gd(30, 0.0, 0.0, {vex::green, vex::red}, 2), cs(cs) {}
   void update(bool, int, int) override {}
 
   void draw(vex::brain::lcd &scr, bool, unsigned int) override {

@@ -8,8 +8,9 @@
  */
 OdometryBase::OdometryBase(bool is_async) : current_pos(zero_pos)
 {
-  if (is_async)
+  if (is_async) {
     handle = new vex::task(background_task, (void *)this);
+}
 }
 
 /**
@@ -108,12 +109,14 @@ double OdometryBase::smallest_angle(double start_deg, double end_deg)
   double retval;
   // get the difference between 0 and 360
   retval = fmod(end_deg - start_deg, 360.0);
-  if (retval < 0)
+  if (retval < 0) {
     retval += 360.0;
+}
 
   // Get the closest angle, now between -180 (turn left) and +180 (turn right)
-  if (retval > 180)
+  if (retval > 180) {
     retval -= 360;
+}
 
   return retval;
 }

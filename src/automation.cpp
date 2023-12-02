@@ -15,8 +15,9 @@ void matchload_1(bool &enable)
 
 void matchload_1(std::function<bool()> enable)
 {
-    if(!enable())
+    if(!enable()) {
         return;
+}
         
     FunctionCommand *waitForIntake = new FunctionCommand([&](){
         return intake_watcher.objectDistance(distanceUnits::mm) < 150;

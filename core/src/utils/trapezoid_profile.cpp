@@ -44,8 +44,9 @@ void TrapezoidProfile::set_vel_endpts(double start, double end) {
 }
 
 motion_t TrapezoidProfile::calculate_time_based(double time_s) {
-  if (!this->precalculated)
+  if (!this->precalculated) {
     precalculate();
+}
 
   int segment_i = 0;
 
@@ -85,8 +86,9 @@ motion_t TrapezoidProfile::calculate_time_based(double time_s) {
 }
 
 motion_t TrapezoidProfile::calculate(double time_s, double pos_s) {
-  if (!this->precalculated)
+  if (!this->precalculated) {
     precalculate();
+}
 
   // printf("%f %f\n", time_s, pos_s);
 
@@ -153,8 +155,9 @@ motion_t TrapezoidProfile::calculate(double time_s, double pos_s) {
   out.vel = sqrt(segment_v * segment_v + 2 * segment_a * (pos_s - segment_s));
 
   // match the sign of the starting velocity of the segment
-  if (segment_v < 0)
+  if (segment_v < 0) {
     out.vel *= -1;
+}
 
   return out;
 }
@@ -186,10 +189,11 @@ bool TrapezoidProfile::precalculate() {
   if (fabs(this->vf) > this->max_v) {
     printf("WARNING: trapezoid motion profile target velocity is greater than "
            "maximum velocity\n");
-    if (this->vf > this->max_v)
+    if (this->vf > this->max_v) {
       this->vf = this->max_v;
-    else
+    } else {
       this->vf = -this->max_v;
+}
   }
 
   // if displacement is + but vf is -, or if displacement is - but vf is +
@@ -208,8 +212,9 @@ bool TrapezoidProfile::precalculate() {
     segment = calculate_next_segment(s, v);
     total_time += segment.duration;
 
-    if (fabs(segment.pos_after - this->sf) < EPSILON)
+    if (fabs(segment.pos_after - this->sf) < EPSILON) {
       return true;
+}
 
     // Check if xf is between x and x_next (meaning we overshot the end
     // position)
@@ -219,8 +224,9 @@ bool TrapezoidProfile::precalculate() {
       // Solve for the exact time to reach self.xf using the quadratic formula
       // Given: x = x0 + v0 * t + 0.5 * a * t^2
       double a_coeff = 0.5 * segment.accel;
-      if (fabs(a_coeff) < EPSILON)
+      if (fabs(a_coeff) < EPSILON) {
         a_coeff = EPSILON;
+}
       double b_coeff = v;
       double c_coeff = s - this->sf;
 

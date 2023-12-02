@@ -227,8 +227,9 @@ bool TankDrive::drive_forward(double inches, directionType dir, Feedback &feedba
  */
 bool TankDrive::drive_forward(double inches, directionType dir, double max_speed, double end_speed)
 {
-  if (drive_default_feedback != NULL)
+  if (drive_default_feedback != NULL) {
     return drive_forward(inches, dir, *drive_default_feedback, max_speed, end_speed);
+}
 
   printf("tank_drive.cpp: Cannot run drive_forward without a feedback controller!\n");
   fflush(stdout);
@@ -282,8 +283,9 @@ bool TankDrive::turn_degrees(double degrees, Feedback &feedback, double max_spee
  */
 bool TankDrive::turn_degrees(double degrees, double max_speed, double end_speed)
 {
-  if (turn_default_feedback != NULL)
+  if (turn_default_feedback != NULL) {
     return turn_degrees(degrees, *turn_default_feedback, max_speed, end_speed);
+}
 
   printf("tank_drive.cpp: Cannot run turn_degrees without a feedback controller!\n");
   fflush(stdout);
@@ -352,16 +354,19 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   double angle = fmod(current_pos.rot - angle_to_point, 360.0);
 
   // Normalize the angle between 0 and 360
-  if (angle > 360)
+  if (angle > 360) {
     angle -= 360;
-  if (angle < 0)
+}
+  if (angle < 0) {
     angle += 360;
+}
 
   // If the angle is behind the robot, report negative.
-  if (dir == directionType::fwd && angle > 90 && angle < 270)
+  if (dir == directionType::fwd && angle > 90 && angle < 270) {
     sign = -1;
-  else if (dir == directionType::rev && (angle < 90 || angle > 270))
+  } else if (dir == directionType::rev && (angle < 90 || angle > 270)) {
     sign = -1;
+}
 
   if (fabs(dist_left) < config.drive_correction_cutoff)
   {
@@ -376,10 +381,11 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   double delta_heading = 0;
 
   // Going backwards "flips" the robot's current heading
-  if (dir == directionType::fwd)
+  if (dir == directionType::fwd) {
     delta_heading = OdometryBase::smallest_angle(current_pos.rot, heading);
-  else
+  } else {
     delta_heading = OdometryBase::smallest_angle(current_pos.rot - 180, heading);
+}
 
   // Update the PID controllers with new information
   correction_pid.update(delta_heading);
@@ -387,15 +393,17 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
 
   // Disable correction when we're close enough to the point
   double correction = 0;
-  if (is_pure_pursuit || fabs(dist_left) > config.drive_correction_cutoff)
+  if (is_pure_pursuit || fabs(dist_left) > config.drive_correction_cutoff) {
     correction = correction_pid.get();
+}
 
   // Reverse the drive_pid output if we're going backwards
   double drive_pid_rval;
-  if (dir == directionType::rev)
+  if (dir == directionType::rev) {
     drive_pid_rval = feedback.get() * -1;
-  else
+  } else {
     drive_pid_rval = feedback.get();
+}
 
   // Combine the two pid outputs
   double lside = drive_pid_rval + correction;
@@ -410,8 +418,9 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
   // Check if the robot has reached it's destination
   if (feedback.is_on_target())
   {
-    if (end_speed == 0)
+    if (end_speed == 0) {
       stop();
+}
     func_initialized = false;
     return true;
   }
@@ -434,8 +443,9 @@ bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, Feedb
  */
 bool TankDrive::drive_to_point(double x, double y, vex::directionType dir, double max_speed, double end_speed)
 {
-  if (drive_default_feedback != NULL)
+  if (drive_default_feedback != NULL) {
     return this->drive_to_point(x, y, dir, *drive_default_feedback, max_speed, end_speed);
+}
 
   printf("tank_drive.cpp: Cannot run drive_to_point without a feedback controller!\n");
   fflush(stdout);
@@ -500,8 +510,9 @@ bool TankDrive::turn_to_heading(double heading_deg, Feedback &feedback, double m
  */
 bool TankDrive::turn_to_heading(double heading_deg, double max_speed, double end_speed)
 {
-  if (turn_default_feedback != NULL)
+  if (turn_default_feedback != NULL) {
     return turn_to_heading(heading_deg, *turn_default_feedback, max_speed, end_speed);
+}
 
   printf("tank_drive.cpp: Cannot run turn_to_heading without a feedback controller!\n");
   fflush(stdout);
@@ -543,10 +554,11 @@ bool TankDrive::pure_pursuit(PurePursuit::Path path, directionType dir, Feedback
   // On function initialization, send the path-length estimate to the feedback controller
   if (!func_initialized)
   {
-    if (dir != directionType::rev)
+    if (dir != directionType::rev) {
       feedback.init(-estimate_path_length(points), 0, odometry->get_speed(), end_speed);
-    else
+    } else {
       feedback.init(estimate_path_length(points), 0, odometry->get_speed(), end_speed);
+}
 
     func_initialized = true;
   }
@@ -562,10 +574,11 @@ bool TankDrive::pure_pursuit(PurePursuit::Path path, directionType dir, Feedback
   double angle_diff = 0;
 
   // Robot is facing forwards / backwards, change the bot's angle by 180
-  if (dir != directionType::rev)
+  if (dir != directionType::rev) {
     angle_diff = OdometryBase::smallest_angle(robot_pose.rot, rad2deg(atan2(localized.y, localized.x)));
-  else
+  } else {
     angle_diff = OdometryBase::smallest_angle(robot_pose.rot + 180, rad2deg(atan2(localized.y, localized.x)));
+}
 
   // Correct the robot's heading until the last cut-off
   if (!(is_last_point && robot_pose.get_point().dist(last_point) < config.drive_correction_cutoff))
@@ -578,10 +591,11 @@ bool TankDrive::pure_pursuit(PurePursuit::Path path, directionType dir, Feedback
     dist_remaining *= cos(angle_diff * (PI / 180.0));
   }
 
-  if (dir != directionType::rev)
+  if (dir != directionType::rev) {
     feedback.update(-dist_remaining);
-  else
+  } else {
     feedback.update(dist_remaining);
+}
 
   max_speed = fabs(max_speed);
 

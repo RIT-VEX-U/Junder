@@ -104,8 +104,9 @@ pose_t OdometryTank::update()
   // Limit the angle betwen 0 and 360.
   // fmod (floating-point modulo) gets it between -359 and +359, so tack on another 360 if it's negative.
   angle = fmod(angle, 360.0);
-  if (angle < 0)
+  if (angle < 0) {
     angle += 360;
+}
 
   current_pos = calculate_new_pos(config, current_pos, lside_revs, rside_revs, angle);
 
