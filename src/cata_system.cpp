@@ -241,7 +241,8 @@ bool CataSys::can_fire() const {
 
 class CataSysPage : public screen::Page {
 public:
-  CataSysPage(const CataSys &cs) : cs(cs) {}
+  CataSysPage(const CataSys &cs)
+      : cs(cs), gd(30, 0.0, 0.0, {vex::green, vex::red}, 2) {}
   void update(bool, int, int) override {}
 
   void draw(vex::brain::lcd &scr, bool, unsigned int) override {
@@ -262,6 +263,8 @@ public:
       break;
     }
 
+    gd.add_samples({cata_pid.get_sensor_val(), cata_pid.get_target()});
+
     const bool ball_in_intake = cs.intake_watcher.objectDistance(
                                     distanceUnits::mm) < intake_sensor_dist_mm;
 
@@ -276,12 +279,30 @@ public:
                 cs.firing_requested ? "yes" : "no");
 
     scr.printAt(40, 140, true, "Ball in Cata: %s", ball_in_cata ? "yes" : "no");
+
+    const char *intake_dir = "";
+    if (cs.intaking_requested) {
+      switch (cs.intake_type) {
+      case CataSys::IntakeType::Hold:
+        intake_dir = "Hold";
+        break;
+      case CataSys::IntakeType::In:
+        intake_dir = "In";
+        break;
+      case CataSys::IntakeType::Out:
+        intake_dir = "Out";
+        break;
+      }
+    }
     scr.printAt(40, 160, true, "Ball in Intake: %s",
                 ball_in_intake ? "yes" : "no");
     scr.printAt(40, 180, true, "Can Fire: %s", cs.can_fire() ? "yes" : "no");
+
+    gd.draw(scr, 20, 0, 200, 200);
   }
 
 private:
+  GraphDrawer gd;
   const CataSys &cs;
 };
 

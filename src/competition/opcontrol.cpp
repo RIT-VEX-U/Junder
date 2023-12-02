@@ -17,12 +17,12 @@ void opcontrol() {
     vexDelay(20);
   }
 
-  con.ButtonA.pressed([] {
-    CommandController cc{
-        drive_sys.DriveForwardCmd(5.0, vex::fwd),
-    };
-    cc.run();
-  });
+  // con.ButtonA.pressed([] {
+    // CommandController cc{
+        // drive_sys.DriveForwardCmd(5.0, vex::fwd),
+    // };
+    // cc.run();
+  // });
 
   static bool enable_matchload = false;
 
@@ -71,7 +71,7 @@ void opcontrol() {
 
     double f = con.Axis3.position() / 100.0;
     double s = con.Axis1.position() / 100.0;
-    drive_sys.drive_arcade(f, s, 1, TankDrive::BrakeType::Smart);
+    drive_sys.drive_arcade(f, s, 1, TankDrive::BrakeType::None);
 #endif
 
     // matchload_1(enable_matchload); // Toggle

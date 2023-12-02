@@ -49,7 +49,7 @@ bool FunctionCondition::test()
 IfTimePassed::IfTimePassed(double time_s) : time_s(time_s), tmr() {}
 bool IfTimePassed::test()
 {
-    return (static_cast<double>(tmr.time()) / 1000.0) > time_s;
+    return tmr.value() > time_s;
 }
 
 InOrder::InOrder(std::queue<AutoCommand *> cmds) : cmds(cmds)
@@ -88,7 +88,7 @@ bool InOrder::run()
         return false; // continue onto next command
     }
 
-    double seconds = static_cast<double>(tmr.time()) / 1000.0;
+    double seconds = tmr.value();
 
     bool should_timeout = current_command->timeout_seconds > 0.0;
     bool doTimeout = should_timeout && seconds > current_command->timeout_seconds;
@@ -306,6 +306,8 @@ RepeatUntil::RepeatUntil(InOrder cmds, Condition *cond) : cmds(cmds), working_cm
     timeout_seconds = -1.0;
 }
 
+
+
 bool RepeatUntil::run()
 {
     bool finished = working_cmds->run();
@@ -323,6 +325,7 @@ bool RepeatUntil::run()
         return true;
     }
     working_cmds = new InOrder(cmds);
+
 
     return false;
 }
