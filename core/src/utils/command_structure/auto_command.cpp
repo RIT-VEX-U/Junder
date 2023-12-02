@@ -66,7 +66,6 @@ bool InOrder::run()
     // outer loop finished
     if (cmds.size() == 0 && current_command == nullptr)
     {
-        printf("INORDER finished\n");
         return true;
     }
     // retrieve and remove command at the front of the queue
@@ -74,7 +73,6 @@ bool InOrder::run()
     {
         printf("TAKING INORDER: len =  %d\n", cmds.size());
         current_command = cmds.front();
-        printf("Current command: %p\n", (void *)current_command);
         cmds.pop();
         tmr.reset();
     }
@@ -97,10 +95,10 @@ bool InOrder::run()
         doTimeout = doTimeout || current_command->true_to_end->test();
     }
 
-    printf(".");
     // timeout
     if (doTimeout)
     {
+        printf("InOrder timed out\n");
         current_command->on_timeout();
         current_command = nullptr;
         return false;

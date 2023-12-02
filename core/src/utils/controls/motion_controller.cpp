@@ -51,7 +51,7 @@ double MotionController::update(double sensor_val) {
 
     if (lower_limit != upper_limit) {
         out = clamp(out, lower_limit, upper_limit);
-}
+    }
 
     return out;
 }

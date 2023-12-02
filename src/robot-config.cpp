@@ -88,6 +88,7 @@ robot_specs_t robot_cfg = {.robot_radius = 12,      // inches
                            .turn_feedback = new PID(turn_pid_cfg),
                            .correction_pid = (PID::pid_config_t){
                                .p = .03,
+                               .d = 0.004
                            }};
 
 OdometryTank odom{left_motors, right_motors, robot_cfg, &imu};
@@ -174,15 +175,14 @@ std::vector<screen::Page *> pages;
  */
 void robot_init() {
 
-  pages = {
-      new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
-      new screen::StatsPage(motor_names),
-      new screen::OdometryPage(odom, 12, 12, true),
-      cata_sys.Page(),
-      drive_mc.Page(),
-  };
+    pages = {
+        new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
+        new screen::StatsPage(motor_names),
+        new screen::OdometryPage(odom, 12, 12, true),
+        cata_sys.Page(),
+    };
 
-  screen::start_screen(Brain.Screen, pages, 4);
-  // imu.calibrate();
-  // gps_sensor.calibrate();
+    screen::start_screen(Brain.Screen, pages, 3);
+    // imu.calibrate();
+    // gps_sensor.calibrate();
 }

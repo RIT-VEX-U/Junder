@@ -40,6 +40,7 @@ public:
 
     // Autocommands
     AutoCommand *Fire();
+    AutoCommand *StopIntake();
     AutoCommand *IntakeToHold();
     AutoCommand *IntakeFully();
     AutoCommand *WaitForIntake();
