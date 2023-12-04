@@ -71,9 +71,9 @@ void OdometryBase::set_position(const pose_t &newpos)
   mut.unlock();
 }
 
-AutoCommand *OdometryBase::SetPositionCmd(const pose_t &newpos)
+AutoCommand OdometryBase::SetPositionCmd(const pose_t &newpos)
 {
-  return new FunctionCommand([&](){set_position(newpos); return true;});
+  return  FunctionCommand([&](){set_position(newpos); return true;});
 
 }
 

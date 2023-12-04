@@ -39,12 +39,12 @@ public:
     bool can_fire() const;
 
     // Autocommands
-    AutoCommand *Fire();
-    AutoCommand *StopFiring();
-    AutoCommand *StopIntake();
-    AutoCommand *IntakeToHold();
-    AutoCommand *IntakeFully();
-    AutoCommand *WaitForIntake();
+    AutoCommand Fire();
+    AutoCommand StopFiring();
+    AutoCommand StopIntake();
+    AutoCommand IntakeToHold();
+    AutoCommand IntakeFully();
+    AutoCommand WaitForIntake();
 
     // Page
     screen::Page *Page();

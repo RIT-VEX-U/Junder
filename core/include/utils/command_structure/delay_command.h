@@ -9,7 +9,7 @@
 
 #include "../core/include/utils/command_structure/auto_command.h"
 
-class DelayCommand: public AutoCommand {
+class DelayCommand: public AutoCommandBase {
   public:
     /**
      * Construct a delay command
@@ -25,6 +25,9 @@ class DelayCommand: public AutoCommand {
     bool run() override {
       vexDelay(ms);
       return true;
+    }
+    AutoCommand duplicate() const override{
+      return DelayCommand(ms);
     }
 
   private:

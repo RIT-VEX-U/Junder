@@ -37,20 +37,20 @@ public:
    */
   TankDrive(motor_group &left_motors, motor_group &right_motors, robot_specs_t &config, OdometryBase *odom = NULL);
 
-  AutoCommand *DriveToPointCmd(point_t pt, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
-  AutoCommand *DriveToPointCmd(Feedback &fb, point_t pt, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
+  AutoCommand DriveToPointCmd(point_t pt, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
+  AutoCommand DriveToPointCmd(Feedback &fb, point_t pt, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
 
-  AutoCommand *DriveForwardCmd(double dist, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
-  AutoCommand *DriveForwardCmd(Feedback &fb, double dist, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
+  AutoCommand DriveForwardCmd(double dist, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
+  AutoCommand DriveForwardCmd(Feedback &fb, double dist, vex::directionType dir = vex::forward, double max_speed = 1.0, double end_speed = 0.0);
 
-  AutoCommand *TurnToHeadingCmd(double heading, double max_speed = 1.0, double end_speed = 0.0);
-  AutoCommand *TurnToHeadingCmd(Feedback &fb, double heading, double max_speed = 1.0, double end_speed = 0.0);
+  AutoCommand TurnToHeadingCmd(double heading, double max_speed = 1.0, double end_speed = 0.0);
+  AutoCommand TurnToHeadingCmd(Feedback &fb, double heading, double max_speed = 1.0, double end_speed = 0.0);
 
-  AutoCommand *TurnDegreesCmd(double degrees, double max_speed = 1.0, double start_speed = 0.0);
-  AutoCommand *TurnDegreesCmd(Feedback &fb, double degrees, double max_speed = 1.0, double end_speed = 0.0);
+  AutoCommand TurnDegreesCmd(double degrees, double max_speed = 1.0, double start_speed = 0.0);
+  AutoCommand TurnDegreesCmd(Feedback &fb, double degrees, double max_speed = 1.0, double end_speed = 0.0);
 
-  AutoCommand *PurePursuitCmd(PurePursuit::Path path, directionType dir, double max_speed = 1, double end_speed = 0);
-  AutoCommand *PurePursuitCmd(Feedback &feedback, PurePursuit::Path path, directionType dir, double max_speed = 1, double end_speed = 0);
+  AutoCommand PurePursuitCmd(PurePursuit::Path path, directionType dir, double max_speed = 1, double end_speed = 0);
+  AutoCommand PurePursuitCmd(Feedback &feedback, PurePursuit::Path path, directionType dir, double max_speed = 1, double end_speed = 0);
 
   /**
    * Stops rotation of all the motors using their "brake mode"

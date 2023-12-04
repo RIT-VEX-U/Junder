@@ -326,35 +326,35 @@ class CataSysPage : public screen::Page {
 
 screen::Page *CataSys::Page() { return new CataSysPage(*this); }
 
-AutoCommand *CataSys::StopIntake() {
-    return new FunctionCommand([&]() {
+AutoCommand CataSys::StopIntake() {
+    return FunctionCommand([&]() {
         send_command(Command::StopIntake);
         return true;
     });
 }
 
-AutoCommand *CataSys::Fire() {
-    return new FunctionCommand([&]() {
+AutoCommand CataSys::Fire() {
+    return FunctionCommand([&]() {
         send_command(Command::StartFiring);
         return true;
     });
 }
 
-AutoCommand *CataSys::IntakeFully() {
-    return new FunctionCommand([&]() {
+AutoCommand CataSys::IntakeFully() {
+    return FunctionCommand([&]() {
         send_command(Command::IntakeIn);
         return true;
     });
 }
 
-AutoCommand *CataSys::WaitForIntake() {
-    return new FunctionCommand([&]() {
+AutoCommand CataSys::WaitForIntake() {
+    return FunctionCommand([&]() {
         return intake_watcher.objectDistance(distanceUnits::mm) < 150;
     });
 }
 
-AutoCommand *CataSys::StopFiring() {
-    return new FunctionCommand([]() {
+AutoCommand CataSys::StopFiring() {
+    return FunctionCommand([]() {
         cata_sys.send_command(CataSys::Command::StopFiring);
         return true;
     });

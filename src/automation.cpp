@@ -12,7 +12,7 @@ void matchload_1(std::function<bool()> enable) {
     if (!enable())
         return;
 
-    FunctionCommand *intakeToCata = new FunctionCommand([]() {
+    AutoCommand intakeToCata = FunctionCommand([]() {
         drive_sys.drive_tank(0.15, 0.15);
         // Only return when the ball is in the bot
         return cata_watcher.isNearObject();
@@ -23,23 +23,19 @@ void matchload_1(std::function<bool()> enable) {
     double rot = odom.get_position().rot;
     CommandController cmd{
         cata_sys.IntakeFully(),
-        intakeToCata->withTimeout(3),
-        new Async{new InOrder{
-            new DelayCommand(100),
-            cata_sys.Fire(),
-        }},
-        drive_sys.DriveForwardCmd(10, REV, 0.8)->withTimeout(1),
-        drive_sys.TurnToHeadingCmd(rot-2),
-        new FunctionCommand([]() {
+        intakeToCata.withTimeout(3),
+        drive_sys.DriveForwardCmd(10, REV, 0.8).withTimeout(1),
+        drive_sys.TurnToHeadingCmd(rot - 2),
+        FunctionCommand([]() {
             cata_sys.send_command(CataSys::Command::StopFiring);
             return true;
         }),
         cata_sys.IntakeFully(),
-        drive_sys.DriveForwardCmd(14, FWD, 0.2)->withTimeout(1),
+        drive_sys.DriveForwardCmd(14, FWD, 0.2).withTimeout(1),
     };
 
     // Cancel the operation if the button is ever released
-    cmd.add_cancel_func([&]() { return !enable(); });
+    // cmd.add_cancel_func([&]() { return !enable(); });
     cmd.run();
     cata_sys.send_command(CataSys::Command::StopIntake);
 }
