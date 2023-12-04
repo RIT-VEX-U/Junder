@@ -7,12 +7,17 @@
  *    a queue and get executed and removed from the queue
  *    in FIFO order.
  */
-#include "core/utils/command_structure/auto_command.h"
 #include <vector>
 
+#include "core/utils/command_structure/auto_command.h"
+
 class CommandController {
-  public:
-    CommandController(std::initializer_list<AutoCommand> cmds) {}
+   public:
+    CommandController(std::initializer_list<AutoCommand> cmds);
     void run();
-    void add_cancel_func(std::function<bool()>) {}
+    void set_cancel_func(std::function<bool()> true_to_end);
+
+   private:
+    std::vector<AutoCommand> cmds;
+    std::function<bool()> controller_should_end = [](){return false;}; 
 };

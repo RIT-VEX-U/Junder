@@ -1,4 +1,5 @@
 #include "automation.h"
+
 #include "robot-config.h"
 
 #define FWD vex::directionType::fwd
@@ -9,8 +10,7 @@
 // ================ Driver Assist Automations ================
 
 void matchload_1(std::function<bool()> enable) {
-    if (!enable())
-        return;
+    if (!enable()) return;
 
     AutoCommand intakeToCata = FunctionCommand([]() {
         drive_sys.drive_tank(0.15, 0.15);
@@ -35,7 +35,7 @@ void matchload_1(std::function<bool()> enable) {
     };
 
     // Cancel the operation if the button is ever released
-    // cmd.add_cancel_func([&]() { return !enable(); });
+    // cmd.set_cancel_func([&]() { return !enable(); });
     cmd.run();
     cata_sys.send_command(CataSys::Command::StopIntake);
 }

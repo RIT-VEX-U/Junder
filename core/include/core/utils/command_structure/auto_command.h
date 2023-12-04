@@ -8,11 +8,13 @@
 
 #include "core/utils/command_structure/condition.h"
 
+// A memory managing wrapper for any autocommand. See below for more information
 class AutoCommand;
 /**
  * AutoCommandInterface is the 'base class' of all commands for the auto system.
- * This class is virtual (member functions ending in = 0) so it can not be instantiated. 
- * If you want to talk about a list of commands to run, use AutoCommand
+ * This class is virtual (member functions ending in = 0) so it can not be
+ * instantiated. If you want to talk about a list of commands to run, use
+ * AutoCommand
  */
 class AutoCommandInterface {
    public:
@@ -28,6 +30,52 @@ class AutoCommandInterface {
     virtual AutoCommand duplicate() const = 0;
     virtual ~AutoCommandInterface() {}
 };
+class InOrder : public AutoCommandInterface {
+   public:
+    InOrder();
+    InOrder(std::initializer_list<AutoCommand> cmds);
+    bool run() override;
+    AutoCommand duplicate() const override;
+    AutoCommand with_timeout(double seconds);
+    AutoCommand until(Condition cond);
+    InOrder repeat_times(size_t number_times);
+
+   private:
+    std::vector<AutoCommand> cmds;
+};
+class Repeat : public AutoCommandInterface {
+   public:
+    Repeat();
+    Repeat(std::initializer_list<AutoCommand> cmds);
+    static Repeat FromVector(const std::vector<AutoCommand> &cmds);
+    bool run() override;
+    AutoCommand duplicate() const override;
+    AutoCommand with_timeout(double seconds);
+    AutoCommand until(Condition cond);
+
+   private:
+    std::vector<AutoCommand> cmds;
+    std::queue<AutoCommand> working_cmds;
+};
+
+class FunctionCommand : public AutoCommandInterface {
+   public:
+    FunctionCommand(std::function<bool()> f) : f(f) {}
+    bool run() override { return f(); }
+
+    AutoCommand duplicate() const override;
+
+   private:
+    std::function<bool()> f;
+};
+
+/// @brief TimeSinceStartExceeds tests based on time since the command
+/// controller was constructed. Returns true if elapsed time > time_s
+Condition TimeSinceStartExceeds(double seconds);
+
+/// @brief Pauses until the condition is true. Basically delay but with a
+/// condition instead of a time
+AutoCommand PauseUntil(Condition cond);
 
 /**
  * AutoCommand is a memory managed way to talk about autocommands.
@@ -37,8 +85,9 @@ class AutoCommandInterface {
  */
 class AutoCommand {
    public:
-    const double default_timeout = 10.0;
-    const double DONT_TIMEOUT = -1.0;
+    friend class CommandController;
+    static constexpr double default_timeout = 10.0;
+    static constexpr double DONT_TIMEOUT = -1.0;
 
     // Implicit InOrder constructor. Helpful for grouping commands together
     AutoCommand(std::initializer_list<AutoCommand> cmds);
@@ -70,59 +119,16 @@ class AutoCommand {
 
     AutoCommand with_timeout(double seconds);
     AutoCommand until(Condition cond);
+    bool does_timeout();
+    void on_timeout();
 
    private:
     AutoCommandInterface *cmd_ptr = nullptr;
     Condition true_to_end = AlwaysFalseCondition();
     double timeout_seconds = default_timeout;
 };
+template <>
+AutoCommand::AutoCommand(InOrder io);
 
-class FunctionCommand : public AutoCommandInterface {
-   public:
-    FunctionCommand(std::function<bool()> f) : f(f) {}
-    bool run() override { return f(); }
-
-    AutoCommand duplicate() const override {
-        return AutoCommand(FunctionCommand(f));
-    }
-
-   private:
-    std::function<bool()> f;
-};
-
-class InOrder : public AutoCommandInterface {
-   public:
-    InOrder();
-    InOrder(std::initializer_list<AutoCommand> cmds);
-    bool run() override;
-    AutoCommand duplicate() const override;
-    AutoCommand with_timeout(double seconds);
-    AutoCommand until(Condition cond);
-    InOrder repeat_times(size_t number_times);
-
-   private:
-    std::vector<AutoCommand> cmds;
-};
-
-class Repeat : public AutoCommandInterface {
-   public:
-    Repeat();
-    Repeat(std::initializer_list<AutoCommand> cmds);
-    static Repeat FromVector(const std::vector<AutoCommand> &cmds);
-    bool run() override;
-    AutoCommand duplicate() const override;
-    AutoCommand with_timeout(double seconds);
-    AutoCommand until(Condition cond);
-
-   private:
-    std::vector<AutoCommand> cmds;
-    std::queue<AutoCommand> working_cmds;
-};
-
-/// @brief TimeSinceStartExceeds tests based on time since the command
-/// controller was constructed. Returns true if elapsed time > time_s
-Condition TimeSinceStartExceeds(double seconds);
-
-/// @brief Pauses until the condition is true. Basically delay but with a
-/// condition instead of a time
-AutoCommand PauseUntil(Condition cond);
+template <>
+AutoCommand::AutoCommand(Repeat r);

@@ -229,7 +229,7 @@ void skills() {
          WingCmd(RIGHT, false)},
     };
 
-    cmd.add_cancel_func([]() { return con.ButtonA.pressing(); });
+    cmd.set_cancel_func([]() { return con.ButtonA.pressing(); });
     cmd.run();
 
     drive_sys.stop();
