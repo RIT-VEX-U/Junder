@@ -9,6 +9,8 @@ using namespace vex;
 // ================ INPUTS ================
 // Digital sensors
 
+
+bool DONT_RUN_CATA_YOU_FOOL = true;
 // Analog sensors
 inertial imu(PORT8);
 
@@ -78,18 +80,15 @@ MotionController::m_profile_cfg_t drive_mc_cfg{.max_v = 72.50,
                                                    }};
 MotionController drive_mc{drive_mc_cfg};
 
-robot_specs_t robot_cfg = {.robot_radius = 12,      // inches
-                           .odom_wheel_diam = 3.15, // inches
-                           .odom_gear_ratio = .5,
-                           .dist_between_wheels = 10.6,  // inches
-                           .drive_correction_cutoff = 4, // inches
-                           .drive_feedback =
-                               new PID(drive_pid_cfg), //&drive_mc,
-                           .turn_feedback = new PID(turn_pid_cfg),
-                           .correction_pid = (PID::pid_config_t){
-                               .p = .03,
-                               .d = 0.004
-                           }};
+robot_specs_t robot_cfg = {
+    .robot_radius = 12,      // inches
+    .odom_wheel_diam = 3.15, // inches
+    .odom_gear_ratio = .5,
+    .dist_between_wheels = 10.6,              // inches
+    .drive_correction_cutoff = 4,             // inches
+    .drive_feedback = new PID(drive_pid_cfg), //&drive_mc,
+    .turn_feedback = new PID(turn_pid_cfg),
+    .correction_pid = (PID::pid_config_t){.p = .03, .d = 0.004}};
 
 OdometryTank odom{left_motors, right_motors, robot_cfg, &imu};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
@@ -171,7 +170,7 @@ std::vector<screen::Page *> pages;
 
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous
- * are started.
+* are started.
  */
 void robot_init() {
 
@@ -183,6 +182,7 @@ void robot_init() {
     };
 
     screen::start_screen(Brain.Screen, pages, 3);
+
     // imu.calibrate();
     // gps_sensor.calibrate();
 }

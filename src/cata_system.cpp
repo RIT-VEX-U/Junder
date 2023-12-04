@@ -8,11 +8,11 @@ const double intake_enable_upper_threshold = 200;
 
 const double intake_upper_volt = 12;
 const double intake_upper_volt_hold = 6;
-const double intake_lower_volt = 10.0;
+const double intake_lower_volt = 9.0;
 const double intake_sensor_dist_mm = 150;
 
-const double cata_target_charge = 177;
-const double cata_target_intake = 177;
+const double cata_target_charge = 178;
+const double cata_target_intake = 178; // LOWER IS CLOSER TO SLIPPPING
 
 PID::pid_config_t pc = {.p = 1,
                         // .i = 2,
@@ -35,6 +35,15 @@ int thread_func(void *void_cata) {
     cata_pid.set_limits(-12.0, 0);
 
     vex::timer intake_tmr;
+
+    while(DONT_RUN_CATA_YOU_FOOL){
+        vexDelay(20);
+    }
+    // cata_motors.stop(brakeType::hold);
+    // for (int i = 0; i < 10; i++) {
+    //     cata.intake_lower.spin(vex::reverse, 12.0, vex::volt);
+    //     vexDelay(20);
+    // }
 
     while (true) {
         // read sensors
@@ -300,7 +309,7 @@ class CataSysPage : public screen::Page {
                     cs.firing_requested ? "yes" : "no");
 
         scr.printAt(40, 140, true, "Ball in Cata: %s",
-                  ball_in_cata ? "yes" : "no");
+                    ball_in_cata ? "yes" : "no");
 
         scr.printAt(40, 160, true, "Ball in Intake: %s",
                     ball_in_intake ? "yes" : "no");
@@ -341,5 +350,12 @@ AutoCommand *CataSys::IntakeFully() {
 AutoCommand *CataSys::WaitForIntake() {
     return new FunctionCommand([&]() {
         return intake_watcher.objectDistance(distanceUnits::mm) < 150;
+    });
+}
+
+AutoCommand *CataSys::StopFiring() {
+    return new FunctionCommand([]() {
+        cata_sys.send_command(CataSys::Command::StopFiring);
+        return true;
     });
 }
