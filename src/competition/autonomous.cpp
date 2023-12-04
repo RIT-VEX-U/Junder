@@ -143,15 +143,6 @@ void only_shoot() {
 
 void skills() {
     AutoCommand intakeToCata = FunctionCommand([]() {
-        // Run intake in, periodically push out in case it's caught.
-        // static vex::timer intake_tmr;
-        // if(intake_tmr.time(sec) > 1)
-        //     cata_sys.send_command(CataSys::Command::IntakeOut);
-        // else if( intake_tmr.time(sec) > 1.5)
-        //     intake_tmr.reset();
-        // else
-        //     cata_sys.send_command(CataSys::Command::IntakeIn);
-
         // Only return when the ball is in the bot
         return cata_watcher.isNearObject();
     });
@@ -159,12 +150,6 @@ void skills() {
     const double dist = 6.0;
     const double load_angle = 225;
     const double shoot_angle = 210.0;
-
-    AutoCommand printOdom = FunctionCommand([]() {
-        auto pose = odom.get_position();
-        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
-        return true;
-    });
 
     CommandController cmd{
         odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
@@ -185,7 +170,7 @@ void skills() {
             cata_sys.IntakeFully(),
             drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).withTimeout(1.5),
         },
-        // Matchloading phase
+        // 3. Matchloading
         Repeat{
             odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
@@ -201,8 +186,8 @@ void skills() {
             drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(2.0),
         }
             .withTimeout(4),
-        //
-        // Last preload
+
+        // 4. Last preload
         {
             intakeToCata,
             drive_sys.DriveForwardCmd(dist, REV, 0.5).withTimeout(2.0),
@@ -215,49 +200,33 @@ void skills() {
             cata_sys.StopFiring(),
         },
 
-        printOdom,
-        odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
-        drive_sys.DriveToPointCmd({.x = 19, .y = 19}, REV, 0.5),
-        printOdom,
-        drive_sys.TurnToHeadingCmd(160, .5),
-        cata_sys.StopIntake(),
-
-        // // Drive through "The Passage" & push into side of goal
-        // // Push into side of goal
-        // new Parallel{
-        //     new InOrder{new WaitUntilCondition(new FunctionCondition(
-        //                     []() { return odom.get_position().x > 102; })),
-        //                 new WingCmd(LEFT, false)},
-        //     drive_sys.PurePursuitCmd(PurePursuit::Path(
-        //                                  {
-        //                                      {.x = 19, .y = 19},
-        //                                      {.x = 30, 0, .y = 11},
-        //                                      {.x = 62, .y = 12},
-        //                                      {.x = 100.0, .y = 19},
-        //                                      {.x = 120.0, .y = 26},
-        //                                  },
-        //                                  4),
-        //                              REV, .5)},
-        drive_sys.TurnToHeadingCmd(60 - 180, .5),
-        drive_sys.DriveForwardCmd(36, REV, 1).withTimeout(3.0),
-        drive_sys.DriveForwardCmd(4, FWD, 1),
-        drive_sys.TurnDegreesCmd(-80),
-        drive_sys.DriveForwardCmd(8, REV, .15).withTimeout(3.0),  // wall align
-        printOdom,
-        odom.SetPositionCmd(
-            {.x = 137, .y = 51, .rot = 180}),  // odom.get_position().rot
-        printOdom,
-        drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
-        WingCmd(RIGHT, true),
-        // new WingCmd(LEFT, true),
-        drive_sys.TurnDegreesCmd(55),
-        drive_sys.DriveForwardCmd(32, REV).withTimeout(3.0),
-        drive_sys.TurnDegreesCmd(-10),
-        drive_sys.DriveForwardCmd(34, FWD).withTimeout(3.0),
-        drive_sys.DriveForwardCmd(40, REV).withTimeout(3.0),
-        drive_sys.DriveForwardCmd(34, FWD).withTimeout(3.0),
-        drive_sys.DriveForwardCmd(40, REV).withTimeout(3.0),
-        WingCmd(RIGHT, false)};
+        // 5. Drive through "The Passage" & push into side of goal
+        {
+            odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+            drive_sys.DriveToPointCmd({.x = 19, .y = 19}, REV, 0.5),
+            drive_sys.TurnToHeadingCmd(160, .5),
+            cata_sys.StopIntake(),
+            drive_sys.TurnToHeadingCmd(60 - 180, .5),
+            drive_sys.DriveForwardCmd(36, REV, 1).withTimeout(3.0),
+            drive_sys.DriveForwardCmd(4, FWD, 1),
+        },
+        // 6. Wall align
+        {
+            drive_sys.TurnDegreesCmd(-80),
+            drive_sys.DriveForwardCmd(8, REV, .15).withTimeout(3.0),
+            odom.SetPositionCmd({.x = 137, .y = 51, .rot = 180}),
+        },
+        // 7. Drive out to front of goal and slam a couple times
+        {drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
+         WingCmd(RIGHT, true), drive_sys.TurnDegreesCmd(55),
+         drive_sys.DriveForwardCmd(32, REV).withTimeout(3.0),
+         drive_sys.TurnDegreesCmd(-10),
+         drive_sys.DriveForwardCmd(34, FWD).withTimeout(3.0),
+         drive_sys.DriveForwardCmd(40, REV).withTimeout(3.0),
+         drive_sys.DriveForwardCmd(34, FWD).withTimeout(3.0),
+         drive_sys.DriveForwardCmd(40, REV).withTimeout(3.0),
+         WingCmd(RIGHT, false)},
+    };
 
     cmd.add_cancel_func([]() { return con.ButtonA.pressing(); });
     cmd.run();

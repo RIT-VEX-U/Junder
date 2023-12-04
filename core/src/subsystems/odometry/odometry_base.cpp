@@ -72,6 +72,14 @@ AutoCommand OdometryBase::SetPositionCmd(const pose_t &newpos) {
     });
 }
 
+AutoCommand OdometryBase::PrintCmd() {
+    return FunctionCommand([&]() {
+        auto pose = get_position();
+        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
+        return true;
+    });
+}
+
 /**
  * Get the distance between two points
  * @param start_pos distance from this point

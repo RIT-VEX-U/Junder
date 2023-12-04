@@ -92,6 +92,7 @@ class Repeat : public AutoCommandBase {
     AutoCommand duplicate() const override;
     AutoCommand withTimeout(double seconds);
 
+
    private:
     std::vector<AutoCommand> cmds;
 };
