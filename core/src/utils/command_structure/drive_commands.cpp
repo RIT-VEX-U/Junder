@@ -1,8 +1,9 @@
 /**
  * File: drive_commands.h
  * Desc:
- *    Holds all the AutoCommand subclasses that wrap (currently) TankDrive functions
- *    
+ *    Holds all the AutoCommand subclasses that wrap (currently) TankDrive
+ * functions
+ *
  *    Currently includes:
  *      - drive_forward
  *      - turn_degrees
@@ -18,7 +19,6 @@
 
 #include "core/utils/command_structure/drive_commands.h"
 
-
 // ==== DRIVING ====
 
 /**
@@ -28,9 +28,17 @@
  * @param inches how far forward to drive
  * @param dir the direction to drive
  * @param max_speed 0 -> 1 percentage of the drive systems speed to drive at
-*/
-DriveForwardCommand::DriveForwardCommand(TankDrive &drive_sys, Feedback &feedback, double inches, directionType dir, double max_speed, double end_speed):
-  drive_sys(drive_sys), feedback(feedback), inches(inches), dir(dir), max_speed(max_speed), end_speed(end_speed) {}
+ */
+DriveForwardCommand::DriveForwardCommand(TankDrive &drive_sys,
+                                         Feedback &feedback, double inches,
+                                         directionType dir, double max_speed,
+                                         double end_speed)
+    : drive_sys(drive_sys),
+      feedback(feedback),
+      inches(inches),
+      dir(dir),
+      max_speed(max_speed),
+      end_speed(end_speed) {}
 
 /**
  * Run drive_forward
@@ -38,17 +46,21 @@ DriveForwardCommand::DriveForwardCommand(TankDrive &drive_sys, Feedback &feedbac
  * @returns true when execution is complete, false otherwise
  */
 bool DriveForwardCommand::run() {
-  return drive_sys.drive_forward(inches, dir, feedback, max_speed, end_speed);
+    return drive_sys.drive_forward(inches, dir, feedback, max_speed, end_speed);
+}
+
+AutoCommand DriveForwardCommand::duplicate() const {
+    return DriveForwardCommand(drive_sys, feedback, inches, dir, max_speed,
+                               end_speed);
 }
 
 /**
  * reset the drive system if we timeout
-*/
-void DriveForwardCommand::on_timeout(){
-  drive_sys.stop();
-  drive_sys.reset_auto();
+ */
+void DriveForwardCommand::on_timeout() {
+    drive_sys.stop();
+    drive_sys.reset_auto();
 }
-
 
 /**
  * Construct a TurnDegreesCommand Command
@@ -57,8 +69,14 @@ void DriveForwardCommand::on_timeout(){
  * @param degrees how many degrees to rotate
  * @param max_speed 0 -> 1 percentage of the drive systems speed to drive at
  */
-TurnDegreesCommand::TurnDegreesCommand(TankDrive &drive_sys, Feedback &feedback, double degrees, double max_speed, double end_speed):
-  drive_sys(drive_sys), feedback(feedback), degrees(degrees), max_speed(max_speed), end_speed(end_speed) {}
+TurnDegreesCommand::TurnDegreesCommand(TankDrive &drive_sys, Feedback &feedback,
+                                       double degrees, double max_speed,
+                                       double end_speed)
+    : drive_sys(drive_sys),
+      feedback(feedback),
+      degrees(degrees),
+      max_speed(max_speed),
+      end_speed(end_speed) {}
 
 /**
  * Run turn_degrees
@@ -66,16 +84,20 @@ TurnDegreesCommand::TurnDegreesCommand(TankDrive &drive_sys, Feedback &feedback,
  * @returns true when execution is complete, false otherwise
  */
 bool TurnDegreesCommand::run() {
-  return drive_sys.turn_degrees(degrees, max_speed, end_speed);
+    return drive_sys.turn_degrees(degrees, max_speed, end_speed);
 }
 /**
  * reset the drive system if we timeout
-*/
-void TurnDegreesCommand::on_timeout(){
-  drive_sys.stop();
-  drive_sys.reset_auto();
+ */
+void TurnDegreesCommand::on_timeout() {
+    drive_sys.stop();
+    drive_sys.reset_auto();
 }
 
+AutoCommand TurnDegreesCommand::duplicate() const {
+    return TurnDegreesCommand(drive_sys, feedback, degrees, max_speed,
+                              end_speed);
+}
 
 /**
  * Construct a DriveForward Command
@@ -86,8 +108,17 @@ void TurnDegreesCommand::on_timeout(){
  * @param dir the direction to drive
  * @param max_speed 0 -> 1 percentage of the drive systems speed to drive at
  */
-DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys, Feedback &feedback, double x, double y, directionType dir, double max_speed, double end_speed):
-  drive_sys(drive_sys), feedback(feedback), x(x), y(y), dir(dir), max_speed(max_speed), end_speed(end_speed) {}
+DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys,
+                                         Feedback &feedback, double x, double y,
+                                         directionType dir, double max_speed,
+                                         double end_speed)
+    : drive_sys(drive_sys),
+      feedback(feedback),
+      x(x),
+      y(y),
+      dir(dir),
+      max_speed(max_speed),
+      end_speed(end_speed) {}
 
 /**
  * Construct a DriveForward Command
@@ -97,8 +128,17 @@ DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys, Feedback &feedbac
  * @param dir the direction to drive
  * @param max_speed 0 -> 1 percentage of the drive systems speed to drive at
  */
-DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys, Feedback &feedback, point_t point, directionType dir, double max_speed, double end_speed):
-  drive_sys(drive_sys), feedback(feedback), x(point.x), y(point.y), dir(dir), max_speed(max_speed), end_speed(end_speed) {}
+DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys,
+                                         Feedback &feedback, point_t point,
+                                         directionType dir, double max_speed,
+                                         double end_speed)
+    : drive_sys(drive_sys),
+      feedback(feedback),
+      x(point.x),
+      y(point.y),
+      dir(dir),
+      max_speed(max_speed),
+      end_speed(end_speed) {}
 
 /**
  * Run drive_to_point
@@ -106,16 +146,20 @@ DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys, Feedback &feedbac
  * @returns true when execution is complete, false otherwise
  */
 bool DriveToPointCommand::run() {
-  return drive_sys.drive_to_point(x, y, dir, feedback, max_speed, end_speed);
+    return drive_sys.drive_to_point(x, y, dir, feedback, max_speed, end_speed);
 }
 /**
  * reset the drive system if we don't hit our target
-*/
-void DriveToPointCommand::on_timeout(){
-  drive_sys.stop();
-  drive_sys.reset_auto();
+ */
+void DriveToPointCommand::on_timeout() {
+    drive_sys.stop();
+    drive_sys.reset_auto();
 }
 
+AutoCommand DriveToPointCommand::duplicate() const {
+    return DriveToPointCommand(drive_sys, feedback, {.x = x, .y = y}, dir,
+                               max_speed, end_speed);
+}
 
 /**
  * Construct a TurnToHeadingCommand Command
@@ -124,8 +168,15 @@ void DriveToPointCommand::on_timeout(){
  * @param heading_deg the heading to turn to in degrees
  * @param max_speed 0 -> 1 percentage of the drive systems speed to drive at
  */
-TurnToHeadingCommand::TurnToHeadingCommand(TankDrive &drive_sys, Feedback &feedback, double heading_deg, double max_speed, double end_speed):
-  drive_sys(drive_sys), feedback(feedback), heading_deg(heading_deg), max_speed(max_speed), end_speed(end_speed) {}
+TurnToHeadingCommand::TurnToHeadingCommand(TankDrive &drive_sys,
+                                           Feedback &feedback,
+                                           double heading_deg, double max_speed,
+                                           double end_speed)
+    : drive_sys(drive_sys),
+      feedback(feedback),
+      heading_deg(heading_deg),
+      max_speed(max_speed),
+      end_speed(end_speed) {}
 
 /**
  * Run turn_to_heading
@@ -133,56 +184,69 @@ TurnToHeadingCommand::TurnToHeadingCommand(TankDrive &drive_sys, Feedback &feedb
  * @returns true when execution is complete, false otherwise
  */
 bool TurnToHeadingCommand::run() {
-  return drive_sys.turn_to_heading(heading_deg, feedback, max_speed, end_speed);
+    return drive_sys.turn_to_heading(heading_deg, feedback, max_speed,
+                                     end_speed);
 }
 /**
  * reset the drive system if we don't hit our target
-*/
-void TurnToHeadingCommand::on_timeout(){
-  drive_sys.stop();
-  drive_sys.reset_auto();
+ */
+void TurnToHeadingCommand::on_timeout() {
+    drive_sys.stop();
+    drive_sys.reset_auto();
+}
+
+AutoCommand TurnToHeadingCommand::duplicate() const {
+    return TurnToHeadingCommand(drive_sys, feedback, heading_deg, max_speed,
+                                end_speed);
 }
 
 /**
  * Construct a Pure Pursuit AutoCommand
- * 
+ *
  * @param path The list of coordinates to follow, in order
  * @param dir Run the bot forwards or backwards
  * @param feedback The feedback controller determining speed
  * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
-*/
-PurePursuitCommand::PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback, PurePursuit::Path path, directionType dir, double max_speed, double end_speed)
-: drive_sys(drive_sys), path(path), dir(dir), feedback(feedback), max_speed(max_speed), end_speed(end_speed)
-{}
+ */
+PurePursuitCommand::PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback,
+                                       PurePursuit::Path path,
+                                       directionType dir, double max_speed,
+                                       double end_speed)
+    : drive_sys(drive_sys),
+      path(path),
+      dir(dir),
+      feedback(feedback),
+      max_speed(max_speed),
+      end_speed(end_speed) {}
 
 /**
  * Direct call to TankDrive::pure_pursuit
-*/
-bool PurePursuitCommand::run()
-{
-  return drive_sys.pure_pursuit(path, dir, feedback, max_speed, end_speed);
+ */
+bool PurePursuitCommand::run() {
+    return drive_sys.pure_pursuit(path, dir, feedback, max_speed, end_speed);
 }
 
 /**
  * Reset the drive system when it times out
-*/
-void PurePursuitCommand::on_timeout()
-{
-  drive_sys.stop();
-  drive_sys.reset_auto();
+ */
+void PurePursuitCommand::on_timeout() {
+    drive_sys.stop();
+    drive_sys.reset_auto();
+}
+
+AutoCommand PurePursuitCommand::duplicate() const {
+    return PurePursuitCommand(drive_sys, feedback, path, dir, max_speed,
+                              end_speed);
 }
 
 /**
  * Construct a DriveStop Command
  * @param drive_sys the drive system we are commanding
  */
-DriveStopCommand::DriveStopCommand(TankDrive &drive_sys):
-  drive_sys(drive_sys) {}
+DriveStopCommand::DriveStopCommand(TankDrive &drive_sys)
+    : drive_sys(drive_sys) {}
 
-void DriveStopCommand::on_timeout()
-{
-  drive_sys.reset_auto();
-}
+void DriveStopCommand::on_timeout() { drive_sys.reset_auto(); }
 
 /**
  * Stop the drive train
@@ -190,20 +254,9 @@ void DriveStopCommand::on_timeout()
  * @returns true when execution is complete, false otherwise
  */
 bool DriveStopCommand::run() {
-  drive_sys.stop();
-  return true;
+    drive_sys.stop();
+    return true;
 }
-
-
-// ==== ODOMETRY ====
-/**
- * Construct an Odometry set pos
- * @param odom the odometry system we are setting
- * @param newpos the now position to set the odometry to
- */
-OdomSetPosition::OdomSetPosition(OdometryBase &odom, const pose_t &newpos): odom(odom), newpos(newpos){}
-
-bool OdomSetPosition::run() {
-  odom.set_position(newpos);
-  return true;
+AutoCommand DriveStopCommand::duplicate() const {
+    return DriveStopCommand(drive_sys);
 }

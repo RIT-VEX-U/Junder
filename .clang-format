@@ -1,3 +1,2 @@
-BasedOnStyle: LLVM
+BasedOnStyle: Google
 IndentWidth: 4
-AlignAfterOpenBracket: BlockIndent

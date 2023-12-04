@@ -1,14 +1,15 @@
 #pragma once
-#include "core/utils/command_structure/condition.h"
 #include <functional>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
 
+#include "core/utils/command_structure/condition.h"
+
 class AutoCommand;
 class AutoCommandBase {
-  public:
+   public:
     // The way to execute the command. returns true when this command is
     // finished
     virtual bool run() { return true; };
@@ -19,16 +20,22 @@ class AutoCommandBase {
     /// that is duplicate the command in the state it was before the first run()
     /// was called.
     virtual AutoCommand duplicate() const = 0;
+    virtual ~AutoCommandBase() {}
 };
 
 // Handles memory management
 // A custom unique ptr basically
 class AutoCommand {
-  public:
+   public:
     const double default_timeout = 10.0;
+    const double DONT_TIMEOUT = -1.0;
+
+    // Implicit InOrder constructor. Helpful for grouping commands together
+    AutoCommand(std::initializer_list<AutoCommand> cmds);
 
     // constructor from arbitrary command
-    template <typename CommandT> AutoCommand(CommandT cmd) {
+    template <typename CommandT>
+    AutoCommand(CommandT cmd) {
         static_assert(
             !std::is_pointer<CommandT>::value,
             "Command should not be a pointer. We used to initilize command "
@@ -52,13 +59,13 @@ class AutoCommand {
 
     AutoCommand withTimeout(double seconds);
 
-  private:
+   private:
     AutoCommandBase *cmd_ptr = nullptr;
     double timeout_seconds = default_timeout;
 };
 
 class FunctionCommand : public AutoCommandBase {
-  public:
+   public:
     FunctionCommand(std::function<bool()> f) : f(f) {}
     bool run() override { return f(); }
 
@@ -66,23 +73,27 @@ class FunctionCommand : public AutoCommandBase {
         return AutoCommand(FunctionCommand(f));
     }
 
-  private:
+   private:
     std::function<bool()> f;
 };
 
 class InOrder : public AutoCommandBase {
-  public:
+   public:
     InOrder(std::initializer_list<AutoCommand> cmds);
     bool run() override;
     AutoCommand duplicate() const override;
 };
 
 class Repeat : public AutoCommandBase {
-  public:
+   public:
+    Repeat();
     Repeat(std::initializer_list<AutoCommand> cmds);
     bool run() override;
     AutoCommand duplicate() const override;
-    operator AutoCommand();
+    AutoCommand withTimeout(double seconds);
+
+   private:
+    std::vector<AutoCommand> cmds;
 };
 
 /// @brief TimeSinceStartExceeds tests based on time since the command
@@ -93,4 +104,4 @@ class Repeat : public AutoCommandBase {
 
 /// @brief Pauses until the condition is true. Basically delay but with a
 /// condition instead of a time
-Condition PauseUntilCondition(Condition &&cond); 
+Condition PauseUntilCondition(Condition &&cond);

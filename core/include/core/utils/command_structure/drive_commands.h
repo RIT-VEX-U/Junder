@@ -210,6 +210,7 @@ class PurePursuitCommand : public AutoCommandBase {
      * Reset the drive system when it times out
      */
     void on_timeout() override;
+
     AutoCommand duplicate() const override;
 
   private:
@@ -243,35 +244,3 @@ class DriveStopCommand : public AutoCommandBase {
     TankDrive &drive_sys;
 };
 
-// ==== ODOMETRY ====
-
-/**
- * AutoCommand wrapper class for the set_position function in the
- * Odometry class
- */
-class OdomSetPosition : public AutoCommandBase {
-  public:
-    /**
-     * constructs a new OdomSetPosition command
-     * @param odom the odometry system we are setting
-     * @param newpos the position we are telling the odometry to take. defaults
-     * to (0, 0), angle = 90
-     */
-    OdomSetPosition(
-        OdometryBase &odom, const pose_t &newpos = OdometryBase::zero_pos
-    );
-
-    /**
-     * Run set_position
-     * Overrides run from AutoCommand
-     * @returns true when execution is complete, false otherwise
-     */
-    bool run() override;
-
-    AutoCommand duplicate() const override;
-
-  private:
-    // drive system with an odometry config
-    OdometryBase &odom;
-    pose_t newpos;
-};

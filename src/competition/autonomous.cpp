@@ -11,7 +11,7 @@
 enum Side { LEFT, RIGHT };
 
 class WingCmd : public AutoCommandBase {
-  public:
+   public:
     WingCmd(Side s, bool deploy_down) : s(s), deploy_down(deploy_down) {}
 
     bool run() override {
@@ -31,7 +31,7 @@ class WingCmd : public AutoCommandBase {
 
     AutoCommand duplicate() const override;
 
-  private:
+   private:
     Side s;
     bool deploy_down;
 };
@@ -51,7 +51,6 @@ void autonomous() {
 
 AutoCommand shoot_and_drive(double dist, vex::directionType dir,
                             double max_pow) {
-
     return InOrder{
         cata_sys.Fire(),
         drive_sys.DriveForwardCmd(dist, dir, max_pow).withTimeout(1.5),
@@ -171,41 +170,57 @@ void skills() {
         odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
         // 1 - Turn and shoot preload
-        drive_sys.DriveForwardCmd(dist, REV),
-        drive_sys.TurnToHeadingCmd(shoot_angle, .5), cata_sys.Fire(),
-        cata_sys.StopFiring(),
+        {
+            drive_sys.DriveForwardCmd(dist, REV),
+            drive_sys.TurnToHeadingCmd(shoot_angle, .5),
+            cata_sys.Fire(),
+            cata_sys.StopFiring(),
 
-        DelayCommand(300),
+            DelayCommand(300),
+        },
 
         // 2 - Turn to matchload zone & begin matchloading
-        drive_sys.TurnToHeadingCmd(load_angle, .5), cata_sys.IntakeFully(),
-        drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).withTimeout(1.5),
-
+        {
+            drive_sys.TurnToHeadingCmd(load_angle, .5),
+            cata_sys.IntakeFully(),
+            drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).withTimeout(1.5),
+        },
         // Matchloading phase
-        Repeat{odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+        Repeat{
+            odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
-               intakeToCata.withTimeout(2.0),
-               drive_sys.DriveForwardCmd(dist, REV, 0.5),
-               drive_sys.TurnToHeadingCmd(shoot_angle, 0.5), cata_sys.Fire(),
-               DelayCommand(300),
-               drive_sys.TurnToHeadingCmd(load_angle, 0.5),
-               cata_sys.StopFiring(),
+            intakeToCata.withTimeout(2.0),
+            drive_sys.DriveForwardCmd(dist, REV, 0.5),
+            drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
+            cata_sys.Fire(),
+            DelayCommand(300),
+            drive_sys.TurnToHeadingCmd(load_angle, 0.5),
+            cata_sys.StopFiring(),
 
-               cata_sys.IntakeFully(),
-               drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(2.0)},
+            cata_sys.IntakeFully(),
+            drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(2.0),
+        }
+            .withTimeout(4),
         //
         // Last preload
-        intakeToCata,
-        drive_sys.DriveForwardCmd(dist, REV, 0.5).withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(shoot_angle, 0.5), cata_sys.Fire(),
-        DelayCommand(500), drive_sys.TurnToHeadingCmd(load_angle, 0.5),
-        drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(4.0),
+        {
+            intakeToCata,
+            drive_sys.DriveForwardCmd(dist, REV, 0.5).withTimeout(2.0),
+            drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
+            cata_sys.Fire(),
+            DelayCommand(500),
+            drive_sys.TurnToHeadingCmd(load_angle, 0.5),
+            drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(4.0),
 
-        cata_sys.StopFiring(),
+            cata_sys.StopFiring(),
+        },
 
-        printOdom, odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
-        drive_sys.DriveToPointCmd({.x = 19, .y = 19}, REV, 0.5), printOdom,
-        drive_sys.TurnToHeadingCmd(160, .5), cata_sys.StopIntake(),
+        printOdom,
+        odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+        drive_sys.DriveToPointCmd({.x = 19, .y = 19}, REV, 0.5),
+        printOdom,
+        drive_sys.TurnToHeadingCmd(160, .5),
+        cata_sys.StopIntake(),
 
         // // Drive through "The Passage" & push into side of goal
         // // Push into side of goal
@@ -225,12 +240,14 @@ void skills() {
         //                              REV, .5)},
         drive_sys.TurnToHeadingCmd(60 - 180, .5),
         drive_sys.DriveForwardCmd(36, REV, 1).withTimeout(3.0),
-        drive_sys.DriveForwardCmd(4, FWD, 1), drive_sys.TurnDegreesCmd(-80),
-        drive_sys.DriveForwardCmd(8, REV, .15).withTimeout(3.0), // wall align
+        drive_sys.DriveForwardCmd(4, FWD, 1),
+        drive_sys.TurnDegreesCmd(-80),
+        drive_sys.DriveForwardCmd(8, REV, .15).withTimeout(3.0),  // wall align
         printOdom,
         odom.SetPositionCmd(
-            {.x = 137, .y = 51, .rot = 180}), // odom.get_position().rot
-        printOdom, drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
+            {.x = 137, .y = 51, .rot = 180}),  // odom.get_position().rot
+        printOdom,
+        drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
         WingCmd(RIGHT, true),
         // new WingCmd(LEFT, true),
         drive_sys.TurnDegreesCmd(55),
