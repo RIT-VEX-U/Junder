@@ -20,7 +20,7 @@ std::unique_ptr<T> make_unique(Args &&...args) {
 
 class ConditionBase;
 
-using Condition = std::unique_ptr<ConditionBase>;
+using Condition = std::shared_ptr<ConditionBase>;
 
 template <typename Cond>
 Condition ConditionFrom(Cond c) {
@@ -32,8 +32,8 @@ Condition ConditionFrom(Cond c) {
 
 class ConditionBase {
    public:
-    Condition Or(Condition &&c);
-    Condition And(Condition &&c);
+    Condition Or(Condition c);
+    Condition And(Condition c);
     virtual bool test() = 0;
     virtual ~ConditionBase() {}
 };

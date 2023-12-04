@@ -1,13 +1,14 @@
 #pragma once
 
+#include <atomic>
+
 #include "core/robot_specs.h"
 #include "core/subsystems/screen.h"
 #include "core/utils/command_structure/auto_command.h"
+#include "core/utils/command_structure/condition.h"
 #include "core/utils/controls/feedforward.h"
 #include "core/utils/controls/pid.h"
 #include "vex.h"
-#include "core/utils/command_structure/condition.h"
-#include <atomic>
 
 /**
  * a Flywheel class that handles all control of a high inertia spinning disk
@@ -19,8 +20,7 @@
  *
  */
 class Flywheel {
-
-  public:
+   public:
     // CONSTRUCTORS, GETTERS, AND SETTERS
     /**
      * Create the Flywheel object using PID + feedforward for control.
@@ -93,7 +93,6 @@ class Flywheel {
      * @return an auto command to add to a command controller
      */
     AutoCommand SpinRpmCmd(int rpm) {
-
         return FunctionCommand([this, rpm]() {
             spin_rpm(rpm);
             return true;
@@ -105,25 +104,25 @@ class Flywheel {
      * its target as defined by its feedback controller
      * @return an auto command to add to a command controller
      */
-    Condition WaitUntilUpToSpeedCmd() {
-        return PauseUntilCondition(fc([&]() { return is_on_target(); }));
+    AutoCommand WaitUntilUpToSpeedCmd() {
+        return PauseUntilCondition((fc([&]() { return is_on_target(); })));
     }
 
-  private:
+   private:
     friend class FlywheelPage;
     friend int spinRPMTask(void *wheelPointer);
 
-    vex::motor_group &motors;  ///< motors that make up the flywheel
-    bool task_running = false; ///< is the task currently running?
-    Feedback &fb;              ///< Main Feeback controller
-    FeedForward &ff;           ///< Helper Feedforward Controller
-    vex::mutex fb_mut;         ///< guard for talking to the runner thread
-    double ratio; ///< ratio between motor and flywheel. For accurate RPM
-                  ///< calcualation
-    std::atomic<double> target_rpm; ///< Desired RPM of the flywheel.
-    task rpm_task; ///< task that handles spinning the wheel at a given
-                   ///< target_rpm
-    Filter &avger; ///< Moving average to smooth out noise from
+    vex::motor_group &motors;   ///< motors that make up the flywheel
+    bool task_running = false;  ///< is the task currently running?
+    Feedback &fb;               ///< Main Feeback controller
+    FeedForward &ff;            ///< Helper Feedforward Controller
+    vex::mutex fb_mut;          ///< guard for talking to the runner thread
+    double ratio;  ///< ratio between motor and flywheel. For accurate RPM
+                   ///< calcualation
+    std::atomic<double> target_rpm;  ///< Desired RPM of the flywheel.
+    task rpm_task;  ///< task that handles spinning the wheel at a given
+                    ///< target_rpm
+    Filter &avger;  ///< Moving average to smooth out noise from
 
     // Functions for internal use only
     /**

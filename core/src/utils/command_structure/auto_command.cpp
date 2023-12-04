@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "vex.h"
+
 // Auto command implementation =================================
 bool AutoCommand::run() {
     if (cmd_ptr == nullptr) {
@@ -21,7 +23,7 @@ AutoCommand::AutoCommand(std::initializer_list<AutoCommand> cmds) {
     this->timeout_seconds = DONT_TIMEOUT;
 }
 
-AutoCommand AutoCommand::until(Condition &&cond) {
+AutoCommand AutoCommand::until(Condition cond) {
     true_to_end = true_to_end->Or(std::move(cond));
     return *this;
 }
@@ -75,7 +77,7 @@ AutoCommand InOrder::with_timeout(double seconds) {
     return AutoCommand(*this).with_timeout(seconds);
 }
 
-AutoCommand InOrder::until(Condition &&cond) {
+AutoCommand InOrder::until(Condition cond) {
     return AutoCommand(*this).until(std::forward<Condition>(cond));
 }
 
@@ -91,26 +93,37 @@ InOrder InOrder::repeat_times(size_t times) {
 }
 
 Repeat::Repeat() : cmds{} {}
-Repeat::Repeat(std::initializer_list<AutoCommand> cmds) : cmds{cmds} {}
+Repeat::Repeat(std::initializer_list<AutoCommand> cmds)
+    : cmds{cmds}, working_cmds{cmds} {}
+
+Repeat Repeat::FromVector(const std::vector<AutoCommand> &cmds) {
+    Repeat r;
+    r.cmds = cmds;
+    for (const AutoCommand &cmd : cmds) {
+        r.working_cmds.push(cmd);
+    }
+    return r;
+}
 
 bool Repeat::run() {
     printf("unimplemented Repeat::run()\n");
     return true;
 }
 
-AutoCommand Repeat::duplicate() const {
-    Repeat other;
-    other.cmds = cmds;  // all the correct copying happens magically  :)
-    return other;
-}
+AutoCommand Repeat::duplicate() const { return Repeat::FromVector(cmds); }
 AutoCommand Repeat::with_timeout(double seconds) {
     return AutoCommand(*this).with_timeout(seconds);
 }
 
-AutoCommand Repeat::until(Condition &&cond) {
+AutoCommand Repeat::until(Condition cond) {
     return AutoCommand(*this).until(std::forward<Condition>(cond));
 }
 
-Condition PauseUntilCondition(Condition &&cond) {
-    return fc([&]() { return cond->test(); });
+Condition TimeSinceStartExceeds(double seconds) {
+    return fc(
+        [seconds, tmr = vex::timer()]() { return tmr.value() > seconds; });
+}
+
+AutoCommand PauseUntilCondition(Condition c) {
+    return FunctionCommand([&]() { return c->test(); });
 }

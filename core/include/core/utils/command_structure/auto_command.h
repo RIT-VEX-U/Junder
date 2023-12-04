@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <memory>
+#include <queue>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -58,7 +59,7 @@ class AutoCommand {
     bool run();
 
     AutoCommand with_timeout(double seconds);
-    AutoCommand until(Condition &&cond);
+    AutoCommand until(Condition cond);
 
    private:
     AutoCommandBase *cmd_ptr = nullptr;
@@ -86,7 +87,7 @@ class InOrder : public AutoCommandBase {
     bool run() override;
     AutoCommand duplicate() const override;
     AutoCommand with_timeout(double seconds);
-    AutoCommand until(Condition &&cond);
+    AutoCommand until(Condition cond);
     InOrder repeat_times(size_t number_times);
 
    private:
@@ -97,21 +98,21 @@ class Repeat : public AutoCommandBase {
    public:
     Repeat();
     Repeat(std::initializer_list<AutoCommand> cmds);
+    static Repeat FromVector(const std::vector<AutoCommand> &cmds);
     bool run() override;
     AutoCommand duplicate() const override;
     AutoCommand with_timeout(double seconds);
-    AutoCommand until(Condition &&cond);
+    AutoCommand until(Condition cond);
 
    private:
     std::vector<AutoCommand> cmds;
+    std::queue<AutoCommand> working_cmds;
 };
 
 /// @brief TimeSinceStartExceeds tests based on time since the command
 /// controller was constructed. Returns true if elapsed time > time_s
-// Condition TimeSinceStartExceeds(double seconds) {
-//     return fc([=, tmr = vex::timer()]() { return tmr.value() > seconds; });
-// }
+Condition TimeSinceStartExceeds(double seconds);
 
 /// @brief Pauses until the condition is true. Basically delay but with a
 /// condition instead of a time
-Condition PauseUntilCondition(Condition &&cond);
+AutoCommand PauseUntilCondition(Condition cond);

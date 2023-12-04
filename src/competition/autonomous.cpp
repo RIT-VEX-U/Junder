@@ -167,7 +167,8 @@ void skills() {
         InOrder{
             drive_sys.TurnToHeadingCmd(load_angle, .5),
             cata_sys.IntakeFully(),
-            drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).with_timeout(1.5),
+            drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5)
+                .with_timeout(1.5),
         },
         // 3. Matchloading
         Repeat{
@@ -188,7 +189,7 @@ void skills() {
             .with_timeout(4.0),
 
         // 4. Last preload
-        AutoCommand{
+        {
             intakeToCata,
             drive_sys.DriveForwardCmd(dist, REV, 0.5).with_timeout(2.0),
             drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
