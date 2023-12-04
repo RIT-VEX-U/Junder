@@ -39,11 +39,6 @@ int thread_func(void *void_cata) {
     while (DONT_RUN_CATA_YOU_FOOL) {
         vexDelay(20);
     }
-    // cata_motors.stop(brakeType::hold);
-    // for (int i = 0; i < 10; i++) {
-    //     cata.intake_lower.spin(vex::reverse, 12.0, vex::volt);
-    //     vexDelay(20);
-    // }
 
     while (true) {
         // read sensors

@@ -152,7 +152,7 @@ void skills() {
         },
 
         // 2 - Turn to matchload zone & begin matchloading
-        InOrder{
+        {
             drive_sys.TurnToHeadingCmd(load_angle, .5),
             cata_sys.IntakeFully(),
             drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5)
