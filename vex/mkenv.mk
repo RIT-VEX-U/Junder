@@ -100,7 +100,7 @@ CXX_FLAGS = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Werror=return-type -fno-rtti -fno-thr
 CXX_TIDY_CHECKS = readability-*,-readability-magic-numbers,-readability-identifier-length,
 CXX_TIDY_CHECKS +=bugprone-*,performance-*,misc-*
 # bugprone-narrowing-conversions,bugprone-branch-clone,bugprone-integer-division,performance-unnecessary-value-param,performance-*
-CXX_TIDY = clang-tidy -fix --use-color -checks="${CXX_TIDY_CHECKS}"
+CXX_TIDY = clang-tidy --use-color -checks="${CXX_TIDY_CHECKS}"
 
 
 # linker flags
