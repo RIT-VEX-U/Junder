@@ -58,9 +58,11 @@ class AutoCommand {
     bool run();
 
     AutoCommand withTimeout(double seconds);
+    AutoCommand until(Condition &&cond);
 
    private:
     AutoCommandBase *cmd_ptr = nullptr;
+    Condition true_to_end = AlwaysFalseCondition();
     double timeout_seconds = default_timeout;
 };
 
@@ -79,9 +81,15 @@ class FunctionCommand : public AutoCommandBase {
 
 class InOrder : public AutoCommandBase {
    public:
+    InOrder();
     InOrder(std::initializer_list<AutoCommand> cmds);
     bool run() override;
     AutoCommand duplicate() const override;
+    AutoCommand withTimeout(double seconds);
+    AutoCommand until(Condition &&cond);
+
+   private:
+    std::vector<AutoCommand> cmds;
 };
 
 class Repeat : public AutoCommandBase {
@@ -91,7 +99,7 @@ class Repeat : public AutoCommandBase {
     bool run() override;
     AutoCommand duplicate() const override;
     AutoCommand withTimeout(double seconds);
-
+    AutoCommand until(Condition &&cond);
 
    private:
     std::vector<AutoCommand> cmds;

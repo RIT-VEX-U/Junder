@@ -153,7 +153,6 @@ void skills() {
 
     CommandController cmd{
         odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
-
         // 1 - Turn and shoot preload
         {
             drive_sys.DriveForwardCmd(dist, REV),
@@ -165,7 +164,7 @@ void skills() {
         },
 
         // 2 - Turn to matchload zone & begin matchloading
-        {
+        InOrder{
             drive_sys.TurnToHeadingCmd(load_angle, .5),
             cata_sys.IntakeFully(),
             drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).withTimeout(1.5),
@@ -185,7 +184,8 @@ void skills() {
             cata_sys.IntakeFully(),
             drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(2.0),
         }
-            .withTimeout(4),
+            .until(AlwaysTrueCondition()->And(AlwaysFalseCondition()))
+            .withTimeout(4.0),
 
         // 4. Last preload
         {

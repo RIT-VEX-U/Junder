@@ -2,11 +2,9 @@
 #include <functional>
 #include <memory>
 
-
 // Backported from C++14
-template<typename T, typename ...Args>
-std::unique_ptr<T> make_unique(Args &&... args)
-{
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args &&...args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
@@ -24,29 +22,33 @@ class ConditionBase;
 
 using Condition = std::unique_ptr<ConditionBase>;
 
-template<typename Cond>
-Condition ConditionFrom(Cond c){
-    static_assert(std::is_convertible<Cond *, ConditionBase *>::value, "Cond must implement ConditionBase");
+template <typename Cond>
+Condition ConditionFrom(Cond c) {
+    static_assert(std::is_convertible<Cond *, ConditionBase *>::value,
+                  "Cond must implement ConditionBase");
     std::unique_ptr<ConditionBase> uptr = c;
     return uptr;
 }
 
 class ConditionBase {
-  public:
-    Condition Or(Condition c);
-    Condition And(Condition c);
+   public:
+    Condition Or(Condition &&c);
+    Condition And(Condition &&c);
     virtual bool test() = 0;
     virtual ~ConditionBase() {}
 };
 
 class FunctionCondition : public ConditionBase {
-  public:
+   public:
     FunctionCondition(std::function<bool()> f) : f(f) {}
     bool test() override { return true; }
 
-  private:
+   private:
     std::function<bool()> f;
 };
 
 // shorthand for function Condition
 Condition fc(std::function<bool()> f);
+
+Condition AlwaysFalseCondition();
+Condition AlwaysTrueCondition();

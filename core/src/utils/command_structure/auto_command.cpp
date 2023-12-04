@@ -21,6 +21,11 @@ AutoCommand::AutoCommand(std::initializer_list<AutoCommand> cmds) {
     this->timeout_seconds = DONT_TIMEOUT;
 }
 
+AutoCommand AutoCommand::until(Condition &&cond) {
+    true_to_end = true_to_end->Or(std::move(cond));
+    return *this;
+}
+
 /***
  * Special Member functions
  * TODO EXPLAIN THESE
@@ -53,6 +58,27 @@ AutoCommand::~AutoCommand() {
     delete cmd_ptr;
 }
 
+InOrder::InOrder() : cmds{} {}
+InOrder::InOrder(std::initializer_list<AutoCommand> cmds) : cmds{cmds} {}
+
+bool InOrder::run() {
+    printf("Inorder::run() not implemented\n");
+    return true;
+}
+
+AutoCommand InOrder::duplicate() const {
+    InOrder other;  // all the correct copying happens magically  :)
+    other.cmds = cmds;
+    return other;
+}
+AutoCommand InOrder::withTimeout(double seconds) {
+    return AutoCommand(*this).withTimeout(seconds);
+}
+
+AutoCommand InOrder::until(Condition &&cond) {
+    return AutoCommand(*this).until(std::forward<Condition>(cond));
+}
+
 Repeat::Repeat() : cmds{} {}
 Repeat::Repeat(std::initializer_list<AutoCommand> cmds) : cmds{cmds} {}
 
@@ -66,9 +92,12 @@ AutoCommand Repeat::duplicate() const {
     other.cmds = cmds;  // all the correct copying happens magically  :)
     return other;
 }
-
 AutoCommand Repeat::withTimeout(double seconds) {
     return AutoCommand(*this).withTimeout(seconds);
+}
+
+AutoCommand Repeat::until(Condition &&cond) {
+    return AutoCommand(*this).until(std::forward<Condition>(cond));
 }
 
 Condition PauseUntilCondition(Condition &&cond) {
