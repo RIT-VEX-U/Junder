@@ -87,6 +87,7 @@ class InOrder : public AutoCommandBase {
     AutoCommand duplicate() const override;
     AutoCommand withTimeout(double seconds);
     AutoCommand until(Condition &&cond);
+    InOrder RepeatTimes(size_t number_times);
 
    private:
     std::vector<AutoCommand> cmds;

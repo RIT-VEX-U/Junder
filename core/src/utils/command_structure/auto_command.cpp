@@ -79,6 +79,17 @@ AutoCommand InOrder::until(Condition &&cond) {
     return AutoCommand(*this).until(std::forward<Condition>(cond));
 }
 
+InOrder InOrder::RepeatTimes(size_t times) {
+    cmds.reserve(times * cmds.size());
+    size_t og_size = cmds.size();
+    for (size_t i = 0; i < times - 1; i++) {
+        for (size_t j = 0; j < og_size; j++) {
+            cmds.push_back(cmds[j]);
+        }
+    }
+    return *this;
+}
+
 Repeat::Repeat() : cmds{} {}
 Repeat::Repeat(std::initializer_list<AutoCommand> cmds) : cmds{cmds} {}
 
