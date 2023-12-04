@@ -2,8 +2,8 @@
 #include "vex.h"
 #include <string>
 #include <vector>
-#include "../core/include/subsystems/screen.h"
-#include "../core/include/utils/geometry.h"
+#include "core/subsystems/screen.h"
+#include "core/utils/geometry.h"
 
 /**
  * Autochooser is a utility to make selecting robot autonomous programs easier

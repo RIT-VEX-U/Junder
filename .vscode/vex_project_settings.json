@@ -12,7 +12,7 @@
 		"slot": 1,
 		"sdkVersion": "V5_20220726_10_00_00",
 		"cpp": {
-			"includePath": [],
+			"includePath": ["core/include"],
 			"printf_float": true
 		}
 	}

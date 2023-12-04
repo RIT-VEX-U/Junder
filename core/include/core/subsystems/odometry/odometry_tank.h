@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../core/include/subsystems/odometry/odometry_base.h"
-#include "../core/include/subsystems/custom_encoder.h"
-#include "../core/include/utils/geometry.h"
-#include "../core/include/utils/vector2d.h"
-#include "../core/include/utils/moving_average.h"
+#include "core/subsystems/odometry/odometry_base.h"
+#include "core/subsystems/custom_encoder.h"
+#include "core/utils/geometry.h"
+#include "core/utils/vector2d.h"
+#include "core/utils/moving_average.h"
 
-#include "../core/include/robot_specs.h"
+#include "core/robot_specs.h"
 
 static int background_task(void* odom_obj);
 

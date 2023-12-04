@@ -1,9 +1,9 @@
 #pragma once
 
 #include "vex.h"
-#include "../core/include/utils/geometry.h"
-#include "../core/include/robot_specs.h"
-#include "../core/include/utils/command_structure/auto_command.h"
+#include "core/utils/geometry.h"
+#include "core/robot_specs.h"
+#include "core/utils/command_structure/auto_command.h"
 
 #ifndef PI
 #define PI 3.141592654

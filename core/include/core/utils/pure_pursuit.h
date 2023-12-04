@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "../core/include/utils/geometry.h"
-#include "../core/include/utils/vector2d.h"
+#include "core/utils/geometry.h"
+#include "core/utils/vector2d.h"
 #include "vex.h"
 
 using namespace vex;

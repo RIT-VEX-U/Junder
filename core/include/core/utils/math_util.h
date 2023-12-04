@@ -2,7 +2,7 @@
 #include <vector>
 #include "math.h"
 #include "vex.h"
-#include "../core/include/utils/geometry.h"
+#include "core/utils/geometry.h"
 
 
 /**

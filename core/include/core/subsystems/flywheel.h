@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../core/include/robot_specs.h"
-#include "../core/include/subsystems/screen.h"
-#include "../core/include/utils/command_structure/auto_command.h"
-#include "../core/include/utils/controls/feedforward.h"
-#include "../core/include/utils/controls/pid.h"
+#include "core/robot_specs.h"
+#include "core/subsystems/screen.h"
+#include "core/utils/command_structure/auto_command.h"
+#include "core/utils/controls/feedforward.h"
+#include "core/utils/controls/pid.h"
 #include "vex.h"
-#include "../core/include/utils/command_structure/condition.h"
+#include "core/utils/command_structure/condition.h"
 #include <atomic>
 
 /**
@@ -106,7 +106,7 @@ class Flywheel {
      * @return an auto command to add to a command controller
      */
     Condition WaitUntilUpToSpeedCmd() {
-        PauseUntilCondition(fc([&]() { return is_on_target(); }));
+        return PauseUntilCondition(fc([&]() { return is_on_target(); }));
     }
 
   private:

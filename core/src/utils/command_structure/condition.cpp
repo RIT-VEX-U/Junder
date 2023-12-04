@@ -1,4 +1,4 @@
-#include "../core/include/utils/command_structure/condition.h"
+#include "core/utils/command_structure/condition.h"
 
 Condition ConditionBase::And(Condition c) {
     return fc([&]() { return this->test() && c->test(); });

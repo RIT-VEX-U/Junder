@@ -4,10 +4,10 @@
 #include <functional>
 #include <map>
 #include <cassert>
-#include "../core/include/subsystems/odometry/odometry_base.h"
-#include "../core/include/utils/graph_drawer.h"
-#include "../core/include/utils/controls/pid.h"
-#include "../core/include/utils/controls/pidff.h"
+#include "core/subsystems/odometry/odometry_base.h"
+#include "core/utils/graph_drawer.h"
+#include "core/utils/controls/pid.h"
+#include "core/utils/controls/pidff.h"
 
 namespace screen
 {

@@ -5,8 +5,8 @@
 #include <vector>
 #include <cmath>
 #include "vex.h"
-#include "../core/include/utils/geometry.h"
-#include "../core/include/utils/vector2d.h"
+#include "core/utils/geometry.h"
+#include "core/utils/vector2d.h"
 
 class GraphDrawer
 {

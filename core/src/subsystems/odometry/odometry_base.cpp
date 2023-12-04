@@ -1,5 +1,5 @@
-#include "../core/include/subsystems/odometry/odometry_base.h"
-#include "../core/include/utils/vector2d.h"
+#include "core/subsystems/odometry/odometry_base.h"
+#include "core/utils/vector2d.h"
 
 /**
  * Construct a new Odometry Base object

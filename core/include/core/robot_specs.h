@@ -1,6 +1,6 @@
 #pragma once
-#include "../core/include/utils/controls/pid.h"
-#include "../core/include/utils/controls/feedback_base.h"
+#include "core/utils/controls/pid.h"
+#include "core/utils/controls/feedback_base.h"
 
 /**
  * Main robot characterization struct.

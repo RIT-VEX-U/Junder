@@ -1,5 +1,5 @@
 #pragma once
-#include "../core/include/utils/command_structure/condition.h"
+#include "core/utils/command_structure/condition.h"
 #include <functional>
 #include <memory>
 #include <string>
@@ -73,16 +73,16 @@ class FunctionCommand : public AutoCommandBase {
 class InOrder : public AutoCommandBase {
   public:
     InOrder(std::initializer_list<AutoCommand> cmds);
-    bool run() override{};
-    AutoCommand duplicate() const override{};
+    bool run() override;
+    AutoCommand duplicate() const override;
 };
 
 class Repeat : public AutoCommandBase {
   public:
     Repeat(std::initializer_list<AutoCommand> cmds);
-    bool run() override{};
+    bool run() override;
     AutoCommand duplicate() const override;
-    operator AutoCommand() {}
+    operator AutoCommand();
 };
 
 /// @brief TimeSinceStartExceeds tests based on time since the command

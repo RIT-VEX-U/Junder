@@ -2,7 +2,7 @@
 
 
 #include <cmath>
-#include "../core/include/utils/geometry.h"
+#include "core/utils/geometry.h"
 
 #ifndef PI
 #define PI 3.141592654

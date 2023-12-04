@@ -1,5 +1,5 @@
 #pragma once
-#include "../core/include/utils/controls/feedback_base.h"
+#include "core/utils/controls/feedback_base.h"
 
 /// @brief A velocity controller
 /// @warning If you try to use this as a position controller, it will fail.
