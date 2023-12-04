@@ -47,7 +47,7 @@ class AutoCommand {
         cmd_ptr = new CommandT(cmd);
     }
 
-    // Special Constructors. See .cpp for why these are needed
+    // Special member functions. See .cpp for why these are needed
     AutoCommand(const AutoCommand &other);
     AutoCommand(AutoCommand &&other);
     AutoCommand operator=(const AutoCommand &other);
@@ -57,7 +57,7 @@ class AutoCommand {
 
     bool run();
 
-    AutoCommand withTimeout(double seconds);
+    AutoCommand with_timeout(double seconds);
     AutoCommand until(Condition &&cond);
 
    private:
@@ -85,9 +85,9 @@ class InOrder : public AutoCommandBase {
     InOrder(std::initializer_list<AutoCommand> cmds);
     bool run() override;
     AutoCommand duplicate() const override;
-    AutoCommand withTimeout(double seconds);
+    AutoCommand with_timeout(double seconds);
     AutoCommand until(Condition &&cond);
-    InOrder RepeatTimes(size_t number_times);
+    InOrder repeat_times(size_t number_times);
 
    private:
     std::vector<AutoCommand> cmds;
@@ -99,7 +99,7 @@ class Repeat : public AutoCommandBase {
     Repeat(std::initializer_list<AutoCommand> cmds);
     bool run() override;
     AutoCommand duplicate() const override;
-    AutoCommand withTimeout(double seconds);
+    AutoCommand with_timeout(double seconds);
     AutoCommand until(Condition &&cond);
 
    private:

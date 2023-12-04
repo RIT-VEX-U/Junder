@@ -11,7 +11,7 @@ bool AutoCommand::run() {
     return cmd_ptr->run();
 }
 
-AutoCommand AutoCommand::withTimeout(double seconds) {
+AutoCommand AutoCommand::with_timeout(double seconds) {
     timeout_seconds = seconds;
     return *this;
 }
@@ -71,15 +71,15 @@ AutoCommand InOrder::duplicate() const {
     other.cmds = cmds;
     return other;
 }
-AutoCommand InOrder::withTimeout(double seconds) {
-    return AutoCommand(*this).withTimeout(seconds);
+AutoCommand InOrder::with_timeout(double seconds) {
+    return AutoCommand(*this).with_timeout(seconds);
 }
 
 AutoCommand InOrder::until(Condition &&cond) {
     return AutoCommand(*this).until(std::forward<Condition>(cond));
 }
 
-InOrder InOrder::RepeatTimes(size_t times) {
+InOrder InOrder::repeat_times(size_t times) {
     cmds.reserve(times * cmds.size());
     size_t og_size = cmds.size();
     for (size_t i = 0; i < times - 1; i++) {
@@ -103,8 +103,8 @@ AutoCommand Repeat::duplicate() const {
     other.cmds = cmds;  // all the correct copying happens magically  :)
     return other;
 }
-AutoCommand Repeat::withTimeout(double seconds) {
-    return AutoCommand(*this).withTimeout(seconds);
+AutoCommand Repeat::with_timeout(double seconds) {
+    return AutoCommand(*this).with_timeout(seconds);
 }
 
 AutoCommand Repeat::until(Condition &&cond) {

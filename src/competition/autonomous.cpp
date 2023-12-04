@@ -53,7 +53,7 @@ AutoCommand shoot_and_drive(double dist, vex::directionType dir,
                             double max_pow) {
     return InOrder{
         cata_sys.Fire(),
-        drive_sys.DriveForwardCmd(dist, dir, max_pow).withTimeout(1.5),
+        drive_sys.DriveForwardCmd(dist, dir, max_pow).with_timeout(1.5),
     };
 }
 
@@ -95,24 +95,24 @@ void only_shoot() {
         cata_sys.IntakeFully(),
 
         // 2 - Turn to matchload zone & begin matchloading
-        drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).withTimeout(1.5),
+        drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).with_timeout(1.5),
 
         // Matchloading phase
         Repeat{odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
-               intakeToCata.withTimeout(1.75), cata_sys.Fire(),
+               intakeToCata.with_timeout(1.75), cata_sys.Fire(),
                drive_sys.DriveForwardCmd(dist, REV, 0.5), cata_sys.StopFiring(),
 
                cata_sys.IntakeFully(),
                drive_sys.TurnToHeadingCmd(load_angle, 0.5),
 
-               drive_sys.DriveForwardCmd(dist + 2, FWD, 0.2).withTimeout(1.7)},
+               drive_sys.DriveForwardCmd(dist + 2, FWD, 0.2).with_timeout(1.7)},
 
         drive_sys.DriveForwardCmd(3, REV),
         cata_sys.Fire(),
         DelayCommand(300),
         cata_sys.StopIntake(),
-        drive_sys.TurnToHeadingCmd(165).withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(165).with_timeout(2.0),
         drive_sys
             .DriveToPointCmd(
                 {
@@ -120,9 +120,9 @@ void only_shoot() {
                     10,
                 },
                 REV)
-            .withTimeout(5.0),
+            .with_timeout(5.0),
         printOdom,
-        drive_sys.TurnToHeadingCmd(175).withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(175).with_timeout(2.0),
         drive_sys
             .DriveToPointCmd(
                 {
@@ -130,12 +130,12 @@ void only_shoot() {
                     15,
                 },
                 REV)
-            .withTimeout(5.0),
-        drive_sys.TurnToHeadingCmd(-125).withTimeout(3.0),
-        drive_sys.DriveForwardCmd(36.0, REV).withTimeout(2.0),
-        drive_sys.DriveForwardCmd(30.0, FWD).withTimeout(2.0),
-        drive_sys.DriveForwardCmd(36.0, REV).withTimeout(2.0),
-        drive_sys.DriveForwardCmd(30.0, FWD).withTimeout(2.0),
+            .with_timeout(5.0),
+        drive_sys.TurnToHeadingCmd(-125).with_timeout(3.0),
+        drive_sys.DriveForwardCmd(36.0, REV).with_timeout(2.0),
+        drive_sys.DriveForwardCmd(30.0, FWD).with_timeout(2.0),
+        drive_sys.DriveForwardCmd(36.0, REV).with_timeout(2.0),
+        drive_sys.DriveForwardCmd(30.0, FWD).with_timeout(2.0),
 
     };
     cmd.run();
@@ -167,13 +167,13 @@ void skills() {
         InOrder{
             drive_sys.TurnToHeadingCmd(load_angle, .5),
             cata_sys.IntakeFully(),
-            drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).withTimeout(1.5),
+            drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).with_timeout(1.5),
         },
         // 3. Matchloading
         Repeat{
             odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
-            intakeToCata.withTimeout(2.0),
+            intakeToCata.with_timeout(2.0),
             drive_sys.DriveForwardCmd(dist, REV, 0.5),
             drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
             cata_sys.Fire(),
@@ -182,20 +182,20 @@ void skills() {
             cata_sys.StopFiring(),
 
             cata_sys.IntakeFully(),
-            drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(2.0),
+            drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).with_timeout(2.0),
         }
             .until(AlwaysTrueCondition()->And(AlwaysFalseCondition()))
-            .withTimeout(4.0),
+            .with_timeout(4.0),
 
         // 4. Last preload
-        {
+        AutoCommand{
             intakeToCata,
-            drive_sys.DriveForwardCmd(dist, REV, 0.5).withTimeout(2.0),
+            drive_sys.DriveForwardCmd(dist, REV, 0.5).with_timeout(2.0),
             drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
             cata_sys.Fire(),
             DelayCommand(500),
             drive_sys.TurnToHeadingCmd(load_angle, 0.5),
-            drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).withTimeout(4.0),
+            drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5).with_timeout(4.0),
 
             cata_sys.StopFiring(),
         },
@@ -207,24 +207,24 @@ void skills() {
             drive_sys.TurnToHeadingCmd(160, .5),
             cata_sys.StopIntake(),
             drive_sys.TurnToHeadingCmd(60 - 180, .5),
-            drive_sys.DriveForwardCmd(36, REV, 1).withTimeout(3.0),
+            drive_sys.DriveForwardCmd(36, REV, 1).with_timeout(3.0),
             drive_sys.DriveForwardCmd(4, FWD, 1),
         },
         // 6. Wall align
         {
             drive_sys.TurnDegreesCmd(-80),
-            drive_sys.DriveForwardCmd(8, REV, .15).withTimeout(3.0),
+            drive_sys.DriveForwardCmd(8, REV, .15).with_timeout(3.0),
             odom.SetPositionCmd({.x = 137, .y = 51, .rot = 180}),
         },
         // 7. Drive out to front of goal and slam a couple times
         {drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
          WingCmd(RIGHT, true), drive_sys.TurnDegreesCmd(55),
-         drive_sys.DriveForwardCmd(32, REV).withTimeout(3.0),
+         drive_sys.DriveForwardCmd(32, REV).with_timeout(3.0),
          drive_sys.TurnDegreesCmd(-10),
-         drive_sys.DriveForwardCmd(34, FWD).withTimeout(3.0),
-         drive_sys.DriveForwardCmd(40, REV).withTimeout(3.0),
-         drive_sys.DriveForwardCmd(34, FWD).withTimeout(3.0),
-         drive_sys.DriveForwardCmd(40, REV).withTimeout(3.0),
+         drive_sys.DriveForwardCmd(34, FWD).with_timeout(3.0),
+         drive_sys.DriveForwardCmd(40, REV).with_timeout(3.0),
+         drive_sys.DriveForwardCmd(34, FWD).with_timeout(3.0),
+         drive_sys.DriveForwardCmd(40, REV).with_timeout(3.0),
          WingCmd(RIGHT, false)},
     };
 
