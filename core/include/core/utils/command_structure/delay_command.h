@@ -9,7 +9,7 @@
 
 #include "core/utils/command_structure/auto_command.h"
 
-class DelayCommand: public AutoCommandBase {
+class DelayCommand: public AutoCommandInterface {
   public:
     /**
      * Construct a delay command

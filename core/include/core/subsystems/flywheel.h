@@ -105,7 +105,7 @@ class Flywheel {
      * @return an auto command to add to a command controller
      */
     AutoCommand WaitUntilUpToSpeedCmd() {
-        return PauseUntilCondition((fc([&]() { return is_on_target(); })));
+        return PauseUntil((fc([&]() { return is_on_target(); })));
     }
 
    private:

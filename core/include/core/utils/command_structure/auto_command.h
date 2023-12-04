@@ -9,23 +9,32 @@
 #include "core/utils/command_structure/condition.h"
 
 class AutoCommand;
-class AutoCommandBase {
+/**
+ * AutoCommandInterface is the 'base class' of all commands for the auto system.
+ * This class is virtual (member functions ending in = 0) so it can not be instantiated. 
+ * If you want to talk about a list of commands to run, use AutoCommand
+ */
+class AutoCommandInterface {
    public:
-    // The way to execute the command. returns true when this command is
-    // finished
-    virtual bool run() { return true; };
-    // What to do when this command is interrupted
-    // clean up after yourself.
+    /// The way to execute the command. returns true when this command is
+    /// finished
+    virtual bool run() = 0;
+    /// What to do when this command is interrupted
+    /// ie. stop motors, reset external state
     virtual void on_timeout(){};
     /// duplicates the command in its original state.
     /// that is duplicate the command in the state it was before the first run()
     /// was called.
     virtual AutoCommand duplicate() const = 0;
-    virtual ~AutoCommandBase() {}
+    virtual ~AutoCommandInterface() {}
 };
 
-// Handles memory management
-// A custom unique ptr basically
+/**
+ * AutoCommand is a memory managed way to talk about autocommands.
+ * Treat it just like you would an integer and it will take care of all the base
+ * class nonsense See CommandController or InOrder for how this looks in
+ * practice
+ */
 class AutoCommand {
    public:
     const double default_timeout = 10.0;
@@ -42,9 +51,10 @@ class AutoCommand {
             "Command should not be a pointer. We used to initilize command "
             "lists with pointers but you don't need to do that "
             "anymore");
-        static_assert(std::is_convertible<CommandT *, AutoCommandBase *>::value,
-                      "Command going into AutoCommand must "
-                      "implement AutoCommandBase");
+        static_assert(
+            std::is_convertible<CommandT *, AutoCommandInterface *>::value,
+            "Command going into AutoCommand must "
+            "implement AutoCommandInterface");
         cmd_ptr = new CommandT(cmd);
     }
 
@@ -62,12 +72,12 @@ class AutoCommand {
     AutoCommand until(Condition cond);
 
    private:
-    AutoCommandBase *cmd_ptr = nullptr;
+    AutoCommandInterface *cmd_ptr = nullptr;
     Condition true_to_end = AlwaysFalseCondition();
     double timeout_seconds = default_timeout;
 };
 
-class FunctionCommand : public AutoCommandBase {
+class FunctionCommand : public AutoCommandInterface {
    public:
     FunctionCommand(std::function<bool()> f) : f(f) {}
     bool run() override { return f(); }
@@ -80,7 +90,7 @@ class FunctionCommand : public AutoCommandBase {
     std::function<bool()> f;
 };
 
-class InOrder : public AutoCommandBase {
+class InOrder : public AutoCommandInterface {
    public:
     InOrder();
     InOrder(std::initializer_list<AutoCommand> cmds);
@@ -94,7 +104,7 @@ class InOrder : public AutoCommandBase {
     std::vector<AutoCommand> cmds;
 };
 
-class Repeat : public AutoCommandBase {
+class Repeat : public AutoCommandInterface {
    public:
     Repeat();
     Repeat(std::initializer_list<AutoCommand> cmds);
@@ -115,4 +125,4 @@ Condition TimeSinceStartExceeds(double seconds);
 
 /// @brief Pauses until the condition is true. Basically delay but with a
 /// condition instead of a time
-AutoCommand PauseUntilCondition(Condition cond);
+AutoCommand PauseUntil(Condition cond);

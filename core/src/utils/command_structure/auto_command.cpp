@@ -124,6 +124,6 @@ Condition TimeSinceStartExceeds(double seconds) {
         [seconds, tmr = vex::timer()]() { return tmr.value() > seconds; });
 }
 
-AutoCommand PauseUntilCondition(Condition c) {
+AutoCommand PauseUntil(Condition c) {
     return FunctionCommand([&]() { return c->test(); });
 }

@@ -1,10 +1,10 @@
 #include "core/utils/command_structure/condition.h"
 
 Condition ConditionBase::And(Condition c) {
-    return fc([&]() { return this->test() && c->test(); });
+    return fc([=]() { return this->test() && c->test(); });
 }
 Condition ConditionBase::Or(Condition c) {
-    return fc([&]() { return this->test() || c->test(); });
+    return fc([=]() { return this->test() || c->test(); });
 }
 
 Condition fc(std::function<bool()> f) {

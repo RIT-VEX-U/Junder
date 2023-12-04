@@ -33,7 +33,7 @@ using namespace vex;
  * TankDrive class
  *
  */
-class DriveForwardCommand : public AutoCommandBase {
+class DriveForwardCommand : public AutoCommandInterface {
   public:
     DriveForwardCommand(
         TankDrive &drive_sys, Feedback &feedback, double inches,
@@ -71,7 +71,7 @@ class DriveForwardCommand : public AutoCommandBase {
  * AutoCommand wrapper class for the turn_degrees function in the
  * TankDrive class
  */
-class TurnDegreesCommand : public AutoCommandBase {
+class TurnDegreesCommand : public AutoCommandInterface {
   public:
     TurnDegreesCommand(
         TankDrive &drive_sys, Feedback &feedback, double degrees,
@@ -107,7 +107,7 @@ class TurnDegreesCommand : public AutoCommandBase {
  * AutoCommand wrapper class for the drive_to_point function in the
  * TankDrive class
  */
-class DriveToPointCommand : public AutoCommandBase {
+class DriveToPointCommand : public AutoCommandInterface {
   public:
     DriveToPointCommand(
         TankDrive &drive_sys, Feedback &feedback, double x, double y,
@@ -151,7 +151,7 @@ class DriveToPointCommand : public AutoCommandBase {
  * TankDrive class
  *
  */
-class TurnToHeadingCommand : public AutoCommandBase {
+class TurnToHeadingCommand : public AutoCommandInterface {
   public:
     TurnToHeadingCommand(
         TankDrive &drive_sys, Feedback &feedback, double heading_deg,
@@ -186,7 +186,7 @@ class TurnToHeadingCommand : public AutoCommandBase {
 /**
  * Autocommand wrapper class for pure pursuit function in the TankDrive class
  */
-class PurePursuitCommand : public AutoCommandBase {
+class PurePursuitCommand : public AutoCommandInterface {
   public:
     /**
      * Construct a Pure Pursuit AutoCommand
@@ -226,7 +226,7 @@ class PurePursuitCommand : public AutoCommandBase {
  * AutoCommand wrapper class for the stop() function in the
  * TankDrive class
  */
-class DriveStopCommand : public AutoCommandBase {
+class DriveStopCommand : public AutoCommandInterface {
   public:
     DriveStopCommand(TankDrive &drive_sys);
 
