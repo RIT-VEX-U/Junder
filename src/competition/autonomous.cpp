@@ -206,15 +206,18 @@ void skills() {
             odom.SetPositionCmd({.x = 137, .y = 51, .rot = 180}),
         },
         // 7. Drive out to front of goal and slam a couple times
-        {drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
-         WingCmd(RIGHT, true), drive_sys.TurnDegreesCmd(55),
-         drive_sys.DriveForwardCmd(32, REV).with_timeout(3.0),
-         drive_sys.TurnDegreesCmd(-10),
-         drive_sys.DriveForwardCmd(34, FWD).with_timeout(3.0),
-         drive_sys.DriveForwardCmd(40, REV).with_timeout(3.0),
-         drive_sys.DriveForwardCmd(34, FWD).with_timeout(3.0),
-         drive_sys.DriveForwardCmd(40, REV).with_timeout(3.0),
-         WingCmd(RIGHT, false)},
+        {
+            drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
+            WingCmd(RIGHT, true),
+            drive_sys.TurnDegreesCmd(55),
+            drive_sys.DriveForwardCmd(32, REV).with_timeout(3.0),
+            drive_sys.TurnDegreesCmd(-10),
+            drive_sys.DriveForwardCmd(34, FWD).with_timeout(3.0),
+            drive_sys.DriveForwardCmd(40, REV).with_timeout(3.0),
+            drive_sys.DriveForwardCmd(34, FWD).with_timeout(3.0),
+            drive_sys.DriveForwardCmd(40, REV).with_timeout(3.0),
+            WingCmd(RIGHT, false),
+        },
     };
 
     cmd.set_cancel_func([]() { return con.ButtonA.pressing(); });

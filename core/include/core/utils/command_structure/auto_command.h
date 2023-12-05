@@ -93,6 +93,8 @@ class AutoCommand {
     AutoCommand(std::initializer_list<AutoCommand> cmds);
 
     // constructor from arbitrary command
+    // Specialize this if you want to do something more fance. 
+    // We specialize it for stuff like InOrder and Repeat where we don't want the default timeout
     template <typename CommandT>
     AutoCommand(CommandT cmd) {
         static_assert(
@@ -127,6 +129,8 @@ class AutoCommand {
     Condition true_to_end = AlwaysFalseCondition();
     double timeout_seconds = default_timeout;
 };
+
+// Specializations for commands for which the default makes no sens
 template <>
 AutoCommand::AutoCommand(InOrder io);
 
