@@ -36,7 +36,7 @@ int thread_func(void *void_cata) {
 
     vex::timer intake_tmr;
 
-    while(DONT_RUN_CATA_YOU_FOOL){
+    while (cata.state == CataSys::CataState::UNFOLDING) {
         vexDelay(20);
     }
     // cata_motors.stop(brakeType::hold);
@@ -201,8 +201,8 @@ CataSys::CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
     : intake_watcher(intake_watcher), cata_pot(cata_pot),
       cata_watcher(cata_watcher), cata_motor(cata_motor),
       intake_upper(intake_upper), intake_lower(intake_lower),
-      firing_requested(false), intaking_requested(false),
-      intake_type(CataSys::IntakeType::In) {
+      state(CataState::UNFOLDING), firing_requested(false),
+      intaking_requested(false), intake_type(CataSys::IntakeType::In) {
     runner = vex::task(thread_func, (void *)this);
 }
 
@@ -235,6 +235,9 @@ void CataSys::send_command(Command next_cmd) {
         break;
     case CataSys::Command::StopMatchLoad:
         matchload_requested = false;
+        break;
+    case CataSys::Command::IntakeDropped:
+        state = CataState::CHARGING;
         break;
     default:
         break;
@@ -354,8 +357,8 @@ AutoCommand *CataSys::WaitForIntake() {
 }
 
 AutoCommand *CataSys::StopFiring() {
-    return new FunctionCommand([]() {
-        cata_sys.send_command(CataSys::Command::StopFiring);
+    return new FunctionCommand([&]() {
+        send_command(CataSys::Command::StopFiring);
         return true;
     });
 }

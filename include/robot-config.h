@@ -2,7 +2,7 @@
 #include "cata_system.h"
 #include "core.h"
 #include "vex.h"
-#define COMP_BOT
+// #define COMP_BOT
 
 using namespace vex;
 
@@ -23,7 +23,6 @@ extern vex::distance intake_watcher;
 extern motor intake_combine;
 extern motor intake_roller;
 
-extern bool DONT_RUN_CATA_YOU_FOOL;
 
 extern motor_group cata_motors;
 

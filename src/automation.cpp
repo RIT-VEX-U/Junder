@@ -9,6 +9,7 @@
 // ================ Driver Assist Automations ================
 
 void matchload_1(std::function<bool()> enable) {
+#ifdef COMP_BOT
     if (!enable())
         return;
 
@@ -29,7 +30,7 @@ void matchload_1(std::function<bool()> enable) {
             cata_sys.Fire(),
         }},
         drive_sys.DriveForwardCmd(10, REV, 0.8)->withTimeout(1),
-        drive_sys.TurnToHeadingCmd(rot-2),
+        drive_sys.TurnToHeadingCmd(rot - 2),
         new FunctionCommand([]() {
             cata_sys.send_command(CataSys::Command::StopFiring);
             return true;
@@ -42,4 +43,5 @@ void matchload_1(std::function<bool()> enable) {
     cmd.add_cancel_func([&]() { return !enable(); });
     cmd.run();
     cata_sys.send_command(CataSys::Command::StopIntake);
+#endif
 }

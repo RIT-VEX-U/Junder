@@ -27,24 +27,16 @@ void opcontrol() {
         auto pose = odom.get_position();
         printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
     });
-
-    // intake_combine.spin(vex::reverse, 12.0, vex::volt);
+#ifdef COMP_BOT
     intake_combine.spinFor(directionType::rev, 1.0, timeUnits::sec, 100,
                            velocityUnits::pct);
-    DONT_RUN_CATA_YOU_FOOL = false;
+    cata_sys.send_command()
     while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
     {
         vexDelay(20);
     }
-
+#endif
     // skills();
-
-    // con.ButtonA.pressed([] {
-    // CommandController cc{
-    // drive_sys.DriveForwardCmd(5.0, vex::fwd),
-    // };
-    // cc.run();
-    // });
 
     static bool enable_matchload = false;
 
@@ -77,15 +69,17 @@ void opcontrol() {
     });
 
     // con.ButtonDown.pressed([]() {  });
-    con.ButtonB.pressed([]() { toggle_brake_mode(); });
 
 #endif
+    con.ButtonB.pressed([]() { toggle_brake_mode(); });
     // ================ INIT ================
     while (true) {
+#ifdef COMP_BOT
         if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() &&
             !con.ButtonL2.pressing()) {
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
+#endif
 #ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;

@@ -17,7 +17,8 @@ public:
         StopIntake,
         IntakeOut,
         StartMatchLoad,
-        StopMatchLoad
+        StopMatchLoad,
+        IntakeDropped
     };
     enum class IntakeType
     {
@@ -30,7 +31,8 @@ public:
     {
         CHARGING,
         READY,
-        FIRING
+        FIRING,
+        UNFOLDING
     };
 
     CataSys(vex::distance &intake_watcher, vex::pot &cata_pot, vex::optical &cata_watcher, vex::motor_group &cata_motor, vex::motor &intake_upper, vex::motor &intake_lower);

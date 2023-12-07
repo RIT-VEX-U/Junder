@@ -7,6 +7,7 @@
 
 #define FWD vex::directionType::fwd
 #define REV vex::directionType::rev
+#ifdef COMP_BOT
 
 enum Side { LEFT, RIGHT };
 
@@ -32,6 +33,7 @@ class WingCmd : public AutoCommand {
     Side s;
     bool deploy_down;
 };
+
 
 /**
  * Main entrypoint for the autonomous period
@@ -216,7 +218,7 @@ void skills() {
             drive_sys.PurePursuitCmd(PurePursuit::Path(
                                          {
                                              {.x = 19, .y = 19},
-                                             {.x = 30, 0, .y = 11},
+                                             {.x = 30, .y = 11},
                                              {.x = 62, .y = 12},
                                              {.x = 100.0, .y = 19},
                                              {.x = 120.0, .y = 26},
@@ -247,3 +249,7 @@ void skills() {
 
     drive_sys.stop();
 }
+
+#else
+void autonomous(){}
+#endif

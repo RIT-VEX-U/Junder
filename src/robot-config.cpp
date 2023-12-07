@@ -9,8 +9,6 @@ using namespace vex;
 // ================ INPUTS ================
 // Digital sensors
 
-
-bool DONT_RUN_CATA_YOU_FOOL = true;
 // Analog sensors
 inertial imu(PORT8);
 
@@ -170,15 +168,16 @@ std::vector<screen::Page *> pages;
 
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous
-* are started.
+ * are started.
  */
 void robot_init() {
 
     pages = {
-        new AutoChooser({"Auto 1", "Auto 2", "Auto 3", "Auto 4"}),
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
+#ifdef COMP_BOT
         cata_sys.Page(),
+#endif
     };
 
     screen::start_screen(Brain.Screen, pages, 3);
