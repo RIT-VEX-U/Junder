@@ -173,7 +173,7 @@ std::vector<screen::Page *> pages;
  * are started.
  */
 void robot_init() {
-    set_video("fun.mpeg");
+    set_video("joe.mpeg");
     pages = {
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),

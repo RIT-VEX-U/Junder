@@ -4,7 +4,7 @@
 #define PL_MPEG_IMPLEMENTATION
 #include "../core/include/subsystems/fun/pl_mpeg.h"
 
-static uint8_t buf[3000000];
+static uint8_t buf[358400];
 
 enum VideoState { DoesntExist, TooBig, DidntReadRight, Ok, NeverInitialized };
 
