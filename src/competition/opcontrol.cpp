@@ -5,7 +5,7 @@
 #include "vex.h"
 #include <atomic>
 
-// #define Tank
+#define Tank
 
 TankDrive::BrakeType brake_type = TankDrive::BrakeType::None;
 auto toggle_brake_mode = []() {
@@ -37,7 +37,7 @@ void opcontrol() {
 #ifdef COMP_BOT
     intake_combine.spinFor(directionType::rev, 1.0, timeUnits::sec, 100,
                            velocityUnits::pct);
-    cata_sys.send_command()
+    cata_sys.send_command(CataSys::Command::IntakeDropped);
 #endif
         while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
     {
