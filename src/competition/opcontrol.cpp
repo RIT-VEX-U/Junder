@@ -5,7 +5,7 @@
 #include "vex.h"
 #include <atomic>
 
-#define Tank
+// #define Tank
 
 TankDrive::BrakeType brake_type = TankDrive::BrakeType::None;
 auto toggle_brake_mode = []() {
@@ -20,22 +20,33 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
-    // vexDelay(1000);
+
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });
+    con.ButtonDown.pressed([]() { 
+        video_restart();
+        vexDelay(4);
+        screen::goto_page(2);
+     });
+
     con.ButtonY.pressed([]() {
         auto pose = odom.get_position();
+        
         printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
     });
 #ifdef COMP_BOT
     intake_combine.spinFor(directionType::rev, 1.0, timeUnits::sec, 100,
                            velocityUnits::pct);
     cata_sys.send_command()
-    while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+#endif
+        while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
     {
         vexDelay(20);
     }
-#endif
+    // CommandController cc {
+    // drive_sys.DriveForwardCmd(6.0, vex::fwd, 0.2),
+    // };
+    // cc.run();
     // skills();
 
     static bool enable_matchload = false;
@@ -67,8 +78,6 @@ void opcontrol() {
         left_wing.set(!left_wing.value());
         right_wing.set(!right_wing.value());
     });
-
-    // con.ButtonDown.pressed([]() {  });
 
 #endif
     con.ButtonB.pressed([]() { toggle_brake_mode(); });

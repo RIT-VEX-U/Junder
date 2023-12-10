@@ -2,6 +2,8 @@
 brain Brain;
 controller con;
 
+
+
 using namespace vex;
 
 #ifdef COMP_BOT
@@ -171,16 +173,17 @@ std::vector<screen::Page *> pages;
  * are started.
  */
 void robot_init() {
-
+    set_video("fun.mpeg");
     pages = {
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
+        new VideoPlayer(),
 #ifdef COMP_BOT
         cata_sys.Page(),
 #endif
     };
 
-    screen::start_screen(Brain.Screen, pages, 3);
+    screen::start_screen(Brain.Screen, pages, 2);
 
     // imu.calibrate();
     // gps_sensor.calibrate();
