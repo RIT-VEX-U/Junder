@@ -88,6 +88,10 @@ class AutoCommand {
     friend class CommandController;
     static constexpr double default_timeout = 10.0;
     static constexpr double DONT_TIMEOUT = -1.0;
+    
+    // Used to determine if the constructor sould accept a certain command
+    template<typename T>
+    using IsAutoCommand = std::is_convertible<T *, AutoCommandInterface *>;
 
     // Implicit InOrder constructor. Helpful for grouping commands together
     AutoCommand(std::initializer_list<AutoCommand> cmds);
@@ -103,7 +107,7 @@ class AutoCommand {
             "lists with pointers but you don't need to do that "
             "anymore");
         static_assert(
-            std::is_convertible<CommandT *, AutoCommandInterface *>::value,
+            IsAutoCommand<CommandT>::value,
             "Command going into AutoCommand must "
             "implement AutoCommandInterface");
         cmd_ptr = new CommandT(cmd);
