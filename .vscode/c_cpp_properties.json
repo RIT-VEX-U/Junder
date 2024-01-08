@@ -9,8 +9,8 @@
 			"${vex_gcc}/arm-none-eabi/armv7-arm/thumb",
 			"${vex_sdkPath}/gcc/include",
 			"${vex_sdkPath}/include/**",
-			"${workspaceFolder}/include/**",
-			"${workspaceFolder}/src/**"
+			
+
 		]
 	},
 	"configurations": [
@@ -18,7 +18,9 @@
 			"name": "Win32",
 			"includePath": [
 				"${vex_sdkIncludes}",
-				"core/include"
+				"${workspaceFolder}/core/include",
+				"${workspaceFolder}/include/**"
+
 			],
 			"compilerPath": "${vex_compilerPath}",
 			"cStandard": "gnu99",
@@ -29,7 +31,8 @@
 			"name": "Mac",
 			"includePath": [
 				"${vex_sdkIncludes}",
-				"core/include"
+				"${workspaceFolder}/core/include",
+				"${workspaceFolder}/include/**"
 			],
 			"compilerPath": "${vex_compilerPath}",
 			"cStandard": "gnu99",
@@ -40,9 +43,9 @@
 			"name": "Linux",
 			"includePath": [
 				"${vex_sdkIncludes}",
-				"core/include"
+				"${workspaceFolder}/core/include",
+				"${workspaceFolder}/include/**"
 			],
-			"compilerPath": "",
 			"cStandard": "gnu99",
 			"cppStandard": "gnu++11",
 			"intelliSenseMode": "linux-clang-x86"

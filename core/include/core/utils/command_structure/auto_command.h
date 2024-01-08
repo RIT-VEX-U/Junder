@@ -11,13 +11,13 @@
 // A memory managing wrapper for any autocommand. See below for more information
 class AutoCommand;
 /**
- * AutoCommandInterface is the 'base class' of all commands for the auto system.
+ * AutoCommandInterface is the interface of all commands for the auto system.
  * This class is virtual (member functions ending in = 0) so it can not be
  * instantiated. If you want to talk about a list of commands to run, use
  * AutoCommand
  */
 class AutoCommandInterface {
-   public:
+  public:
     /// The way to execute the command. returns true when this command is
     /// finished
     virtual bool run() = 0;
@@ -31,7 +31,7 @@ class AutoCommandInterface {
     virtual ~AutoCommandInterface() {}
 };
 class InOrder : public AutoCommandInterface {
-   public:
+  public:
     InOrder();
     InOrder(std::initializer_list<AutoCommand> cmds);
     bool run() override;
@@ -40,11 +40,11 @@ class InOrder : public AutoCommandInterface {
     AutoCommand until(Condition cond);
     InOrder repeat_times(size_t number_times);
 
-   private:
+  private:
     std::vector<AutoCommand> cmds;
 };
 class Repeat : public AutoCommandInterface {
-   public:
+  public:
     Repeat();
     Repeat(std::initializer_list<AutoCommand> cmds);
     static Repeat FromVector(const std::vector<AutoCommand> &cmds);
@@ -53,19 +53,19 @@ class Repeat : public AutoCommandInterface {
     AutoCommand with_timeout(double seconds);
     AutoCommand until(Condition cond);
 
-   private:
+  private:
     std::vector<AutoCommand> cmds;
     std::queue<AutoCommand> working_cmds;
 };
 
 class FunctionCommand : public AutoCommandInterface {
-   public:
+  public:
     FunctionCommand(std::function<bool()> f) : f(f) {}
     bool run() override { return f(); }
 
     AutoCommand duplicate() const override;
 
-   private:
+  private:
     std::function<bool()> f;
 };
 
@@ -84,32 +84,31 @@ AutoCommand PauseUntil(Condition cond);
  * practice
  */
 class AutoCommand {
-   public:
+  public:
     friend class CommandController;
     static constexpr double default_timeout = 10.0;
     static constexpr double DONT_TIMEOUT = -1.0;
-    
+
     // Used to determine if the constructor sould accept a certain command
-    template<typename T>
+    template <typename T>
     using IsAutoCommand = std::is_convertible<T *, AutoCommandInterface *>;
 
     // Implicit InOrder constructor. Helpful for grouping commands together
     AutoCommand(std::initializer_list<AutoCommand> cmds);
 
     // constructor from arbitrary command
-    // Specialize this if you want to do something more fance. 
-    // We specialize it for stuff like InOrder and Repeat where we don't want the default timeout
-    template <typename CommandT>
-    AutoCommand(CommandT cmd) {
+    // Specialize this if you want to do something more fance.
+    // We specialize it for stuff like InOrder and Repeat where we don't want
+    // the default timeout
+    template <typename CommandT> AutoCommand(CommandT cmd) {
         static_assert(
             !std::is_pointer<CommandT>::value,
             "Command should not be a pointer. We used to initilize command "
             "lists with pointers but you don't need to do that "
             "anymore");
-        static_assert(
-            IsAutoCommand<CommandT>::value,
-            "Command going into AutoCommand must "
-            "implement AutoCommandInterface");
+        static_assert(IsAutoCommand<CommandT>::value,
+                      "Command going into AutoCommand must "
+                      "implement AutoCommandInterface");
         cmd_ptr = new CommandT(cmd);
     }
 
@@ -128,15 +127,13 @@ class AutoCommand {
     bool does_timeout();
     void on_timeout();
 
-   private:
+  private:
     AutoCommandInterface *cmd_ptr = nullptr;
     Condition true_to_end = AlwaysFalseCondition();
     double timeout_seconds = default_timeout;
 };
 
 // Specializations for commands for which the default makes no sens
-template <>
-AutoCommand::AutoCommand(InOrder io);
+template <> AutoCommand::AutoCommand(InOrder io);
 
-template <>
-AutoCommand::AutoCommand(Repeat r);
+template <> AutoCommand::AutoCommand(Repeat r);

@@ -126,8 +126,8 @@ class OdometryBase {
     /**
      * Zeroed position. X=0, Y=0, Rotation= 90 degrees
      */
-    inline static constexpr pose_t zero_pos = {
-        .x = 0.0L, .y = 0.0L, .rot = 90.0L};
+    inline static constexpr pose_t zero_pos = pose_t{
+        .x = 0.0L, .y = 0.0L, .rot = 90.0};
 
    protected:
     /**
