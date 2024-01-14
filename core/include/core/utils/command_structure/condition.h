@@ -2,7 +2,6 @@
 #include <functional>
 #include <memory>
 
-
 /**
  * A Condition is a function that returns true or false
  * is_even is a predicate that would return true if a number is even
@@ -16,22 +15,22 @@ class ConditionBase;
 
 using Condition = std::shared_ptr<ConditionBase>;
 
-
 /// Base interface for a condition. Most important is test()
 class ConditionBase {
-   public:
+  public:
     virtual bool test() = 0;
+
     Condition Or(Condition c);
     Condition And(Condition c);
     virtual ~ConditionBase() {}
 };
 
 class FunctionCondition : public ConditionBase {
-   public:
+  public:
     FunctionCondition(std::function<bool()> f) : f(f) {}
     bool test() override { return true; }
 
-   private:
+  private:
     std::function<bool()> f;
 };
 

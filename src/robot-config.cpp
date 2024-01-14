@@ -9,7 +9,6 @@ using namespace vex;
 // ================ INPUTS ================
 // Digital sensors
 
-
 bool DONT_RUN_CATA_YOU_FOOL = true;
 // Analog sensors
 inertial imu(PORT8);
@@ -73,9 +72,9 @@ MotionController::m_profile_cfg_t drive_mc_cfg{.max_v = 72.50,
                                                .pid_cfg = drive_pid_cfg,
                                                .ff_cfg =
                                                    FeedForward::ff_config_t{
-                                                       .kA = 0.0029,
-                                                       .kV = 0.0131,
                                                        .kS = 0.05,
+                                                       .kV = 0.0131,
+                                                       .kA = 0.0029,
                                                        .kG = 0,
                                                    }};
 MotionController drive_mc{drive_mc_cfg};
@@ -170,7 +169,7 @@ std::vector<screen::Page *> pages;
 
 /**
  * Main robot initialization on startup. Runs before opcontrol and autonomous
-* are started.
+ * are started.
  */
 void robot_init() {
 
@@ -181,7 +180,7 @@ void robot_init() {
         cata_sys.Page(),
     };
 
-    screen::start_screen(Brain.Screen, pages, 3);
+    screen::start_screen(Brain.Screen, pages);
 
     // imu.calibrate();
     // gps_sensor.calibrate();
