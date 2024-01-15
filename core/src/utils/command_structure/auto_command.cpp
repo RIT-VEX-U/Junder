@@ -133,26 +133,30 @@ AutoCommand::~AutoCommand() {
 InOrder::InOrder() : cmds{} {}
 InOrder::InOrder(std::initializer_list<AutoCommand> cmds) : cmds{cmds} {}
 
+InOrder InOrder::FromVector(const std::vector<AutoCommand> &cmds) {
+    InOrder i;
+    i.cmds = cmds;
+    return i;
+}
+
 bool InOrder::run() {
     printf("Inorder::run() not implemented\n");
+    // check for cmds timeout
+    // check for cmds condition
     return true;
 }
 
 AutoCommand InOrder::duplicate() const {
-    InOrder other; // all the correct copying happens magically  :)
+    InOrder other;
     other.cmds = cmds;
-    auto ac = AutoCommand(other);
     return other.with_timeout(AutoCommand::DONT_TIMEOUT);
-    ;
 }
 AutoCommand InOrder::with_timeout(double seconds) {
     return AutoCommand(*this).with_timeout(seconds);
 }
 
 AutoCommand InOrder::until(Condition cond) {
-    return AutoCommand(*this)
-        .until(std::forward<Condition>(cond))
-        .with_timeout(AutoCommand::DONT_TIMEOUT);
+    return AutoCommand(*this).until(std::forward<Condition>(cond));
 }
 
 InOrder InOrder::repeat_times(size_t N) {
@@ -180,15 +184,16 @@ Repeat::Repeat(std::initializer_list<AutoCommand> cmds)
 Repeat Repeat::FromVector(const std::vector<AutoCommand> &cmds) {
     Repeat r;
     r.cmds = cmds;
-    for (const AutoCommand &cmd : cmds) {
-        r.working_cmds.push(cmd);
-    }
+    r.working_cmds = InOrder::FromVector(cmds);
     return r;
 }
 
 bool Repeat::run() {
-    printf("unimplemented Repeat::run()\n");
-    return true;
+    bool inorder_ended = working_cmds.run();
+    if (inorder_ended) {
+        working_cmds = InOrder::FromVector(cmds);
+    }
+    return false;
 }
 
 AutoCommand Repeat::duplicate() const { return Repeat::FromVector(cmds); }
@@ -208,15 +213,40 @@ template <> AutoCommand::AutoCommand(Repeat r) {
 }
 
 Condition TimeSinceStartExceeds(double seconds) {
+    // tmr is started at path creation time. which we say equals the start of
+    // the path (true most of the time)
     return fc(
         [seconds, tmr = vex::timer()]() { return tmr.value() > seconds; });
 }
 
+Message::Message(const std::string &msg) : msg(msg) {}
+
+bool Message::run() {
+    printf("%s", msg.c_str());
+    return true;
+}
+AutoCommand Message::duplicate() const { return Message(msg); }
+
+Branch::Branch(Condition decider, AutoCommand iftrue, AutoCommand iffalse)
+    : is_decided(false), decider(decider), iftrue(iftrue), iffalse(iffalse) {}
+bool Branch::run() {
+    if (!is_decided) {
+        choice = decider.get();
+        is_decided = true;
+    }
+    if (choice) {
+        return iftrue.run();
+    } else {
+        return iffalse.run();
+    }
+}
+AutoCommand Branch::duplicate() const {
+    return Branch(decider, iftrue, iffalse);
+}
+
 FunctionCommand::FunctionCommand(std::function<bool()> f) : f(f) {}
 
-AutoCommand FunctionCommand::duplicate() const {
-    return AutoCommand(FunctionCommand(f));
-}
+AutoCommand FunctionCommand::duplicate() const { return FunctionCommand(f); }
 
 AutoCommand PauseUntil(Condition c) {
     return FunctionCommand([&]() { return c->test(); });

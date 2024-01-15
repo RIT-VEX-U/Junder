@@ -34,47 +34,8 @@ class AutoCommandInterface {
      * was called.
      */
     virtual AutoCommand duplicate() const = 0;
+
     virtual ~AutoCommandInterface() {}
-};
-
-class InOrder : public AutoCommandInterface {
-  public:
-    InOrder();
-    InOrder(std::initializer_list<AutoCommand> cmds);
-    bool run() override;
-    AutoCommand duplicate() const override;
-    AutoCommand with_timeout(double seconds);
-    AutoCommand until(Condition cond);
-    InOrder repeat_times(size_t number_times);
-
-  private:
-    std::vector<AutoCommand> cmds;
-};
-
-class Repeat : public AutoCommandInterface {
-  public:
-    Repeat();
-    Repeat(std::initializer_list<AutoCommand> cmds);
-    static Repeat FromVector(const std::vector<AutoCommand> &cmds);
-    bool run() override;
-    AutoCommand duplicate() const override;
-    AutoCommand with_timeout(double seconds);
-    AutoCommand until(Condition cond);
-
-  private:
-    std::vector<AutoCommand> cmds;
-    std::queue<AutoCommand> working_cmds;
-};
-
-class FunctionCommand : public AutoCommandInterface {
-  public:
-    FunctionCommand(std::function<bool()> f);
-    bool run() override { return f(); }
-
-    AutoCommand duplicate() const override;
-
-  private:
-    std::function<bool()> f;
 };
 
 /// @brief TimeSinceStartExceeds tests based on time since the command
@@ -149,6 +110,83 @@ class AutoCommand {
     AutoCommandInterface *cmd_ptr = nullptr;
     Condition true_to_end = AlwaysFalseCondition();
     double timeout_seconds = default_timeout;
+};
+
+class InOrder : public AutoCommandInterface {
+  public:
+    InOrder();
+    InOrder(std::initializer_list<AutoCommand> cmds);
+    static InOrder FromVector(const std::vector<AutoCommand> &cmds);
+
+    bool run() override;
+    AutoCommand duplicate() const override;
+    AutoCommand with_timeout(double seconds);
+    AutoCommand until(Condition cond);
+    InOrder repeat_times(size_t number_times);
+
+  private:
+    std::vector<AutoCommand> cmds;
+};
+
+class Repeat : public AutoCommandInterface {
+  public:
+    Repeat();
+    Repeat(std::initializer_list<AutoCommand> cmds);
+    static Repeat FromVector(const std::vector<AutoCommand> &cmds);
+    bool run() override;
+    AutoCommand duplicate() const override;
+    AutoCommand with_timeout(double seconds);
+    AutoCommand until(Condition cond);
+
+  private:
+    std::vector<AutoCommand> cmds;
+    InOrder working_cmds;
+};
+
+class Branch : public AutoCommandInterface {
+  public:
+    Branch(Condition decider, AutoCommand iftrue, AutoCommand iffalse);
+    bool run() override;
+    AutoCommand duplicate() const override;
+
+  private:
+    bool is_decided;
+    bool choice;
+    Condition decider;
+    AutoCommand iftrue;
+    AutoCommand iffalse;
+};
+
+class Message : public AutoCommandInterface {
+  public:
+    Message(const std::string &msg);
+    bool run() override;
+    AutoCommand duplicate() const override;
+
+  private:
+    const std::string &msg;
+};
+
+class Parallel : public AutoCommandInterface {
+
+  public:
+    Parallel(std::initializer_list<AutoCommand> cmds);
+    bool run() override;
+    AutoCommand duplicate() const override;
+
+  private:
+    std::vector<AutoCommand> cmds;
+};
+
+class FunctionCommand : public AutoCommandInterface {
+  public:
+    FunctionCommand(std::function<bool()> f);
+    bool run() override { return f(); }
+
+    AutoCommand duplicate() const override;
+
+  private:
+    std::function<bool()> f;
 };
 
 // Specializations for commands for which the default makes no sens

@@ -3,11 +3,11 @@
 
 /// @brief A velocity controller
 /// @warning If you try to use this as a position controller, it will fail.
-class TakeBackHalf : public Feedback
-{
+class TakeBackHalf : public Feedback {
 
-public:
-    TakeBackHalf(double TBH_gain, double first_cross_split, double on_target_threshold);
+  public:
+    TakeBackHalf(double TBH_gain, double first_cross_split,
+                 double on_target_threshold);
     /**
      * Initialize the feedback controller for a movement
      *
@@ -16,7 +16,7 @@ public:
      * @param start_vel Movement starting velocity (IGNORED)
      * @param end_vel Movement ending velocity (IGNORED)
      */
-    void init(double start_pt, double set_pt, double, double);
+    void init(double start_pt, double set_pt, double, double) override;
     /**
      * Iterate the feedback loop once with an updated sensor value
      *
@@ -31,7 +31,8 @@ public:
     double get() override;
 
     /**
-     * Clamp the upper and lower limits of the output. If both are 0, no limits should be applied.
+     * Clamp the upper and lower limits of the output. If both are 0, no limits
+     * should be applied.
      *
      * @param lower Upper limit
      * @param upper Lower limit
@@ -43,9 +44,10 @@ public:
      */
     bool is_on_target() override;
 
-    double TBH_gain;             ///< tuned parameter
-    double first_cross_split; 
-private:
+    double TBH_gain; ///< tuned parameter
+    double first_cross_split;
+
+  private:
     double on_target_threshhold; ///< tuned parameter
 
     double target = 0.0;

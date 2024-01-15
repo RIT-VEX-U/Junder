@@ -11,7 +11,7 @@
 enum Side { LEFT, RIGHT };
 
 class WingCmd : public AutoCommandInterface {
-   public:
+  public:
     WingCmd(Side s, bool deploy_down) : s(s), deploy_down(deploy_down) {}
 
     bool run() override {
@@ -31,7 +31,7 @@ class WingCmd : public AutoCommandInterface {
 
     AutoCommand duplicate() const override;
 
-   private:
+  private:
     Side s;
     bool deploy_down;
 };
@@ -85,16 +85,23 @@ void only_shoot() {
         // 2 - Turn to matchload zone & begin matchloading
         drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).with_timeout(1.5),
 
+        Branch(fc([]() { return true; }), printOdom, printOdom),
+        Message("Here"),
+
         // Matchloading phase
-        Repeat{odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+        Repeat{
+            odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
-               intakeToCata.with_timeout(1.75), cata_sys.Fire(),
-               drive_sys.DriveForwardCmd(dist, REV, 0.5), cata_sys.StopFiring(),
+            intakeToCata.with_timeout(1.75),
+            cata_sys.Fire(),
+            drive_sys.DriveForwardCmd(dist, REV, 0.5),
+            cata_sys.StopFiring(),
 
-               cata_sys.IntakeFully(),
-               drive_sys.TurnToHeadingCmd(load_angle, 0.5),
+            cata_sys.IntakeFully(),
+            drive_sys.TurnToHeadingCmd(load_angle, 0.5),
 
-               drive_sys.DriveForwardCmd(dist + 2, FWD, 0.2).with_timeout(1.7)},
+            drive_sys.DriveForwardCmd(dist + 2, FWD, 0.2).with_timeout(1.7),
+        },
 
         drive_sys.DriveForwardCmd(3, REV),
         cata_sys.Fire(),

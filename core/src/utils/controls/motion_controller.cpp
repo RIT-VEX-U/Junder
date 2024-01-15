@@ -200,9 +200,9 @@ class MotionControllerPage : public screen::Page {
   public:
     MotionControllerPage(const MotionController &mc) : mc(mc) {}
 
-    void update(bool was_pressed, int x, int y) override {}
-    void draw(vex::brain::lcd &screen, bool first_draw,
-              unsigned int frame_number) {
+    void update(bool /* was_pressed */, int /*x*/, int /*y*/) override {}
+    void draw(vex::brain::lcd &screen, bool /* first_draw */,
+              unsigned int /* frame_number */) override {
         const motion_t mot = mc.get_motion();
 
         // Text - top right
