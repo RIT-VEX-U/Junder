@@ -7,6 +7,7 @@
 
 #define FWD vex::directionType::fwd
 #define REV vex::directionType::rev
+#ifdef COMP_BOT
 
 enum Side { LEFT, RIGHT };
 
@@ -214,3 +215,7 @@ void skills() {
 
     drive_sys.stop();
 }
+
+#else
+void autonomous() {}
+#endif

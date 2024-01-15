@@ -10,7 +10,9 @@
 // ================ Driver Assist Automations ================
 
 void matchload_1(std::function<bool()> enable) {
-    if (!enable()) return;
+#ifdef COMP_BOT
+    if (!enable())
+        return;
 
     AutoCommand intakeToCata = FunctionCommand([]() {
         drive_sys.drive_tank(0.15, 0.15);
@@ -23,10 +25,14 @@ void matchload_1(std::function<bool()> enable) {
     double rot = odom.get_position().rot;
     CommandController cmd{
         cata_sys.IntakeFully(),
-        intakeToCata.with_timeout(3),
-        drive_sys.DriveForwardCmd(10, REV, 0.8).with_timeout(1),
+        intakeToCata->withTimeout(3),
+        new Async{new InOrder{
+            new DelayCommand(100),
+            cata_sys.Fire(),
+        }},
+        drive_sys.DriveForwardCmd(10, REV, 0.8)->withTimeout(1),
         drive_sys.TurnToHeadingCmd(rot - 2),
-        FunctionCommand([]() {
+        new FunctionCommand([]() {
             cata_sys.send_command(CataSys::Command::StopFiring);
             return true;
         }),
@@ -38,4 +44,5 @@ void matchload_1(std::function<bool()> enable) {
     // cmd.set_cancel_func([&]() { return !enable(); });
     cmd.run();
     cata_sys.send_command(CataSys::Command::StopIntake);
+#endif
 }
