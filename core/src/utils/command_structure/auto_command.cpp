@@ -228,23 +228,23 @@ bool Message::run() {
 AutoCommand Message::duplicate() const { return Message(msg); }
 
 Branch::Branch(Condition decider, AutoCommand iftrue, AutoCommand iffalse)
-    : is_decided(false), decider(decider), iftrue(iftrue), iffalse(iffalse) {}
+    : is_decided(false), decider(std::move(decider)), iftrue(std::move(iftrue)),
+      iffalse(std::move(iffalse)) {}
 bool Branch::run() {
     if (!is_decided) {
-        choice = decider.get();
+        choice = decider->test();
         is_decided = true;
     }
     if (choice) {
         return iftrue.run();
-    } else {
-        return iffalse.run();
     }
+    return iffalse.run();
 }
 AutoCommand Branch::duplicate() const {
     return Branch(decider, iftrue, iffalse);
 }
 
-FunctionCommand::FunctionCommand(std::function<bool()> f) : f(f) {}
+FunctionCommand::FunctionCommand(std::function<bool()> f) : f(std::move(f)) {}
 
 AutoCommand FunctionCommand::duplicate() const { return FunctionCommand(f); }
 
