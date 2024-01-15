@@ -69,7 +69,6 @@ void only_shoot() {
         printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
         return true;
     });
-    printf("only shoot\n");
 
     CommandController cmd{
         odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
@@ -84,9 +83,6 @@ void only_shoot() {
 
         // 2 - Turn to matchload zone & begin matchloading
         drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5).with_timeout(1.5),
-
-        Branch(fc([]() { return true; }), printOdom, printOdom),
-        Message("Here"),
 
         // Matchloading phase
         Repeat{
@@ -108,24 +104,10 @@ void only_shoot() {
         DelayCommand(300),
         cata_sys.StopIntake(),
         drive_sys.TurnToHeadingCmd(165).with_timeout(2.0),
-        drive_sys
-            .DriveToPointCmd(
-                {
-                    50,
-                    10,
-                },
-                REV)
-            .with_timeout(5.0),
+        drive_sys.DriveToPointCmd({50, 10}, REV).with_timeout(5.0),
         printOdom,
         drive_sys.TurnToHeadingCmd(175).with_timeout(2.0),
-        drive_sys
-            .DriveToPointCmd(
-                {
-                    100,
-                    15,
-                },
-                REV)
-            .with_timeout(5.0),
+        drive_sys.DriveToPointCmd({100, 15}, REV).with_timeout(5.0),
         drive_sys.TurnToHeadingCmd(-125).with_timeout(3.0),
         drive_sys.DriveForwardCmd(36.0, REV).with_timeout(2.0),
         drive_sys.DriveForwardCmd(30.0, FWD).with_timeout(2.0),
