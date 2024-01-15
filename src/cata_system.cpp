@@ -37,7 +37,7 @@ int thread_func(void *void_cata) {
     vex::timer intake_tmr;
 
     while (cata.state == CataSys::CataState::UNFOLDING) {
-        vexDelay(20);
+        vexDelay(10);
     }
 
     while (true) {
@@ -113,6 +113,10 @@ int thread_func(void *void_cata) {
                 (intake_type == CataSys::IntakeType::In && ball_in_cata)) {
                 // intaking_requested = false;
             }
+            break;
+        case CataSys::CataState::UNFOLDING:
+            printf("ILLEGAL CATA STATE. SHOULDNT STILL BE UNFOLDING\n");
+            break;
         }
 
         // Main catapult state machine
@@ -167,6 +171,9 @@ int thread_func(void *void_cata) {
                 cur_state = CataSys::CataState::CHARGING;
                 firing_requested = false;
             }
+            break;
+        case CataSys::CataState::UNFOLDING:
+            printf("ILLEGAL CATA STATE. SHOULDNT STILL BE UNFOLDING\n");
             break;
         }
 
