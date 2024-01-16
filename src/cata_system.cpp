@@ -10,8 +10,8 @@ const double intake_upper_volt_hold = 6;
 const double intake_lower_volt = 9.0;
 const double intake_sensor_dist_mm = 150;
 
-const double cata_target_charge = 178;
-const double cata_target_intake = 178; // LOWER IS CLOSER TO SLIPPPING
+const double cata_target_charge = 179;
+const double cata_target_intake = 179; // LOWER IS CLOSER TO SLIPPPING
 
 PID::pid_config_t pc = {.p = 1,
                         // .i = 2,
