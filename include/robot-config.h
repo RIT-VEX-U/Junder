@@ -1,4 +1,5 @@
 #pragma once
+#include "../core/include/subsystems/fun/video.h"
 #include "cata_system.h"
 #include "core.h"
 #include "vex.h"
@@ -33,6 +34,8 @@ extern TankDrive drive_sys;
 extern vex::optical cata_watcher;
 
 extern CataSys cata_sys;
+
+extern vex::pneumatics climb_solenoid;
 extern vex::digital_out left_wing;
 extern vex::digital_out right_wing;
 

@@ -98,6 +98,7 @@ vex::pot cata_pot(Brain.ThreeWirePort.E);
 
 // VISION PORT 16 Final Port
 
+vex::pneumatics climb_solenoid(Brain.ThreeWirePort.A);
 vex::digital_out left_wing(Brain.ThreeWirePort.G);
 vex::digital_out right_wing(Brain.ThreeWirePort.H);
 
@@ -172,9 +173,11 @@ std::vector<screen::Page *> pages;
  * are started.
  */
 void robot_init() {
+    set_video("joe.mpeg");
     pages = {
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
+        new VideoPlayer(),
 #ifdef COMP_BOT
         cata_sys.Page(),
 #endif

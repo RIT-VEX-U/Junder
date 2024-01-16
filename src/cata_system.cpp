@@ -13,6 +13,8 @@ const double intake_sensor_dist_mm = 150;
 const double cata_target_charge = 179;
 const double cata_target_intake = 179; // LOWER IS CLOSER TO SLIPPPING
 
+const double intake_drop_seconds = 0.5;
+
 PID::pid_config_t pc = {.p = 1,
                         // .i = 2,
                         .deadband = 2,
@@ -35,14 +37,10 @@ int thread_func(void *void_cata) {
 
     vex::timer intake_tmr;
 
-    while (cata.state == CataSys::CataState::UNFOLDING) {
+    while (intake_tmr.value() < intake_drop_seconds) {
+        cata.intake_lower.spin(vex::reverse, 12.0, vex::volt);
         vexDelay(20);
     }
-    // cata_motors.stop(brakeType::hold);
-    // for (int i = 0; i < 10; i++) {
-    //     cata.intake_lower.spin(vex::reverse, 12.0, vex::volt);
-    //     vexDelay(20);
-    // }
 
     while (true) {
         // read sensors

@@ -45,3 +45,10 @@ void matchload_1(std::function<bool()> enable) {
     cata_sys.send_command(CataSys::Command::StopIntake);
 #endif
 }
+
+AutoCommand *ClimbBarDeploy() {
+    return new BasicSolenoidSet(climb_solenoid, true);
+}
+// AutoCommand *ClimbBarDeploy() {
+// return new BasicSolenoidSet(climb_solenoid, true);
+// }
