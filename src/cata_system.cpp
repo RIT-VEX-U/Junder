@@ -39,7 +39,7 @@ int thread_func(void *void_cata) {
     while (true) {
         if (cata.state == CataSys::CataState::UNFOLDING) {
             if (cata.drop_timer.value() < intake_drop_seconds) {
-                cata.intake_lower.spin(vex::forward, 12.0,
+                cata.intake_lower.spin(vex::reverse, 12.0,
                                        vex::voltageUnits::volt);
             } else {
                 cata.state = CataSys::CataState::CHARGING;

@@ -75,7 +75,7 @@ class TankDrive {
     AutoCommand *PurePursuitCmd(Feedback &feedback, PurePursuit::Path path,
                                 directionType dir, double max_speed = 1,
                                 double end_speed = 0);
-    AutoCommand *DriveStalledCmd();
+    Condition *DriveStalledCondition();
     AutoCommand *DriveTankCmd(double left, double right);
 
     /**

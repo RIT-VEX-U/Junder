@@ -22,23 +22,16 @@ auto toggle_brake_mode = []() {
 void opcontrol() {
     cata_sys.send_command(CataSys::Command::StartDropping);
 
-    while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
-    {
+    while (imu.isCalibrating()) {
         vexDelay(20);
     }
 
-    // intake_combine.spinFor(directionType::rev, 1.0, timeUnits::sec, 12.0,
-    //    voltageUnits::volt);
-
-    // printf("CC\n");
-    // double amt = -1.0;
-    // CommandController cc{
-    // ClimbBarDeploy(),
-    // };
-    // cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
-    // cc.run();
-    //
-    // return;
+    printf("CC\n");
+    CommandController cc{
+        Climb(),
+    };
+    cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
+    cc.run();
 
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });

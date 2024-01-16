@@ -9,3 +9,6 @@
 void matchload_1(std::function<bool()> enable);
 
 AutoCommand *ClimbBarDeploy();
+AutoCommand *WingSetCmd(bool val);
+
+AutoCommand *Climb();

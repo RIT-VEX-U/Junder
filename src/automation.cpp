@@ -49,6 +49,21 @@ void matchload_1(std::function<bool()> enable) {
 AutoCommand *ClimbBarDeploy() {
     return new BasicSolenoidSet(climb_solenoid, true);
 }
-// AutoCommand *ClimbBarDeploy() {
-// return new BasicSolenoidSet(climb_solenoid, true);
-// }
+
+AutoCommand *WingSetCmd(bool val) {
+    return new FunctionCommand([val]() {
+        left_wing.set(val);
+        right_wing.set(val);
+        return true;
+    });
+}
+
+AutoCommand *Climb() {
+    double amt = 0.5;
+    return new InOrder{
+        ClimbBarDeploy(),
+        drive_sys.DriveTankCmd(amt, amt)->withCancelCondition(
+            drive_sys.DriveStalledCondition()),
+        WingSetCmd(true),
+    };
+}
