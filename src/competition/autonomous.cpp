@@ -43,7 +43,7 @@ void autonomous() {
     intake_combine.spinFor(directionType::rev, 1.0, timeUnits::sec, 100,
                            velocityUnits::pct);
 
-    DONT_RUN_CATA_YOU_FOOL = false;
+    // DONT_RUN_CATA_YOU_FOOL = false;
 
     only_shoot();
 }

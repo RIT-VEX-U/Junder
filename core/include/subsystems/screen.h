@@ -189,6 +189,7 @@ namespace screen
 
     void next_page();
     void prev_page();
+    void goto_page(size_t page);
 
     /// @brief stops the screen. If you have a drive team that hates fun call this at the start of opcontrol
     void stop_screen();
