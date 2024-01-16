@@ -20,6 +20,7 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
+    cata_sys.send_command(CataSys::Command::StartDropping);
 
     while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
     {

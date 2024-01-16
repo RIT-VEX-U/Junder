@@ -33,16 +33,19 @@ int thread_func(void *void_cata) {
     CataSys &cata = *(CataSys *)void_cata;
     cata.state = CataSys::CataState::CHARGING;
 
+    vex::timer intake_tmr;
     cata_pid.set_limits(-12.0, 0);
 
-    vex::timer intake_tmr;
-
-    while (intake_tmr.value() < intake_drop_seconds) {
-        cata.intake_lower.spin(vex::reverse, 12.0, vex::volt);
-        vexDelay(20);
-    }
-
     while (true) {
+        if (cata.state == CataSys::CataState::UNFOLDING) {
+            if (cata.drop_timer.value() < intake_drop_seconds) {
+                cata.intake_lower.spin(vex::forward, 12.0,
+                                       vex::voltageUnits::volt);
+            } else {
+                cata.state = CataSys::CataState::CHARGING;
+            }
+            continue;
+        }
         // read sensors
         const double cata_pos = cata.cata_pot.angle(vex::degrees);
 
@@ -232,8 +235,9 @@ void CataSys::send_command(Command next_cmd) {
     case CataSys::Command::StopMatchLoad:
         matchload_requested = false;
         break;
-    case CataSys::Command::IntakeDropped:
-        state = CataState::CHARGING;
+    case CataSys::Command::StartDropping:
+        drop_timer.reset();
+        state = CataState::UNFOLDING;
         break;
     default:
         break;
