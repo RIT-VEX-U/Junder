@@ -1,8 +1,7 @@
 #include "robot-config.h"
+
 brain Brain;
 controller con;
-
-
 
 using namespace vex;
 
@@ -173,11 +172,9 @@ std::vector<screen::Page *> pages;
  * are started.
  */
 void robot_init() {
-    set_video("joe.mpeg");
     pages = {
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
-        new VideoPlayer(),
 #ifdef COMP_BOT
         cata_sys.Page(),
 #endif

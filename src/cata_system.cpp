@@ -1,5 +1,4 @@
 #include "cata_system.h"
-#include "robot-config.h"
 
 // const double inake_enable_lower_threshold = 70.0;
 // const double intake_enable_upper_threshold = 120;
@@ -180,7 +179,6 @@ int thread_func(void *void_cata) {
             cata.intake_watcher.objectDistance(distanceUnits::mm) < 150) {
             printf(
                 "DQed! ball in intake and catapault (or a sensor got funny)\n");
-            con.rumble("-");
         }
 
         // SYNCHRONIZE

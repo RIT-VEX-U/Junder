@@ -23,15 +23,10 @@ void opcontrol() {
 
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });
-    con.ButtonDown.pressed([]() { 
-        video_restart();
-        vexDelay(4);
-        screen::goto_page(2);
-     });
 
     con.ButtonY.pressed([]() {
         auto pose = odom.get_position();
-        
+
         printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
     });
 #ifdef COMP_BOT
@@ -39,7 +34,7 @@ void opcontrol() {
                            velocityUnits::pct);
     cata_sys.send_command(CataSys::Command::IntakeDropped);
 #endif
-        while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+    while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
     {
         vexDelay(20);
     }
