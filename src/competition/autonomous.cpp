@@ -47,11 +47,6 @@ void autonomous() {
         vexDelay(20);
     }
 
-    while (gps_sensor.xPosition(vex::distanceUnits::in) == 0.0) {
-        printf("not here\n");
-        vexDelay(20);
-    }
-
     auto_program();
 }
 
@@ -76,23 +71,88 @@ void auto_program() {
         return true;
     });
     AutoCommand *recal = new FunctionCommand([]() {
-        odom.set_position(gps_pose());
+        if (gps_sensor.quality() > 98) {
+            odom.set_position(gps_pose());
+        }
         return true;
     });
+    con.ButtonDown.pressed([]() {
+        printf("GPSing\n");
+        odom.set_position(gps_pose());
+    });
 
-    odom.set_position(gps_pose());
+    odom.set_position({.x = 28, .y = 18, .rot = 180});
     CommandController cc{
+        // new FunctionCommand([]() { return false; }),
+
+        // Drive to linup for alliance
+        drive_sys.DriveForwardCmd(4, FWD),
+        drive_sys.TurnDegreesCmd(-35),
+        drive_sys.DriveForwardCmd(8, FWD),
+        drive_sys.TurnDegreesCmd(70),
+        recal,
+        drive_sys.TurnToHeadingCmd(225),
         printOdom,
         recal,
+        // Pickup Alliance
         cata_sys.IntakeToHold(),
-        drive_sys.DriveForwardCmd(4.0)
+        drive_sys.DriveTankCmd(0.2, 0.2)
+            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
+            ->withTimeout(1.0),
+        cata_sys.WaitForHold()->withTimeout(2.0),
+        recal,
+        drive_sys.DriveForwardCmd(6.0, REV),
+        // Turn to side
+        drive_sys.TurnToHeadingCmd(110.0),
+        drive_sys.DriveForwardCmd(12.0, FWD, 0.4),
+        // Dump in goal
+        cata_sys.Unintake(),
+        new DelayCommand(500),
+        drive_sys.DriveForwardCmd(6.0, REV)->withTimeout(2.0),
+        cata_sys.StopIntake(),
+        drive_sys.TurnDegreesCmd(180.0)->withTimeout(1.0),
+        // Ram once
+        drive_sys.DriveForwardCmd(24, REV)
+            ->withTimeout(2.0)
+            ->withCancelCondition(drive_sys.DriveStalledCondition(0.25)),
+        drive_sys.DriveForwardCmd(3, FWD)->withTimeout(2.0),
+        // Ram Twice
+        drive_sys.DriveTankCmd(-1.0, -1.0)->withTimeout(0.5),
+        recal,
+        drive_sys.DriveForwardCmd(3, FWD)->withTimeout(2.0),
+        // Ram Thrice
+        drive_sys.DriveTankCmd(-1.0, -1.0)->withTimeout(0.5),
+        recal,
+        drive_sys.DriveForwardCmd(6, FWD)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(320.0),
+        recal,
+        drive_sys.DriveForwardCmd(5),
+        recal,
+        drive_sys.TurnToHeadingCmd(0),
+        drive_sys.DriveForwardCmd(50)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(20, FWD, 0.3)->withTimeout(1.0),
+        recal,
+        drive_sys.DriveForwardCmd(8, REV),
+        drive_sys.TurnToPointCmd(72, 24)->withTimeout(2.0),
+        drive_sys.DriveTankCmd(0.3, 0.3)
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
             ->withTimeout(2.0),
-        cata_sys.WaitForIntake()->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(-5.0),
-        drive_sys.TurnToHeadingCmd(135.0),
+
+        // Pickup My Preload
+        // cata_sys.IntakeToHold(),
+        // drive_sys.TurnToPointCmd(29.5, 23)->withTimeout(2.0),
+
+        // drive_sys.DriveToPointCmd({29.5, 23}, FWD, 0.2)->withTimeout(4.0),
+        // cata_sys.WaitForHold()->withTimeout(2.0),
+        // drive_sys.DriveForwardCmd(3, REV)->withTimeout(2.0),
+        // drive_sys.TurnToHeadingCmd(45)->withTimeout(2.0),
+        // drive_sys.DriveForwardCmd(14, FWD)->withTimeout(2.0),
+        // recal,
+        // drive_sys.TurnToHeadingCmd(0),
+        // drive_sys.DriveToPointCmd({65, 37.5}, FWD, 0.5)->withTimeout(4.0),
 
         new FunctionCommand([]() { return false; }),
+
     };
     cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
     cc.run();

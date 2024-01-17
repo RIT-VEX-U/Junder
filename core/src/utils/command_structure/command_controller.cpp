@@ -112,7 +112,7 @@ void CommandController::run() {
         }
         if (should_cancel()) {
             printf("Cancelling");
-            return;
+            break;
         }
 
         printf("Finished Command %d. Timed out: %s\n", command_count,

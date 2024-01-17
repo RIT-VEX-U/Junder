@@ -26,6 +26,10 @@ extern motor intake_roller;
 
 extern motor_group cata_motors;
 
+extern motor_group left_motors;
+
+extern motor_group right_motors;
+
 // ================ SUBSYSTEMS ================
 extern robot_specs_t robot_cfg;
 extern OdometryTank odom;

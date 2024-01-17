@@ -23,12 +23,6 @@ void opcontrol() {
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });
 
-    con.ButtonY.pressed([]() {
-        auto pose = odom.get_position();
-
-        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
-    });
-
     autonomous();
     // return;
     cata_sys.send_command(CataSys::Command::StartDropping);
@@ -37,37 +31,41 @@ void opcontrol() {
         vexDelay(20);
     }
 
-    con.ButtonRight.pressed([]() { screen::next_page(); });
-    con.ButtonLeft.pressed([]() { screen::prev_page(); });
-    con.ButtonDown.pressed(
-        []() { climb_solenoid.set(!climb_solenoid.value()); });
-
-    con.ButtonY.pressed([]() {
-        auto pose = odom.get_position();
-
-        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
-    });
-    // CommandController cc {
-    // drive_sys.DriveForwardCmd(6.0, vex::fwd, 0.2),
-    // };
-    // cc.run();
-    // skills();
-
     static bool enable_matchload = false;
 
-    // Controls:
-    // Cata: Hold L1 (Not on rising edge)
-    // -- Don't shoot until there's a ball
-    // -- Preload
-    // Intake:
-    // -- R1 IN
-    // -- R2 OUT
-    // -- B - 2 intake pistons
-
-    // SUBJECT TO CHANGE!
-    // Wings: DOWN
-
 #ifdef COMP_BOT
+    static std::atomic<bool> disable_drive(false);
+
+    con.ButtonRight.pressed([]() {
+        // Turn Right
+        disable_drive = true;
+        right_motors.spin(directionType::rev, 5, volt);
+        left_motors.spin(directionType::fwd, 3, volt);
+        vexDelay(150);
+        right_motors.stop(brakeType::hold);
+        left_motors.stop(brakeType::hold);
+        vexDelay(150);
+        right_motors.stop(brakeType::coast);
+        left_motors.stop(brakeType::coast);
+        disable_drive = false;
+    });
+
+    con.ButtonLeft.pressed([]() {
+        // Turn Left
+        disable_drive = true;
+        right_motors.spin(directionType::fwd, 3, volt);
+        left_motors.spin(directionType::rev, 5, volt);
+        vexDelay(150);
+        right_motors.stop(brakeType::hold);
+        left_motors.stop(brakeType::hold);
+        vexDelay(150);
+        right_motors.stop(brakeType::coast);
+        left_motors.stop(brakeType::coast);
+        disable_drive = false;
+    });
+    // con.ButtonDown.pressed(
+    // []() { climb_solenoid.set(!climb_solenoid.value()); });
+
     con.ButtonA.pressed([]() { enable_matchload = !enable_matchload; });
 
     con.ButtonL1.pressed(
@@ -79,7 +77,7 @@ void opcontrol() {
     con.ButtonR2.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
 
-    con.ButtonUp.pressed(
+    con.ButtonY.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeHold); });
 
     con.ButtonL2.pressed([]() {
@@ -93,14 +91,16 @@ void opcontrol() {
     while (true) {
 #ifdef COMP_BOT
         if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() &&
-            !con.ButtonL2.pressing() && !con.ButtonUp.pressing()) {
+            !con.ButtonY.pressing()) {
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
 #endif
 #ifdef Tank
         double l = con.Axis3.position() / 100.0;
         double r = con.Axis2.position() / 100.0;
-        drive_sys.drive_tank(l, r, 1, brake_type);
+        if (!disable_drive) {
+            drive_sys.drive_tank(l, r, 1, brake_type);
+        }
 
 #else
 
