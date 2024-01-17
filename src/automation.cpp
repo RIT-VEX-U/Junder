@@ -58,12 +58,50 @@ AutoCommand *WingSetCmd(bool val) {
     });
 }
 
+AutoCommand *GetOverBar() {
+    double roll_target = -8.0;
+    double over_bar_target = 0.0;
+    double drive_amt = -0.5;
+    return (new FunctionCommand(
+                [=, flipped_up = false, over_bar = false]() mutable {
+                    if (!flipped_up && imu.roll() < roll_target) {
+                        flipped_up = true;
+                    }
+                    if (flipped_up) {
+                        if (imu.roll() > over_bar_target) {
+                            over_bar = true;
+                        }
+                    }
+                    printf("%.2f - %d - %d\n", imu.roll(), (int)flipped_up,
+                           (int)over_bar);
+                    if (!over_bar) {
+                        drive_sys.drive_tank(drive_amt, drive_amt);
+                    } else {
+                        drive_sys.stop();
+                        return true;
+                    }
+                    return false;
+                }))
+        ->withTimeout(10.0);
+}
+
 AutoCommand *Climb() {
-    double amt = 0.5;
+    double wall_align_pwr = -.3;
+    double pipe_climb_power = -.6;
     return new InOrder{
+
+        // Align with wall
+        drive_sys.DriveTankCmd(wall_align_pwr, wall_align_pwr)
+            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
+            ->withTimeout(5.0),
+
+        // Climb up
         ClimbBarDeploy(),
-        drive_sys.DriveTankCmd(amt, amt)->withCancelCondition(
-            drive_sys.DriveStalledCondition()),
+        GetOverBar(),
         WingSetCmd(true),
+
+        // Center for safety
+        drive_sys.DriveForwardCmd(1.0),
+
     };
 }

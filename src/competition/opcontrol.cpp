@@ -32,6 +32,7 @@ void opcontrol() {
     };
     cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
     cc.run();
+    printf("Finished\n");
 
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });

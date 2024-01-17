@@ -69,21 +69,27 @@ AutoCommand *TankDrive::PurePursuitCmd(Feedback &feedback,
                                   end_speed);
 }
 
-Condition *TankDrive::DriveStalledCondition() {
+Condition *TankDrive::DriveStalledCondition(double stall_time) {
     class DriveStalledCondition : public Condition {
       public:
-        DriveStalledCondition(TankDrive &td) : td(td) {}
+        DriveStalledCondition(TankDrive &td, double stall_time)
+            : td(td), stalled_for(stall_time) {}
         bool test() override {
+            if (!func_initialized) {
+                stopped_timer.reset();
+                func_initialized = true;
+            }
             if (td.odometry->get_speed() > 0) {
                 stopped_timer.reset();
             }
-            return stopped_timer.value() < stalled_for;
+            return stopped_timer.value() > stalled_for;
         }
         TankDrive &td;
         vex::timer stopped_timer;
-        double stalled_for = 0.1;
+        double stalled_for = 10.0;
+        bool func_initialized = false;
     };
-    return new DriveStalledCondition(*this);
+    return new DriveStalledCondition(*this, stall_time);
 }
 AutoCommand *TankDrive::DriveTankCmd(double left, double right) {
     class DriveTankCommand : public AutoCommand {
