@@ -12,6 +12,7 @@ using namespace vex;
 
 // Analog sensors
 inertial imu(PORT8);
+bool red_side = true;
 
 // ================ OUTPUTS ================
 // Motors

@@ -43,6 +43,8 @@ extern vex::pneumatics climb_solenoid;
 extern vex::digital_out left_wing;
 extern vex::digital_out right_wing;
 
+extern bool red_side;
+
 #else
 // ================ INPUTS ================
 // Digital sensors

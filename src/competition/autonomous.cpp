@@ -39,7 +39,7 @@ class WingCmd : public AutoCommand {
  * Main entrypoint for the autonomous period
  */
 void only_shoot();
-void auto_program();
+void AUTO_WIN_POINT();
 void autonomous() {
     cata_sys.send_command(CataSys::Command::StartDropping);
 
@@ -47,7 +47,7 @@ void autonomous() {
         vexDelay(20);
     }
 
-    auto_program();
+    AUTO_WIN_POINT();
 }
 
 pose_t gps_pose() {
@@ -56,6 +56,12 @@ pose_t gps_pose() {
     double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
     double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
     double rot = gps_sensor.heading();
+    if (!red_side) {
+        x = 144 - x;
+        y = 144 - y;
+        rot += 180;
+    }
+
     pose.x = x;
     pose.y = y;
     pose.rot = rot;
@@ -63,7 +69,7 @@ pose_t gps_pose() {
     return pose;
 }
 
-void auto_program() {
+void AUTO_WIN_POINT() {
 
     AutoCommand *printOdom = new FunctionCommand([]() {
         auto pose = odom.get_position();
@@ -86,9 +92,9 @@ void auto_program() {
         // new FunctionCommand([]() { return false; }),
 
         // Drive to linup for alliance
-        drive_sys.DriveForwardCmd(4, FWD),
+        drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(-35),
-        drive_sys.DriveForwardCmd(8, FWD),
+        drive_sys.DriveForwardCmd(8, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(70),
         recal,
         drive_sys.TurnToHeadingCmd(225),
@@ -101,10 +107,10 @@ void auto_program() {
             ->withTimeout(1.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
         recal,
-        drive_sys.DriveForwardCmd(6.0, REV),
+        drive_sys.DriveForwardCmd(6.0, REV)->withTimeout(2.0),
         // Turn to side
         drive_sys.TurnToHeadingCmd(110.0),
-        drive_sys.DriveForwardCmd(12.0, FWD, 0.4),
+        drive_sys.DriveForwardCmd(12.0, FWD, 0.4)->withTimeout(2.0),
         // Dump in goal
         cata_sys.Unintake(),
         new DelayCommand(500),
