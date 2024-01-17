@@ -42,6 +42,7 @@ class CataSys {
     AutoCommand *IntakeToHold();
     AutoCommand *IntakeFully();
     AutoCommand *WaitForIntake();
+    AutoCommand *WaitForHold();
 
     // Page
     screen::Page *Page();

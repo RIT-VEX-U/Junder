@@ -1,4 +1,5 @@
 #include "competition/autonomous.h"
+#include "automation.h"
 
 #include <functional>
 
@@ -34,18 +35,67 @@ class WingCmd : public AutoCommand {
     bool deploy_down;
 };
 
-
 /**
  * Main entrypoint for the autonomous period
  */
 void only_shoot();
+void auto_program();
 void autonomous() {
-    intake_combine.spinFor(directionType::rev, 1.0, timeUnits::sec, 100,
-                           velocityUnits::pct);
+    cata_sys.send_command(CataSys::Command::StartDropping);
 
-    // DONT_RUN_CATA_YOU_FOOL = false;
+    while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
+        vexDelay(20);
+    }
 
-    only_shoot();
+    while (gps_sensor.xPosition(vex::distanceUnits::in) == 0.0) {
+        printf("not here\n");
+        vexDelay(20);
+    }
+
+    auto_program();
+}
+
+pose_t gps_pose() {
+    printf("GPS Qual: %ld\n", gps_sensor.quality());
+    pose_t pose;
+    double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
+    double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
+    double rot = gps_sensor.heading();
+    pose.x = x;
+    pose.y = y;
+    pose.rot = rot;
+    printf("GPS: (%.2f, %.2f) %.2f\n", x, y, rot);
+    return pose;
+}
+
+void auto_program() {
+
+    AutoCommand *printOdom = new FunctionCommand([]() {
+        auto pose = odom.get_position();
+        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
+        return true;
+    });
+    AutoCommand *recal = new FunctionCommand([]() {
+        odom.set_position(gps_pose());
+        return true;
+    });
+
+    odom.set_position(gps_pose());
+    CommandController cc{
+        printOdom,
+        recal,
+        cata_sys.IntakeToHold(),
+        drive_sys.DriveForwardCmd(4.0)
+            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
+            ->withTimeout(2.0),
+        cata_sys.WaitForIntake()->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(-5.0),
+        drive_sys.TurnToHeadingCmd(135.0),
+
+        new FunctionCommand([]() { return false; }),
+    };
+    cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
+    cc.run();
 }
 
 AutoCommand *shoot_and_drive(double dist, vex::directionType dir,
@@ -117,20 +167,24 @@ void only_shoot() {
         new DelayCommand(300),
         cata_sys.StopIntake(),
         drive_sys.TurnToHeadingCmd(165)->withTimeout(2.0),
-        drive_sys.DriveToPointCmd(
-            {
-                50,
-                10,
-            },
-            REV)->withTimeout(5.0),
+        drive_sys
+            .DriveToPointCmd(
+                {
+                    50,
+                    10,
+                },
+                REV)
+            ->withTimeout(5.0),
         printOdom,
         drive_sys.TurnToHeadingCmd(175)->withTimeout(2.0),
-        drive_sys.DriveToPointCmd(
-            {
-                100,
-                15,
-            },
-            REV)->withTimeout(5.0),
+        drive_sys
+            .DriveToPointCmd(
+                {
+                    100,
+                    15,
+                },
+                REV)
+            ->withTimeout(5.0),
         drive_sys.TurnToHeadingCmd(-125)->withTimeout(3.0),
         drive_sys.DriveForwardCmd(36.0, REV)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(30.0, FWD)->withTimeout(2.0),
@@ -251,5 +305,5 @@ void skills() {
 }
 
 #else
-void autonomous(){}
+void autonomous() {}
 #endif

@@ -20,19 +20,22 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
+    con.ButtonRight.pressed([]() { screen::next_page(); });
+    con.ButtonLeft.pressed([]() { screen::prev_page(); });
+
+    con.ButtonY.pressed([]() {
+        auto pose = odom.get_position();
+
+        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
+    });
+
+    autonomous();
+    // return;
     cata_sys.send_command(CataSys::Command::StartDropping);
 
     while (imu.isCalibrating()) {
         vexDelay(20);
     }
-
-    printf("CC\n");
-    CommandController cc{
-        Climb(),
-    };
-    cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
-    cc.run();
-    printf("Finished\n");
 
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });
@@ -75,6 +78,10 @@ void opcontrol() {
         []() { cata_sys.send_command(CataSys::Command::IntakeIn); });
     con.ButtonR2.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
+
+    con.ButtonUp.pressed(
+        []() { cata_sys.send_command(CataSys::Command::IntakeHold); });
+
     con.ButtonL2.pressed([]() {
         left_wing.set(!left_wing.value());
         right_wing.set(!right_wing.value());
@@ -86,7 +93,7 @@ void opcontrol() {
     while (true) {
 #ifdef COMP_BOT
         if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() &&
-            !con.ButtonL2.pressing()) {
+            !con.ButtonL2.pressing() && !con.ButtonUp.pressing()) {
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
 #endif

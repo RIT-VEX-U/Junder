@@ -104,7 +104,7 @@ vex::digital_out right_wing(Brain.ThreeWirePort.H);
 
 CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors,
                  intake_roller, intake_combine);
-
+gps gps_sensor(PORT6, 0, 0, distanceUnits::in, 0, turnType::left);
 #else
 
 // ================ INPUTS ================
@@ -173,18 +173,18 @@ std::vector<screen::Page *> pages;
  * are started.
  */
 void robot_init() {
-    set_video("joe.mpeg");
+    // set_video("joe.mpeg");
     pages = {
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
-        new VideoPlayer(),
+    // new VideoPlayer(),
 #ifdef COMP_BOT
         cata_sys.Page(),
 #endif
     };
 
-    screen::start_screen(Brain.Screen, pages, 2);
+    screen::start_screen(Brain.Screen, pages, 1);
 
     imu.calibrate();
-    // gps_sensor.calibrate();
+    gps_sensor.calibrate();
 }

@@ -18,7 +18,7 @@ extern controller con;
 // Analog sensors
 extern inertial imu;
 extern vex::distance intake_watcher;
-
+extern vex::gps gps_sensor;
 // ================ OUTPUTS ================
 // Motors
 extern motor intake_combine;

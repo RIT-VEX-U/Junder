@@ -350,12 +350,22 @@ AutoCommand *CataSys::IntakeFully() {
     });
 }
 
+AutoCommand *CataSys::IntakeToHold() {
+    return new FunctionCommand([&]() {
+        send_command(Command::IntakeHold);
+        return true;
+    });
+}
+
 AutoCommand *CataSys::WaitForIntake() {
+    return new FunctionCommand([&]() { return cata_watcher.isNearObject(); });
+}
+
+AutoCommand *CataSys::WaitForHold() {
     return new FunctionCommand([&]() {
         return intake_watcher.objectDistance(distanceUnits::mm) < 150;
     });
 }
-
 AutoCommand *CataSys::StopFiring() {
     return new FunctionCommand([&]() {
         send_command(CataSys::Command::StopFiring);
