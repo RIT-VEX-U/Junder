@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.11)
 
-set(CMAKE_TOOLCHAIN_FILE /home/richie/Clubs/VEX/BuildSystem/Toolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE /home/richie/Clubs/VEX/BuildSystem/Toolchain_VexV5.cmake)
 
 project(Core LANGUAGES C CXX)
 

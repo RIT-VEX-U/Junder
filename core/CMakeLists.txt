@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.11)
 
-set(CMAKE_TOOLCHAIN_FILE /home/richie/Clubs/VEX/BuildSystem/Toolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE /home/richie/Clubs/VEX/BuildSystem/Toolchain_VexV5.cmake)
 
 project(Core LANGUAGES C CXX)
 
@@ -84,6 +84,6 @@ add_library(Core OBJECT
 	${core_sources}
         include/core/vex.h
 )
+target_include_directories(Core PUBLIC include)
 target_compile_options(Core PUBLIC -Wno-c++17-extensions -Wno-c++14-extensions)
 
-target_include_directories(Core PUBLIC include)
