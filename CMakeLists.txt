@@ -5,7 +5,6 @@ set(CMAKE_TOOLCHAIN_FILE /home/richie/Clubs/VEX/BuildSystem/Toolchain.cmake)
 
 project(Core LANGUAGES C CXX)
 
-add_compile_options(-Wno-c++17-extensions -Wno-c++14-extensions)
 
 vex_add_executable(Junder)
 
@@ -32,5 +31,7 @@ target_sources(Junder PRIVATE ${sources})
 target_include_directories(Junder PRIVATE include)
 
 add_subdirectory(core/)
+
+target_compile_options(Junder PRIVATE -Wall -Wextra -Wpedantic -Wno-c99-extensions -Wreturn-type -Wdeprecated-declarations -Wno-keyword-macro -Wno-sign-compare -Wno-vla)
 
 target_link_libraries(Junder Core)
