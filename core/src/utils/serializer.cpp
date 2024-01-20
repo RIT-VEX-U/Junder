@@ -1,6 +1,6 @@
-#include "../core/include/utils/serializer.h"
+#include "core/utils/serializer.h"
+#include "core/vex.h"
 #include "stdlib.h"
-#include "vex.h"
 
 // ===================== Helper Functions for converting to and from bytes =====================
 // Specialize these if you have non trivial types you need to save I suppose

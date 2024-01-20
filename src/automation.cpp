@@ -61,7 +61,7 @@ AutoCommand *WingSetCmd(bool val) {
 AutoCommand *GetOverBar() {
     double roll_target = -8.0;
     double over_bar_target = 0.0;
-    double drive_amt = -0.5;
+    double drive_amt = -0.8;
     return (new FunctionCommand(
                 [=, flipped_up = false, over_bar = false]() mutable {
                     if (!flipped_up && imu.roll() < roll_target) {

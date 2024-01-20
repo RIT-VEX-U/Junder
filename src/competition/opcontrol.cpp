@@ -20,10 +20,10 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
-    con.ButtonRight.pressed([]() { screen::next_page(); });
-    con.ButtonLeft.pressed([]() { screen::prev_page(); });
-
-    autonomous();
+    // con.ButtonRight.pressed([]() { screen::next_page(); });
+    // con.ButtonLeft.pressed([]() { screen::prev_page(); });
+    //
+    // autonomous();
     // return;
     cata_sys.send_command(CataSys::Command::StartDropping);
 
@@ -63,8 +63,12 @@ void opcontrol() {
         left_motors.stop(brakeType::coast);
         disable_drive = false;
     });
-    // con.ButtonDown.pressed(
-    // []() { climb_solenoid.set(!climb_solenoid.value()); });
+    con.ButtonDown.pressed(
+        []() { climb_solenoid.set(!climb_solenoid.value()); });
+    con.ButtonUp.pressed([]() {
+        CommandController cc{Climb()};
+        cc.run();
+    });
 
     con.ButtonA.pressed([]() { enable_matchload = !enable_matchload; });
 

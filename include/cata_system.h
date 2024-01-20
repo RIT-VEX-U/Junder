@@ -1,8 +1,8 @@
 
 #pragma once
-#include "../core/include/subsystems/custom_encoder.h"
-#include "../core/include/subsystems/screen.h"
-#include "../core/include/utils/command_structure/auto_command.h"
+#include "core/subsystems/custom_encoder.h"
+#include "core/subsystems/screen.h"
+#include "core/utils/command_structure/auto_command.h"
 #include "vex.h"
 
 class CataSys {

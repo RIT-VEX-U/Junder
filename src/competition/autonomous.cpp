@@ -40,6 +40,8 @@ class WingCmd : public AutoCommand {
  */
 void only_shoot();
 void AUTO_WIN_POINT();
+void skills();
+void skills2();
 void autonomous() {
     cata_sys.send_command(CataSys::Command::StartDropping);
 
@@ -261,6 +263,146 @@ void only_shoot() {
     cmd.run();
 }
 
+void skills2() {
+    FunctionCommand *intakeToCata = new FunctionCommand([]() {
+        // Run intake in, periodically push out in case it's caught.
+        // static vex::timer intake_tmr;
+        // if(intake_tmr.time(sec) > 1)
+        //     cata_sys.send_command(CataSys::Command::IntakeOut);
+        // else if( intake_tmr.time(sec) > 1.5)
+        //     intake_tmr.reset();
+        // else
+        //     cata_sys.send_command(CataSys::Command::IntakeIn);
+
+        // Only return when the ball is in the bot
+        return cata_watcher.isNearObject();
+    });
+
+    const double dist = 6.0;
+    const double load_angle = 225;
+    const double shoot_angle = 210.0;
+
+    AutoCommand *printOdom = new FunctionCommand([]() {
+        auto pose = odom.get_position();
+        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
+        return true;
+    });
+
+    auto thingRight = new FunctionCommand([]() {
+        // Turn Right
+        // disable_drive = true;
+        right_motors.spin(directionType::rev, 5, volt);
+        left_motors.spin(directionType::fwd, 3, volt);
+        vexDelay(150);
+        right_motors.stop(brakeType::hold);
+        left_motors.stop(brakeType::hold);
+        vexDelay(150);
+        right_motors.stop(brakeType::coast);
+        left_motors.stop(brakeType::coast);
+        return true;
+    });
+
+    auto thingLeft = new FunctionCommand([]() {
+        // Turn Left
+        right_motors.spin(directionType::fwd, 3, volt);
+        left_motors.spin(directionType::rev, 5, volt);
+        vexDelay(150);
+        right_motors.stop(brakeType::hold);
+        left_motors.stop(brakeType::hold);
+        vexDelay(150);
+        right_motors.stop(brakeType::coast);
+        left_motors.stop(brakeType::coast);
+        return true;
+    });
+
+    CommandController cmd{
+        odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+
+        // 1 - Turn and shoot preload
+        // drive_sys.DriveForwardCmd(2.0, REV),
+        // drive_sys.TurnToHeadingCmd(shoot_angle, .5), cata_sys.Fire(),
+        // cata_sys.StopFiring(),
+
+        // new DelayCommand(300),
+
+        // 2 - Turn to matchload zone & begin matchloading
+        // drive_sys.TurnToHeadingCmd(load_angle, .5), cata_sys.IntakeFully(),
+        // drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5)->withTimeout(1.5),
+        // thingLeft,
+        // Matchloading phase
+        new RepeatUntil(
+            InOrder{
+                odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+
+                intakeToCata->withTimeout(2.0),
+                // drive_sys.DriveForwardCmd(dist, REV, 0.5),
+                // drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
+                cata_sys.Fire(), new DelayCommand(300),
+                // drive_sys.TurnToHeadingCmd(load_angle, 0.5),
+                cata_sys.StopFiring(),
+
+                cata_sys.IntakeFully()->withTimeout(5.0),
+                // drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)
+                // ->withTimeout(2.0)
+                // ->withCancelCondition(
+                // drive_sys.DriveStalledCondition(0.25)),
+            },
+            new IfTimePassed(45)),
+        //
+        // Last preload
+        intakeToCata,
+        drive_sys.DriveForwardCmd(dist, REV, 0.5)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(shoot_angle, 0.5), cata_sys.Fire(),
+        new DelayCommand(500), drive_sys.TurnToHeadingCmd(load_angle, 0.5),
+        drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)->withTimeout(4.0),
+
+        cata_sys.StopFiring(),
+
+        printOdom, odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+        drive_sys.DriveToPointCmd({.x = 19, .y = 19}, REV, 0.5), printOdom,
+        drive_sys.TurnToHeadingCmd(160, .5), cata_sys.StopIntake(),
+
+        // // Drive through "The Passage" & push into side of goal
+        // // Push into side of goal
+        new Parallel{
+            new InOrder{new WaitUntilCondition(new FunctionCondition(
+                            []() { return odom.get_position().x > 102; })),
+                        new WingCmd(LEFT, false)},
+            drive_sys.PurePursuitCmd(PurePursuit::Path(
+                                         {
+                                             {.x = 19, .y = 19},
+                                             {.x = 30, .y = 11},
+                                             {.x = 62, .y = 12},
+                                             {.x = 100.0, .y = 19},
+                                             {.x = 120.0, .y = 26},
+                                         },
+                                         4),
+                                     REV, .5)},
+        drive_sys.TurnToHeadingCmd(60 - 180, .5),
+        drive_sys.DriveForwardCmd(36, REV, 1)->withTimeout(3.0),
+        drive_sys.DriveForwardCmd(4, FWD, 1), drive_sys.TurnDegreesCmd(-80),
+        drive_sys.DriveForwardCmd(8, REV, .15)->withTimeout(3.0), // wall align
+        printOdom,
+        odom.SetPositionCmd(
+            {.x = 137, .y = 51, .rot = 180}), // odom.get_position().rot
+        printOdom, drive_sys.DriveToPointCmd({.x = 90, .y = 51}, FWD, .5),
+        new WingCmd(RIGHT, true),
+        // new WingCmd(LEFT, true),
+        drive_sys.TurnDegreesCmd(55),
+        drive_sys.DriveForwardCmd(32, REV)->withTimeout(3.0),
+        drive_sys.TurnDegreesCmd(-10),
+        drive_sys.DriveForwardCmd(34, FWD)->withTimeout(3.0),
+        drive_sys.DriveForwardCmd(40, REV)->withTimeout(3.0),
+        drive_sys.DriveForwardCmd(34, FWD)->withTimeout(3.0),
+        drive_sys.DriveForwardCmd(40, REV)->withTimeout(3.0),
+        new WingCmd(RIGHT, false)};
+
+    cmd.add_cancel_func([]() { return con.ButtonA.pressing(); });
+    cmd.run();
+
+    drive_sys.stop();
+}
+
 void skills() {
     FunctionCommand *intakeToCata = new FunctionCommand([]() {
         // Run intake in, periodically push out in case it's caught.
@@ -302,18 +444,23 @@ void skills() {
 
         // Matchloading phase
         new RepeatUntil(
-            InOrder{odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+            InOrder{
+                odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
-                    intakeToCata->withTimeout(2.0),
-                    drive_sys.DriveForwardCmd(dist, REV, 0.5),
-                    drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
-                    cata_sys.Fire(), new DelayCommand(300),
-                    drive_sys.TurnToHeadingCmd(load_angle, 0.5),
-                    cata_sys.StopFiring(),
+                intakeToCata->withTimeout(2.0),
+                drive_sys.DriveForwardCmd(dist, REV, 0.5),
+                drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
+                cata_sys.Fire(),
+                new DelayCommand(300),
+                drive_sys.TurnToHeadingCmd(load_angle, 0.5),
+                cata_sys.StopFiring(),
 
-                    cata_sys.IntakeFully(),
-                    drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)
-                        ->withTimeout(2.0)},
+                cata_sys.IntakeFully(),
+                drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)
+                    ->withTimeout(2.0)
+                    ->withCancelCondition(
+                        drive_sys.DriveStalledCondition(0.25)),
+            },
             new IfTimePassed(60)),
         //
         // Last preload

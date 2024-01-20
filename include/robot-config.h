@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/include/subsystems/fun/video.h"
 #include "cata_system.h"
 #include "core.h"
+#include "core/subsystems/fun/video.h"
 #include "vex.h"
 #define COMP_BOT
 

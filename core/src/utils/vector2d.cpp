@@ -1,4 +1,4 @@
-#include "../core/include/utils/vector2d.h"
+#include "core/utils/vector2d.h"
 
 /**
  * Construct a vector object.
