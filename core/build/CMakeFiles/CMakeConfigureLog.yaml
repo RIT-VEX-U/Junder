@@ -1,0 +1,322 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineSystem.cmake:228 (message)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      The target system is: Generic -  - arm
+      The host system is: Linux - 6.6.10-1-MANJARO - x86_64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang 
+      Build flags: -march=armv7-a;-mfpu=neon;-mfloat-abi=softfp;-target;thumbv7-none-eabi;-fshort-enums;-Wno-unknown-attributes;-U__INT32_TYPE__;-U__UINT32_TYPE__;-D__INT32_TYPE__=long;-D__UINT32_TYPE__=unsigned long;-Os;-Wall;-Werror=return-type;-ansi;-std=gnu99
+      Id flags:  
+      
+      The output was:
+      1
+      clang: error: unable to execute command: Executable "ld.lld" doesn't exist!
+      clang: error: ld.lld command failed with exit code 1 (use -v to see invocation)
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang 
+      Build flags: -march=armv7-a;-mfpu=neon;-mfloat-abi=softfp;-target;thumbv7-none-eabi;-fshort-enums;-Wno-unknown-attributes;-U__INT32_TYPE__;-U__UINT32_TYPE__;-D__INT32_TYPE__=long;-D__UINT32_TYPE__=unsigned long;-Os;-Wall;-Werror=return-type;-ansi;-std=gnu99
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is Clang, found in:
+        /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/3.28.1/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang 
+      Build flags: -march=armv7-a;-mfpu=neon;-mfloat-abi=softfp;-target;thumbv7-none-eabi;-fshort-enums;-Wno-unknown-attributes;-U__INT32_TYPE__;-U__UINT32_TYPE__;-D__INT32_TYPE__=long;-D__UINT32_TYPE__=unsigned long;-Os;-Wall;-Werror=return-type;-fno-rtti;-fno-threadsafe-statics;-fno-exceptions;-std=gnu++11;-ffunction-sections;-fdata-sections
+      Id flags:  
+      
+      The output was:
+      1
+      clang: error: unable to execute command: Executable "ld.lld" doesn't exist!
+      clang: error: ld.lld command failed with exit code 1 (use -v to see invocation)
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang 
+      Build flags: -march=armv7-a;-mfpu=neon;-mfloat-abi=softfp;-target;thumbv7-none-eabi;-fshort-enums;-Wno-unknown-attributes;-U__INT32_TYPE__;-U__UINT32_TYPE__;-D__INT32_TYPE__=long;-D__UINT32_TYPE__=unsigned long;-Os;-Wall;-Werror=return-type;-fno-rtti;-fno-threadsafe-statics;-fno-exceptions;-std=gnu++11;-ffunction-sections;-fdata-sections
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is Clang, found in:
+        /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/3.28.1/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F"
+      binary: "/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/usr/bin/clang-scan-deps"
+      CMAKE_C_FLAGS: "-march=armv7-a -mfpu=neon -mfloat-abi=softfp -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' -Os -Wall -ansi -std=gnu99"
+      CMAKE_C_FLAGS_DEBUG: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_40c2c/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_40c2c.dir/build.make CMakeFiles/cmTC_40c2c.dir/build
+        make[1]: Entering directory '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F'
+        Building C object CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj
+        /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang   -march=armv7-a -mfpu=neon -mfloat-abi=softfp -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' -Os -Wall -ansi -std=gnu99    -v -DVexV5 -MD -MT CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -MF CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj.d -o CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -c /usr/share/cmake/Modules/CMakeCCompilerABI.c
+        clang version 8.0.0 (tags/RELEASE_800/final)
+        Target: thumbv7-none-unknown-eabi
+        Thread model: posix
+        InstalledDir: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin
+         "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang" -cc1 -triple armv7-none-unknown-eabi -emit-obj -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -mconstructor-aliases -nostdsysteminc -target-cpu generic -target-feature +soft-float-abi -target-feature -fp-only-sp -target-feature -d16 -target-feature +vfp3 -target-feature -fp16 -target-feature -vfp4 -target-feature -fp-armv8 -target-feature +neon -target-feature -crypto -target-feature +strict-align -target-abi aapcs -mfloat-abi soft -fallow-half-arguments-and-returns -dwarf-column-info -debugger-tuning=gdb -v -coverage-notes-file /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F/CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.gcno -resource-dir /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0 -dependency-file CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj.d -sys-header-deps -MT CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -U __INT32_TYPE__ -U __UINT32_TYPE__ -D __INT32_TYPE__=long -D __UINT32_TYPE__=unsigned long -D VexV5 -internal-isystem /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include -internal-isystem include -Os -Wno-unknown-attributes -Wall -std=gnu99 -fdebug-compilation-dir /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F -ferror-limit 19 -fmessage-length 0 -fshort-enums -fno-signed-char -fobjc-runtime=gcc -fdiagnostics-show-option -vectorize-loops -vectorize-slp -o CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -x c /usr/share/cmake/Modules/CMakeCCompilerABI.c -faddrsig
+        clang -cc1 version 8.0.0 based upon LLVM 8.0.0 default target x86_64-unknown-linux-gnu
+        ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"
+        ignoring nonexistent directory "include"
+        ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"
+        #include "..." search starts here:
+        End of search list.
+        Linking C executable cmTC_40c2c
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_40c2c.dir/link.txt --verbose=1
+        /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/gcc/bin/arm-none-eabi-ld -nostdlib -T "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/lscript.ld" -R "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/stdlib_0.lib" --gc-section -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5" -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs" CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -o cmTC_40c2c --start-group -lv5rt -lstdc++ -lc -lm -lgcc --end-group
+        make[1]: Leaving directory '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        end of search list found
+        implicit include dirs: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:159 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(arm-none-eabi-ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_40c2c/fast]
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_40c2c.dir/build.make CMakeFiles/cmTC_40c2c.dir/build]
+        ignore line: [make[1]: Entering directory '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F']
+        ignore line: [Building C object CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj]
+        ignore line: [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang   -march=armv7-a -mfpu=neon -mfloat-abi=softfp -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' -Os -Wall -ansi -std=gnu99    -v -DVexV5 -MD -MT CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -MF CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj.d -o CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -c /usr/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang version 8.0.0 (tags/RELEASE_800/final)]
+        ignore line: [Target: thumbv7-none-unknown-eabi]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin]
+        ignore line: [ "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang" -cc1 -triple armv7-none-unknown-eabi -emit-obj -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -mconstructor-aliases -nostdsysteminc -target-cpu generic -target-feature +soft-float-abi -target-feature -fp-only-sp -target-feature -d16 -target-feature +vfp3 -target-feature -fp16 -target-feature -vfp4 -target-feature -fp-armv8 -target-feature +neon -target-feature -crypto -target-feature +strict-align -target-abi aapcs -mfloat-abi soft -fallow-half-arguments-and-returns -dwarf-column-info -debugger-tuning=gdb -v -coverage-notes-file /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F/CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.gcno -resource-dir /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0 -dependency-file CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj.d -sys-header-deps -MT CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -U __INT32_TYPE__ -U __UINT32_TYPE__ -D __INT32_TYPE__=long -D __UINT32_TYPE__=unsigned long -D VexV5 -internal-isystem /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include -internal-isystem include -Os -Wno-unknown-attributes -Wall -std=gnu99 -fdebug-compilation-dir /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-y0kN0F -ferror-limit 19 -fmessage-length 0 -fshort-enums -fno-signed-char -fobjc-runtime=gcc -fdiagnostics-show-option -vectorize-loops -vectorize-slp -o CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -x c /usr/share/cmake/Modules/CMakeCCompilerABI.c -faddrsig]
+        ignore line: [clang -cc1 version 8.0.0 based upon LLVM 8.0.0 default target x86_64-unknown-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"]
+        ignore line: [ignoring nonexistent directory "include"]
+        ignore line: [ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [End of search list.]
+        ignore line: [Linking C executable cmTC_40c2c]
+        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_40c2c.dir/link.txt --verbose=1]
+        link line: [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/gcc/bin/arm-none-eabi-ld -nostdlib -T "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/lscript.ld" -R "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/stdlib_0.lib" --gc-section -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5" -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs" CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj -o cmTC_40c2c --start-group -lv5rt -lstdc++ -lc -lm -lgcc --end-group]
+          arg [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/gcc/bin/arm-none-eabi-ld] ==> ignore
+          arg [-nostdlib] ==> ignore
+          arg [-T] ==> ignore
+          arg [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/lscript.ld] ==> ignore
+          arg [-R] ==> ignore
+          arg [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/stdlib_0.lib] ==> ignore
+          arg [--gc-section] ==> ignore
+          arg [-L/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5] ==> dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5]
+          arg [-L/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs] ==> dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs]
+          arg [CMakeFiles/cmTC_40c2c.dir/CMakeCCompilerABI.c.obj] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_40c2c] ==> ignore
+          arg [--start-group] ==> ignore
+          arg [-lv5rt] ==> lib [v5rt]
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lc] ==> lib [c]
+          arg [-lm] ==> lib [m]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--end-group] ==> ignore
+        collapse library dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5] ==> [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5]
+        collapse library dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs] ==> [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs]
+        implicit libs: [v5rt;stdc++;c;m;gcc]
+        implicit objs: []
+        implicit dirs: [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5;/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6"
+      binary: "/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/usr/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: "-march=armv7-a -mfpu=neon -mfloat-abi=softfp -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' -Os -Wall -fno-rtti -fno-threadsafe-statics -fno-exceptions  -std=gnu++11 -ffunction-sections -fdata-sections"
+      CMAKE_CXX_FLAGS_DEBUG: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_671fe/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_671fe.dir/build.make CMakeFiles/cmTC_671fe.dir/build
+        make[1]: Entering directory '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6'
+        Building CXX object CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj
+        /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang   -march=armv7-a -mfpu=neon -mfloat-abi=softfp -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' -Os -Wall -fno-rtti -fno-threadsafe-statics -fno-exceptions  -std=gnu++11 -ffunction-sections -fdata-sections  -std=gnu++11   -v -DVexV5 -MD -MT CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -MF CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj.d -o CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang version 8.0.0 (tags/RELEASE_800/final)
+        Target: thumbv7-none-unknown-eabi
+        Thread model: posix
+        InstalledDir: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin
+         "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang" -cc1 -triple armv7-none-unknown-eabi -emit-obj -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -mconstructor-aliases -nostdsysteminc -target-cpu generic -target-feature +soft-float-abi -target-feature -fp-only-sp -target-feature -d16 -target-feature +vfp3 -target-feature -fp16 -target-feature -vfp4 -target-feature -fp-armv8 -target-feature +neon -target-feature -crypto -target-feature +strict-align -target-abi aapcs -mfloat-abi soft -fallow-half-arguments-and-returns -dwarf-column-info -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -coverage-notes-file /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6/CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.gcno -resource-dir /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0 -dependency-file CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj.d -sys-header-deps -MT CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -U __INT32_TYPE__ -U __UINT32_TYPE__ -D __INT32_TYPE__=long -D __UINT32_TYPE__=unsigned long -D VexV5 -internal-isystem /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include -internal-isystem include -Os -Wno-unknown-attributes -Wall -std=gnu++11 -fdeprecated-macro -fdebug-compilation-dir /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6 -ferror-limit 19 -fmessage-length 0 -fno-rtti -fshort-enums -fno-signed-char -fno-threadsafe-statics -fobjc-runtime=gcc -fdiagnostics-show-option -vectorize-loops -vectorize-slp -o CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -x c++ /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp -faddrsig
+        clang -cc1 version 8.0.0 based upon LLVM 8.0.0 default target x86_64-unknown-linux-gnu
+        ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"
+        ignoring nonexistent directory "include"
+        ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"
+        #include "..." search starts here:
+        End of search list.
+        Linking CXX executable cmTC_671fe
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_671fe.dir/link.txt --verbose=1
+        /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/gcc/bin/arm-none-eabi-ld -nostdlib -T "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/lscript.ld" -R "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/stdlib_0.lib" --gc-section -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5" -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs" CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -o cmTC_671fe --start-group -lv5rt -lstdc++ -lc -lm -lgcc --end-group
+        make[1]: Leaving directory '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        end of search list found
+        implicit include dirs: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:159 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(arm-none-eabi-ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_671fe/fast]
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_671fe.dir/build.make CMakeFiles/cmTC_671fe.dir/build]
+        ignore line: [make[1]: Entering directory '/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6']
+        ignore line: [Building CXX object CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj]
+        ignore line: [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang   -march=armv7-a -mfpu=neon -mfloat-abi=softfp -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' -Os -Wall -fno-rtti -fno-threadsafe-statics -fno-exceptions  -std=gnu++11 -ffunction-sections -fdata-sections  -std=gnu++11   -v -DVexV5 -MD -MT CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -MF CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj.d -o CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang version 8.0.0 (tags/RELEASE_800/final)]
+        ignore line: [Target: thumbv7-none-unknown-eabi]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin]
+        ignore line: [ "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/bin/clang" -cc1 -triple armv7-none-unknown-eabi -emit-obj -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -mconstructor-aliases -nostdsysteminc -target-cpu generic -target-feature +soft-float-abi -target-feature -fp-only-sp -target-feature -d16 -target-feature +vfp3 -target-feature -fp16 -target-feature -vfp4 -target-feature -fp-armv8 -target-feature +neon -target-feature -crypto -target-feature +strict-align -target-abi aapcs -mfloat-abi soft -fallow-half-arguments-and-returns -dwarf-column-info -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -coverage-notes-file /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6/CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.gcno -resource-dir /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0 -dependency-file CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj.d -sys-header-deps -MT CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -U __INT32_TYPE__ -U __UINT32_TYPE__ -D __INT32_TYPE__=long -D __UINT32_TYPE__=unsigned long -D VexV5 -internal-isystem /home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include -internal-isystem include -Os -Wno-unknown-attributes -Wall -std=gnu++11 -fdeprecated-macro -fdebug-compilation-dir /home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/CMakeScratch/TryCompile-mjias6 -ferror-limit 19 -fmessage-length 0 -fno-rtti -fshort-enums -fno-signed-char -fno-threadsafe-statics -fobjc-runtime=gcc -fdiagnostics-show-option -vectorize-loops -vectorize-slp -o CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -x c++ /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp -faddrsig]
+        ignore line: [clang -cc1 version 8.0.0 based upon LLVM 8.0.0 default target x86_64-unknown-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"]
+        ignore line: [ignoring nonexistent directory "include"]
+        ignore line: [ignoring nonexistent directory "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/clang/lib/clang/8.0.0/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [End of search list.]
+        ignore line: [Linking CXX executable cmTC_671fe]
+        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_671fe.dir/link.txt --verbose=1]
+        link line: [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/gcc/bin/arm-none-eabi-ld -nostdlib -T "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/lscript.ld" -R "/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/stdlib_0.lib" --gc-section -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5" -L"/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs" CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj -o cmTC_671fe --start-group -lv5rt -lstdc++ -lc -lm -lgcc --end-group]
+          arg [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_linux64/gcc/bin/arm-none-eabi-ld] ==> ignore
+          arg [-nostdlib] ==> ignore
+          arg [-T] ==> ignore
+          arg [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/lscript.ld] ==> ignore
+          arg [-R] ==> ignore
+          arg [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/stdlib_0.lib] ==> ignore
+          arg [--gc-section] ==> ignore
+          arg [-L/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5] ==> dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5]
+          arg [-L/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs] ==> dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs]
+          arg [CMakeFiles/cmTC_671fe.dir/CMakeCXXCompilerABI.cpp.obj] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_671fe] ==> ignore
+          arg [--start-group] ==> ignore
+          arg [-lv5rt] ==> lib [v5rt]
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lc] ==> lib [c]
+          arg [-lm] ==> lib [m]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--end-group] ==> ignore
+        collapse library dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5] ==> [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5]
+        collapse library dir [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs] ==> [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs]
+        implicit libs: [v5rt;stdc++;c;m;gcc]
+        implicit objs: []
+        implicit dirs: [/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5;/home/richie/.config/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20220726_10_00_00/vexv5/gcc/libs]
+        implicit fwks: []
+      
+      
+...

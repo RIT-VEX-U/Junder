@@ -84,4 +84,6 @@ add_library(Core OBJECT
 	${core_sources}
         include/core/vex.h
 )
+target_compile_options(Core PUBLIC -Wno-c++17-extensions -Wno-c++14-extensions)
+
 target_include_directories(Core PUBLIC include)

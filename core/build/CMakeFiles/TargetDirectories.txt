@@ -1,0 +1,3 @@
+/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/Core.dir
+/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/edit_cache.dir
+/home/richie/Clubs/VEX/JunderCMAKE/core/build/CMakeFiles/rebuild_cache.dir
