@@ -39,17 +39,16 @@ class WingCmd : public AutoCommand {
  * Main entrypoint for the autonomous period
  */
 void only_shoot();
-void AUTO_WIN_POINT();
-void skills();
-void skills2();
+void supportAuto();
 void autonomous() {
     cata_sys.send_command(CataSys::Command::StartDropping);
 
     while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
         vexDelay(20);
     }
+    vexDelay(2000);
 
-    AUTO_WIN_POINT();
+    supportAuto();
 }
 
 pose_t gps_pose() {
@@ -71,7 +70,7 @@ pose_t gps_pose() {
     return pose;
 }
 
-void AUTO_WIN_POINT() {
+void supportAuto() {
 
     AutoCommand *printOdom = new FunctionCommand([]() {
         auto pose = odom.get_position();
@@ -94,9 +93,9 @@ void AUTO_WIN_POINT() {
         // new FunctionCommand([]() { return false; }),
 
         // Drive to linup for alliance
-        drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
+        // drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(-35),
-        drive_sys.DriveForwardCmd(8, FWD)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(10, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(70),
         recal,
         drive_sys.TurnToHeadingCmd(225),
@@ -109,35 +108,46 @@ void AUTO_WIN_POINT() {
             ->withTimeout(1.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
         recal,
-        drive_sys.DriveForwardCmd(6.0, REV)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(5.0, REV)->withTimeout(2.0),
         // Turn to side
-        drive_sys.TurnToHeadingCmd(110.0),
-        drive_sys.DriveForwardCmd(12.0, FWD, 0.4)->withTimeout(2.0),
+        drive_sys.TurnToPointCmd(12.0, 36.0)->withTimeout(1.0),
+        drive_sys.DriveForwardCmd(8.5, FWD, 0.4)->withTimeout(2.0),
+        recal,
+        drive_sys.TurnToHeadingCmd(90.0)->withTimeout(1.0),
+        drive_sys.DriveForwardCmd(6.5, FWD, 0.4)->withTimeout(2.0),
         // Dump in goal
         cata_sys.Unintake(),
         new DelayCommand(500),
-        drive_sys.DriveForwardCmd(6.0, REV)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(8.0, REV)->withTimeout(2.0),
         cata_sys.StopIntake(),
-        drive_sys.TurnDegreesCmd(180.0)->withTimeout(1.0),
+
+        // drive_sys.DriveForwardCmd(3.0, FWD, 0.4)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(270)->withTimeout(2.0),
+
+        // drive_sys.DriveForwardCmd(1.5, FWD, 0.4)->withTimeout(2.0),
+        // drive_sys.TurnDegreesCmd(-45.0),
+
         // Ram once
-        drive_sys.DriveForwardCmd(24, REV)
+        drive_sys.DriveForwardCmd(20, REV)
             ->withTimeout(2.0)
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.25)),
-        drive_sys.DriveForwardCmd(3, FWD)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
         // Ram Twice
-        drive_sys.DriveTankCmd(-1.0, -1.0)->withTimeout(0.5),
+        drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(0.5),
         recal,
-        drive_sys.DriveForwardCmd(3, FWD)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
+
+        // new WingCmd(LEFT, false),
         // Ram Thrice
-        drive_sys.DriveTankCmd(-1.0, -1.0)->withTimeout(0.5),
-        recal,
-        drive_sys.DriveForwardCmd(6, FWD)->withTimeout(2.0),
+        // drive_sys.DriveTankCmd(-1.0, -1.0)->withTimeout(0.5),
+        // recal,
+        // drive_sys.DriveForwardCmd(6, FWD)->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(320.0),
         recal,
         drive_sys.DriveForwardCmd(5),
         recal,
         drive_sys.TurnToHeadingCmd(0),
-        drive_sys.DriveForwardCmd(50)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(30)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(20, FWD, 0.3)->withTimeout(1.0),
         recal,
         drive_sys.DriveForwardCmd(8, REV),
