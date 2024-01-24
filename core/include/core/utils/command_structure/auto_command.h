@@ -1,12 +1,12 @@
 #pragma once
+#include "core/utils/command_structure/condition.h"
+#include "vex.h"
 #include <functional>
 #include <memory>
 #include <queue>
 #include <string>
 #include <type_traits>
 #include <vector>
-
-#include "core/utils/command_structure/condition.h"
 
 // A memory managing wrapper for any autocommand. See below for more information
 class AutoCommand;
@@ -53,6 +53,9 @@ AutoCommand PauseUntil(Condition cond);
  * practice
  */
 class AutoCommand {
+    friend class InOrder;
+    friend class CommandController;
+
   public:
     friend class CommandController;
     static constexpr double default_timeout = 10.0;
@@ -105,6 +108,7 @@ class AutoCommand {
     AutoCommand until(Condition cond);
     bool does_timeout() const;
     void on_timeout();
+    double timeout_time();
 
   private:
     AutoCommandInterface *cmd_ptr = nullptr;
@@ -126,6 +130,8 @@ class InOrder : public AutoCommandInterface {
 
   private:
     std::vector<AutoCommand> cmds;
+    size_t cmd_index = -1;
+    vex::timer command_timer;
 };
 
 class Repeat : public AutoCommandInterface {

@@ -23,7 +23,6 @@ extern vex::distance intake_watcher;
 extern motor intake_combine;
 extern motor intake_roller;
 
-
 extern motor_group cata_motors;
 
 // ================ SUBSYSTEMS ================

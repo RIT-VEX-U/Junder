@@ -24,6 +24,7 @@ void AutoCommand::on_timeout() {
     }
     return cmd_ptr->on_timeout();
 }
+double AutoCommand::timeout_time() { return timeout_seconds; }
 
 bool AutoCommand::does_timeout() const {
     return timeout_seconds != DONT_TIMEOUT;
@@ -140,10 +141,41 @@ InOrder InOrder::FromVector(const std::vector<AutoCommand> &cmds) {
 }
 
 bool InOrder::run() {
-    printf("Inorder::run() not implemented\n");
-    // check for cmds timeout
-    // check for cmds condition
-    return true;
+    if (cmd_index == -1) {
+        // Just starting
+        command_timer.reset();
+        cmd_index = 0;
+    } else if (cmd_index >= cmds.size()) {
+        // Finished
+        return true;
+    }
+    // check for cmd's timeout
+    AutoCommand &cmd = cmds[cmd_index];
+    if (cmd.does_timeout() && command_timer.value() > cmd.timeout_time()) {
+        cmd.on_timeout();
+        cmd_index++;
+        command_timer.reset();
+        return true;
+    }
+    // check for cmd's condition
+    if (cmd.true_to_end->test()) {
+        cmd.on_timeout();
+        cmd_index++;
+        command_timer.reset();
+        return true;
+    }
+    // actually act on the command
+    const bool command_ended_normally = cmd.run();
+    if (command_ended_normally) {
+        cmd_index++;
+        command_timer.reset();
+        if (cmd_index >= cmds.size()) {
+            return true;
+        }
+    }
+
+    // still more work to do
+    return false;
 }
 
 AutoCommand InOrder::duplicate() const {
