@@ -20,6 +20,13 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
+    InOrder io{FunctionCommand([]() {
+        printf("ASDASDASDA\n");
+        return true;
+    })};
+    // cc.set_cancel_func([]() { return con.ButtonA.pressing(); });
+    // cc.run();
+
     // vexDelay(1000);
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });
@@ -30,8 +37,8 @@ void opcontrol() {
 #ifdef COMP_BOT
     intake_combine.spinFor(directionType::rev, 1.0, timeUnits::sec, 100,
                            velocityUnits::pct);
-    cata_sys.send_command()
-    while (imu.isCalibrating()) // || gps_sensor.isCalibrating())
+    cata_sys.send_command() while (
+        imu.isCalibrating()) // || gps_sensor.isCalibrating())
     {
         vexDelay(20);
     }
@@ -86,7 +93,6 @@ void opcontrol() {
         drive_sys.drive_tank(l, r, 1, brake_type);
 
 #else
-
         double f = con.Axis3.position() / 100.0;
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s, 1, brake_type);

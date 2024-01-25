@@ -38,6 +38,10 @@ class AutoCommandInterface {
     virtual ~AutoCommandInterface() {}
 };
 
+template <typename Derived> class MakeCommand {
+    operator Derived() { return }
+};
+
 /// @brief TimeSinceStartExceeds tests based on time since the command
 /// controller was constructed. Returns true if elapsed time > time_s
 Condition TimeSinceStartExceeds(double seconds);
@@ -61,16 +65,12 @@ class AutoCommand {
     static constexpr double default_timeout = 10.0;
     static constexpr double DONT_TIMEOUT = -1.0;
 
-    // Used to determine if the constructor should accept a certain command
-    template <typename T>
-    using IsAutoCommand = std::is_convertible<T *, AutoCommandInterface *>;
-
     /**
      * Implicit InOrder constructor. Helpful for grouping commands together
      * If you initilalize a command with a {} enclosed list of other
      * AutoCommands, this will be called
      */
-    AutoCommand(std::initializer_list<AutoCommand> cmds);
+    // AutoCommand(std::initializer_list<AutoCommand> cmds);
 
     /**
      * Constructor from arbitrary command
@@ -81,17 +81,7 @@ class AutoCommand {
      * @tparam CommandT a class that inherits from AutoCommandInterface
      * @param cmd the value of an AutoCommandInterface object
      */
-    template <class CommandT> AutoCommand(CommandT cmd) {
-        static_assert(
-            !std::is_pointer<CommandT>::value,
-            "Command should not be a pointer. We used to initilize command "
-            "lists with pointers but you don't need to do that "
-            "anymore");
-        static_assert(IsAutoCommand<CommandT>::value,
-                      "Command going into AutoCommand must "
-                      "implement AutoCommandInterface");
-        cmd_ptr = new CommandT(cmd);
-    }
+    AutoCommand(AutoCommandInterface *ptr) { cmd_ptr = ptr; }
 
     // Special member functions. See .cpp for a longwinded explanation for why
     // these are needed
@@ -116,7 +106,15 @@ class AutoCommand {
     double timeout_seconds = default_timeout;
 };
 
-class InOrder : public AutoCommandInterface {
+template <typename Derived> class RegisterCommand {
+  public:
+    operator AutoCommand() {
+        auto a = static_cast<Derived *>(this);
+        return AutoCommand{new Derived(*a)};
+    }
+};
+
+class InOrder : public RegisterCommand<InOrder> {
   public:
     InOrder();
     InOrder(std::initializer_list<AutoCommand> cmds);
@@ -134,7 +132,7 @@ class InOrder : public AutoCommandInterface {
     vex::timer command_timer;
 };
 
-class Repeat : public AutoCommandInterface {
+class Repeat : public RegisterCommand<Repeat> {
   public:
     Repeat();
     Repeat(std::initializer_list<AutoCommand> cmds);
