@@ -21,15 +21,11 @@ auto toggle_brake_mode = []() {
  */
 void opcontrol() {
     InOrder io{
-        FunctionCommand([]() {
-            printf("ASDASDASDA\n");
-            return true;
-        }),
         drive_sys.DriveForwardCmd(12),
-        Repeat{
+        InOrder{
             Message("asdsadasfsasD"),
-        }
-            .until(AlwaysFalseCondition()),
+            drive_sys.TurnDegreesCmd(128),
+        },
 
     };
     // cc.set_cancel_func([]() { return con.ButtonA.pressing(); });

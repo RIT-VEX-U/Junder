@@ -62,13 +62,6 @@ class AutoCommand {
     static constexpr double DONT_TIMEOUT = -1.0;
 
     /**
-     * Implicit InOrder constructor. Helpful for grouping commands together
-     * If you initilalize a command with a {} enclosed list of other
-     * AutoCommands, this will be called
-     */
-    // AutoCommand(std::initializer_list<AutoCommand> cmds);
-
-    /**
      * Constructor from arbitrary command
      * Specialize this if you want to do something more fancy.
      * We specialize it for stuff like InOrder and Repeat where we don't want

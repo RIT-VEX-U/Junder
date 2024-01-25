@@ -30,11 +30,6 @@ bool AutoCommand::does_timeout() const {
     return timeout_seconds != DONT_TIMEOUT;
 }
 
-// AutoCommand::AutoCommand(std::initializer_list<AutoCommand> cmds) {
-// this->cmd_ptr = new InOrder(cmds);
-// this->timeout_seconds = DONT_TIMEOUT;
-// }
-
 AutoCommand AutoCommand::until(Condition cond) {
     true_to_end = true_to_end->Or(std::move(cond));
     return *this;
