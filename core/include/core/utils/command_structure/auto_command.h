@@ -38,10 +38,6 @@ class AutoCommandInterface {
     virtual ~AutoCommandInterface() {}
 };
 
-template <typename Derived> class MakeCommand {
-    operator Derived() { return }
-};
-
 /// @brief TimeSinceStartExceeds tests based on time since the command
 /// controller was constructed. Returns true if elapsed time > time_s
 Condition TimeSinceStartExceeds(double seconds);
@@ -106,7 +102,8 @@ class AutoCommand {
     double timeout_seconds = default_timeout;
 };
 
-template <typename Derived> class RegisterCommand {
+template <typename Derived>
+class RegisterCommand : public AutoCommandInterface {
   public:
     operator AutoCommand() {
         auto a = static_cast<Derived *>(this);
@@ -147,7 +144,7 @@ class Repeat : public RegisterCommand<Repeat> {
     InOrder working_cmds;
 };
 
-class Branch : public AutoCommandInterface {
+class Branch : public RegisterCommand<InOrder> {
   public:
     Branch(Condition decider, AutoCommand iftrue, AutoCommand iffalse);
     bool run() override;
@@ -161,7 +158,7 @@ class Branch : public AutoCommandInterface {
     AutoCommand iffalse;
 };
 
-class Message : public AutoCommandInterface {
+class Message : public RegisterCommand<InOrder> {
   public:
     Message(const std::string &msg);
     bool run() override;
@@ -171,7 +168,7 @@ class Message : public AutoCommandInterface {
     const std::string &msg;
 };
 
-class Parallel : public AutoCommandInterface {
+class Parallel : RegisterCommand<InOrder> {
 
   public:
     Parallel(std::initializer_list<AutoCommand> cmds);
@@ -182,7 +179,7 @@ class Parallel : public AutoCommandInterface {
     std::vector<AutoCommand> cmds;
 };
 
-class FunctionCommand : public AutoCommandInterface {
+class FunctionCommand : public RegisterCommand<InOrder> {
   public:
     FunctionCommand(std::function<bool()> f);
     bool run() override { return f(); }
@@ -192,8 +189,3 @@ class FunctionCommand : public AutoCommandInterface {
   private:
     std::function<bool()> f;
 };
-
-// Specializations for commands for which the default makes no sens
-template <> AutoCommand::AutoCommand(InOrder io);
-
-template <> AutoCommand::AutoCommand(Repeat r);

@@ -33,12 +33,11 @@ using namespace vex;
  * TankDrive class
  *
  */
-class DriveForwardCommand : public AutoCommandInterface {
+class DriveForwardCommand : public RegisterCommand<InOrder> {
   public:
-    DriveForwardCommand(
-        TankDrive &drive_sys, Feedback &feedback, double inches,
-        directionType dir, double max_speed = 1, double end_speed = 0
-    );
+    DriveForwardCommand(TankDrive &drive_sys, Feedback &feedback, double inches,
+                        directionType dir, double max_speed = 1,
+                        double end_speed = 0);
 
     /**
      * Run drive_forward
@@ -71,12 +70,10 @@ class DriveForwardCommand : public AutoCommandInterface {
  * AutoCommand wrapper class for the turn_degrees function in the
  * TankDrive class
  */
-class TurnDegreesCommand : public AutoCommandInterface {
+class TurnDegreesCommand : public RegisterCommand<InOrder> {
   public:
-    TurnDegreesCommand(
-        TankDrive &drive_sys, Feedback &feedback, double degrees,
-        double max_speed = 1, double end_speed = 0
-    );
+    TurnDegreesCommand(TankDrive &drive_sys, Feedback &feedback, double degrees,
+                       double max_speed = 1, double end_speed = 0);
 
     /**
      * Run turn_degrees
@@ -107,16 +104,14 @@ class TurnDegreesCommand : public AutoCommandInterface {
  * AutoCommand wrapper class for the drive_to_point function in the
  * TankDrive class
  */
-class DriveToPointCommand : public AutoCommandInterface {
+class DriveToPointCommand : public RegisterCommand<InOrder> {
   public:
-    DriveToPointCommand(
-        TankDrive &drive_sys, Feedback &feedback, double x, double y,
-        directionType dir, double max_speed = 1, double end_speed = 0
-    );
-    DriveToPointCommand(
-        TankDrive &drive_sys, Feedback &feedback, point_t point,
-        directionType dir, double max_speed = 1, double end_speed = 0
-    );
+    DriveToPointCommand(TankDrive &drive_sys, Feedback &feedback, double x,
+                        double y, directionType dir, double max_speed = 1,
+                        double end_speed = 0);
+    DriveToPointCommand(TankDrive &drive_sys, Feedback &feedback, point_t point,
+                        directionType dir, double max_speed = 1,
+                        double end_speed = 0);
 
     /**
      * Run drive_to_point
@@ -151,12 +146,11 @@ class DriveToPointCommand : public AutoCommandInterface {
  * TankDrive class
  *
  */
-class TurnToHeadingCommand : public AutoCommandInterface {
+class TurnToHeadingCommand : public RegisterCommand<InOrder> {
   public:
-    TurnToHeadingCommand(
-        TankDrive &drive_sys, Feedback &feedback, double heading_deg,
-        double speed = 1, double end_speed = 0
-    );
+    TurnToHeadingCommand(TankDrive &drive_sys, Feedback &feedback,
+                         double heading_deg, double speed = 1,
+                         double end_speed = 0);
 
     /**
      * Run turn_to_heading
@@ -186,7 +180,7 @@ class TurnToHeadingCommand : public AutoCommandInterface {
 /**
  * Autocommand wrapper class for pure pursuit function in the TankDrive class
  */
-class PurePursuitCommand : public AutoCommandInterface {
+class PurePursuitCommand : public RegisterCommand<InOrder> {
   public:
     /**
      * Construct a Pure Pursuit AutoCommand
@@ -196,10 +190,9 @@ class PurePursuitCommand : public AutoCommandInterface {
      * @param feedback The feedback controller determining speed
      * @param max_speed Limit the speed of the robot (for pid / pidff feedbacks)
      */
-    PurePursuitCommand(
-        TankDrive &drive_sys, Feedback &feedback, PurePursuit::Path path,
-        directionType dir, double max_speed = 1, double end_speed = 0
-    );
+    PurePursuitCommand(TankDrive &drive_sys, Feedback &feedback,
+                       PurePursuit::Path path, directionType dir,
+                       double max_speed = 1, double end_speed = 0);
 
     /**
      * Direct call to TankDrive::pure_pursuit
@@ -226,7 +219,7 @@ class PurePursuitCommand : public AutoCommandInterface {
  * AutoCommand wrapper class for the stop() function in the
  * TankDrive class
  */
-class DriveStopCommand : public AutoCommandInterface {
+class DriveStopCommand : public RegisterCommand<InOrder> {
   public:
     DriveStopCommand(TankDrive &drive_sys);
 
@@ -243,4 +236,3 @@ class DriveStopCommand : public AutoCommandInterface {
     // drive system to run the function on
     TankDrive &drive_sys;
 };
-

@@ -202,12 +202,6 @@ InOrder InOrder::repeat_times(size_t N) {
     }
     return *this;
 }
-template <> AutoCommand::AutoCommand(InOrder io) {
-    AutoCommand ac = io.duplicate();
-    this->cmd_ptr = ac.cmd_ptr;
-    ac.cmd_ptr = nullptr;
-    this->timeout_seconds = DONT_TIMEOUT;
-}
 
 Repeat::Repeat() : cmds{} {}
 Repeat::Repeat(std::initializer_list<AutoCommand> cmds)
@@ -235,13 +229,6 @@ AutoCommand Repeat::with_timeout(double seconds) {
 
 AutoCommand Repeat::until(Condition cond) {
     return AutoCommand(*this).until(std::forward<Condition>(cond));
-}
-
-template <> AutoCommand::AutoCommand(Repeat r) {
-    AutoCommand ac = r.duplicate();
-    this->cmd_ptr = ac.cmd_ptr;
-    ac.cmd_ptr = nullptr;
-    this->timeout_seconds = DONT_TIMEOUT;
 }
 
 Condition TimeSinceStartExceeds(double seconds) {
@@ -279,7 +266,3 @@ AutoCommand Branch::duplicate() const {
 FunctionCommand::FunctionCommand(std::function<bool()> f) : f(std::move(f)) {}
 
 AutoCommand FunctionCommand::duplicate() const { return FunctionCommand(f); }
-
-AutoCommand PauseUntil(Condition c) {
-    return FunctionCommand([&]() { return c->test(); });
-}

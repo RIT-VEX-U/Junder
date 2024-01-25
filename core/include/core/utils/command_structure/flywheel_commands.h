@@ -14,7 +14,7 @@
  * in the Flywheel class
  *
  */
-class SpinRPMCommand : public AutoCommandInterface {
+class SpinRPMCommand : public RegisterCommand<InOrder> {
   public:
     /**
      * Construct a SpinRPM Command
@@ -43,7 +43,7 @@ class SpinRPMCommand : public AutoCommandInterface {
  * speed +/- the specified threshold
  *
  */
-class WaitUntilUpToSpeedCommand : public AutoCommandInterface {
+class WaitUntilUpToSpeedCommand : public RegisterCommand<InOrder> {
   public:
     /**
      * Creat a WaitUntilUpToSpeedCommand
@@ -74,7 +74,7 @@ class WaitUntilUpToSpeedCommand : public AutoCommandInterface {
  * in the Flywheel class
  *
  */
-class FlywheelStopCommand : public AutoCommandInterface {
+class FlywheelStopCommand : public RegisterCommand<InOrder> {
   public:
     /**
      * Construct a FlywheelStopCommand
@@ -99,7 +99,7 @@ class FlywheelStopCommand : public AutoCommandInterface {
  * in the Flywheel class
  *
  */
-class FlywheelStopMotorsCommand : public AutoCommandInterface {
+class FlywheelStopMotorsCommand : public RegisterCommand<InOrder> {
   public:
     /**
      * Construct a FlywheeStopMotors Command
@@ -124,7 +124,7 @@ class FlywheelStopMotorsCommand : public AutoCommandInterface {
  * in the Flywheel class
  *
  */
-class FlywheelStopNonTasksCommand : public AutoCommandInterface {
+class FlywheelStopNonTasksCommand : public RegisterCommand<InOrder> {
     FlywheelStopNonTasksCommand(Flywheel &flywheel);
 
     /**

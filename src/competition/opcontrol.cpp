@@ -20,10 +20,18 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
-    InOrder io{FunctionCommand([]() {
-        printf("ASDASDASDA\n");
-        return true;
-    })};
+    InOrder io{
+        FunctionCommand([]() {
+            printf("ASDASDASDA\n");
+            return true;
+        }),
+        drive_sys.DriveForwardCmd(12),
+        Repeat{
+            Message("asdsadasfsasD"),
+        }
+            .until(AlwaysFalseCondition()),
+
+    };
     // cc.set_cancel_func([]() { return con.ButtonA.pressing(); });
     // cc.run();
 

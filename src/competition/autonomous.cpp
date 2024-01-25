@@ -11,7 +11,7 @@
 
 enum Side { LEFT, RIGHT };
 
-class WingCmd : public AutoCommandInterface {
+class WingCmd : : public RegisterCommand<InOrder> {
   public:
     WingCmd(Side s, bool deploy_down) : s(s), deploy_down(deploy_down) {}
 

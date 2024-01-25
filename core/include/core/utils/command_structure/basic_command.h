@@ -22,7 +22,7 @@
  * AutoCommand wrapper class for BasicSpinCommand
  * using the vex hardware functions
  */
-class BasicSpinCommand : public AutoCommandInterface {
+class BasicSpinCommand : public RegisterCommand<InOrder> {
   public:
     // Enumurator for the type of power setting in the motor
     enum type { percent, voltage, veocity };
@@ -35,10 +35,8 @@ class BasicSpinCommand : public AutoCommandInterface {
      * @param setting Power setting in volts,percentage,velocity
      * @param power Value of desired power
      */
-    BasicSpinCommand(
-        vex::motor &motor, vex::directionType dir,
-        BasicSpinCommand::type setting, double power
-    );
+    BasicSpinCommand(vex::motor &motor, vex::directionType dir,
+                     BasicSpinCommand::type setting, double power);
 
     /**
      * @brief Runs the BasicSpinCommand
@@ -63,7 +61,7 @@ class BasicSpinCommand : public AutoCommandInterface {
  * AutoCommand wrapper class for BasicStopCommand
  * Using the Vex hardware functions
  */
-class BasicStopCommand : public AutoCommandInterface {
+class BasicStopCommand : public RegisterCommand<InOrder> {
   public:
     /**
      * @brief Construct a new BasicMotorStop Command
@@ -94,7 +92,7 @@ class BasicStopCommand : public AutoCommandInterface {
  * AutoCommand wrapper class for BasicSolenoidSet
  * Using the Vex hardware functions
  */
-class BasicSolenoidSet : public AutoCommandInterface {
+class BasicSolenoidSet : public RegisterCommand<InOrder> {
   public:
     /**
      * @brief Construct a new BasicSolenoidSet Command

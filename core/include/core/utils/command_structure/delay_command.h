@@ -9,26 +9,24 @@
 
 #include "core/utils/command_structure/auto_command.h"
 
-class DelayCommand: public AutoCommandInterface {
+class DelayCommand : public RegisterCommand<InOrder> {
   public:
     /**
      * Construct a delay command
      * @param ms the number of milliseconds to delay for
-    */
-    DelayCommand(int ms): ms(ms) {}
-    
+     */
+    DelayCommand(int ms) : ms(ms) {}
+
     /**
      * Delays for the amount of milliseconds stored in the command
      * Overrides run from AutoCommand
      * @returns true when complete
      */
     bool run() override {
-      vexDelay(ms);
-      return true;
+        vexDelay(ms);
+        return true;
     }
-    AutoCommand duplicate() const override{
-      return DelayCommand(ms);
-    }
+    AutoCommand duplicate() const override { return DelayCommand(ms); }
 
   private:
     // amount of milliseconds to wait
