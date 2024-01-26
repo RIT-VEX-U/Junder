@@ -90,8 +90,9 @@ template <typename Derived>
 class RegisterCommand : public AutoCommandInterface {
   public:
     operator AutoCommand() {
-        auto a = static_cast<Derived *>(this);
-        return AutoCommand{new Derived(*a)};
+        const Derived &ac = *static_cast<Derived *>(this);
+        AutoCommandInterface *aci = new Derived(ac);
+        return AutoCommand::FromPtr(aci);
     }
 };
 
