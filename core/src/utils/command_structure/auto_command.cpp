@@ -89,30 +89,38 @@ AutoCommand AutoCommand::until(Condition cond) {
 /**
  * Copy Constructor
  */
-AutoCommand::AutoCommand(const AutoCommand &other) {
-    *this = other.cmd_ptr->duplicate();
-}
+AutoCommand::AutoCommand(const AutoCommand &o)
+    : AutoCommand(std::move(o.cmd_ptr != nullptr ? o.cmd_ptr->duplicate()
+                                                 : AutoCommand{})) {}
+
 /**
  * Move Constructor
  */
-AutoCommand::AutoCommand(AutoCommand &&other)
-    : cmd_ptr(other.cmd_ptr), timeout_seconds(other.timeout_seconds) {
+AutoCommand::AutoCommand(AutoCommand &&o) {
+    cmd_ptr = o.cmd_ptr;
+    timeout_seconds = o.timeout_seconds;
+    true_to_end = o.true_to_end;
     // we took ownership of the command, other now loses ownership
-    other.cmd_ptr = nullptr;
+    o.cmd_ptr = nullptr;
 }
 
 /**
  * Copy Assignment
  */
 AutoCommand AutoCommand::operator=(const AutoCommand &other) {
-    return AutoCommand(other);
+    return other.cmd_ptr->duplicate();
 }
 /**
  * Move Assignment
  */
 
 AutoCommand AutoCommand::operator=(AutoCommand &&other) {
-    return AutoCommand(other);
+    AutoCommand ac;
+    ac.cmd_ptr = other.cmd_ptr;
+    ac.timeout_seconds = other.timeout_seconds;
+    ac.true_to_end = other.true_to_end;
+    other.cmd_ptr = nullptr;
+    return ac;
 }
 
 /**
@@ -224,13 +232,6 @@ AutoCommand Repeat::with_timeout(double seconds) {
 
 AutoCommand Repeat::until(Condition cond) {
     return AutoCommand(*this).until(std::forward<Condition>(cond));
-}
-
-Condition TimeSinceStartExceeds(double seconds) {
-    // tmr is started at path creation time. which we say equals the start of
-    // the path (true most of the time)
-    return fc(
-        [seconds, tmr = vex::timer()]() { return tmr.value() > seconds; });
 }
 
 Message::Message(const std::string &msg) : msg(msg) {}

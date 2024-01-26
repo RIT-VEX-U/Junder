@@ -27,7 +27,7 @@ class AutoCommandInterface {
      * What to do when this command is interrupted
      * ie. stop motors, reset external state
      */
-    virtual void on_timeout(){};
+    virtual void on_timeout() {}
     /**
      * duplicates the command in its original state.
      * that is duplicate the command in the state it was before the first run()
@@ -37,14 +37,6 @@ class AutoCommandInterface {
 
     virtual ~AutoCommandInterface() {}
 };
-
-/// @brief TimeSinceStartExceeds tests based on time since the command
-/// controller was constructed. Returns true if elapsed time > time_s
-Condition TimeSinceStartExceeds(double seconds);
-
-/// @brief Pauses until the condition is true. Basically delay but with a
-/// condition instead of a time
-AutoCommand PauseUntil(Condition cond);
 
 /**
  * AutoCommand is a memory managed way to talk about autocommands.
@@ -61,16 +53,15 @@ class AutoCommand {
     static constexpr double default_timeout = 10.0;
     static constexpr double DONT_TIMEOUT = -1.0;
 
-    /**
-     * Constructor from arbitrary command
-     * Specialize this if you want to do something more fancy.
-     * We specialize it for stuff like InOrder and Repeat where we don't want
-     * the default timeout.
-     *
-     * @tparam CommandT a class that inherits from AutoCommandInterface
-     * @param cmd the value of an AutoCommandInterface object
-     */
-    AutoCommand(AutoCommandInterface *ptr) { cmd_ptr = ptr; }
+    static AutoCommand FromPtr(AutoCommandInterface *ptr) {
+        AutoCommand ac;
+        ac.cmd_ptr = ptr;
+        return ac;
+    }
+
+    AutoCommand() : cmd_ptr(nullptr) {}
+
+    AutoCommand(std::initializer_list<AutoCommand> cmds);
 
     // Special member functions. See .cpp for a longwinded explanation for why
     // these are needed
@@ -182,3 +173,7 @@ class FunctionCommand : public RegisterCommand<InOrder> {
   private:
     std::function<bool()> f;
 };
+
+/// @brief Pauses until the condition is true. Basically delay but with a
+/// condition instead of a time
+AutoCommand PauseUntil(Condition cond);
