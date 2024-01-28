@@ -43,10 +43,3 @@ Condition AlwaysTrueCondition();
 /// @brief TimeSinceStartExceeds tests based on time since the command
 /// controller was constructed. Returns true if elapsed time > time_s
 Condition TimeSinceStartExceeds(double seconds);
-
-Condition TimeSinceStartExceeds(double seconds) {
-    // tmr is started at path creation time. which we say equals the start of
-    // the path (true most of the time)
-    return fc(
-        [seconds, tmr = vex::timer()]() { return tmr.value() > seconds; });
-}
