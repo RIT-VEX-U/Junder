@@ -3,7 +3,7 @@
 #include "cata_system.h"
 #include "core.h"
 #include "vex.h"
-#define COMP_BOT
+// #define COMP_BOT
 
 using namespace vex;
 
@@ -52,6 +52,7 @@ extern bool red_side;
 // Analog sensors
 extern inertial imu;
 extern gps gps_sensor;
+extern vex::distance intake_watcher;
 
 // ================ OUTPUTS ================
 // Motors
@@ -61,6 +62,9 @@ extern motor intake_roller;
 // ================ SUBSYSTEMS ================
 extern OdometryTank odom;
 extern TankDrive drive_sys;
+
+extern CataSys cata_sys;
+
 #endif
 
 // ================ UTILS ================

@@ -20,18 +20,22 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
-    // con.ButtonRight.pressed([]() { screen::next_page(); });
-    // con.ButtonLeft.pressed([]() { screen::prev_page(); });
-    //
-    // autonomous();
-    // return;
+// con.ButtonRight.pressed([]() { screen::next_page(); });
+// con.ButtonLeft.pressed([]() { screen::prev_page(); });
+//
+// autonomous();
+// return;
+#ifdef COMP_BOT
     cata_sys.send_command(CataSys::Command::StartDropping);
+#endif
 
     while (imu.isCalibrating()) {
         vexDelay(20);
     }
 
     static bool enable_matchload = false;
+
+    static std::atomic<bool> disable_drive(false);
 
 #ifdef COMP_BOT
     static std::atomic<bool> disable_drive(false);
@@ -112,7 +116,24 @@ void opcontrol() {
         double s = con.Axis1.position() / 100.0;
         drive_sys.drive_arcade(f, s, 1, brake_type);
 #endif
+        static VisionTrackTriballCommand viscmd;
 
+        if (con.ButtonX.pressing()) {
+            disable_drive = true;
+            bool override_watch = false;
+#ifndef COMP_BOT
+            override_watch = true;
+#endif
+            if (override_watch ||
+                intake_watcher.objectDistance(distanceUnits::mm) > 100.0) {
+                viscmd.run();
+            } else {
+                drive_sys.stop();
+                cata_sys.send_command(CataSys::Command::StopIntake);
+            }
+        } else {
+            disable_drive = false;
+        }
         // matchload_1(enable_matchload); // Toggle
         matchload_1([]() { return con.ButtonA.pressing(); }); // Hold
         // Controls

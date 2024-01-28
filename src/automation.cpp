@@ -193,13 +193,19 @@ void matchload_1(std::function<bool()> enable) {
 }
 
 AutoCommand *ClimbBarDeploy() {
+#ifdef COMP_BOT
     return new BasicSolenoidSet(climb_solenoid, true);
+#else
+    return new FunctionCommand([] { return true; });
+#endif
 }
 
 AutoCommand *WingSetCmd(bool val) {
     return new FunctionCommand([val]() {
+#ifdef COMP_BOT
         left_wing.set(val);
         right_wing.set(val);
+#endif
         return true;
     });
 }

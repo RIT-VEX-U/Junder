@@ -110,6 +110,9 @@ gps gps_sensor(PORT6, 0, 0, distanceUnits::in, 0, turnType::left);
 
 // ================ INPUTS ================
 // Digital sensors
+vex::distance intake_watcher(vex::PORT3);
+vex::optical cata_watcher(vex::PORT15); // Final Port
+vex::pot cata_pot(Brain.ThreeWirePort.E);
 
 // Analog sensors
 inertial imu(PORT10);
@@ -139,6 +142,9 @@ std::map<std::string, motor &> motor_names = {
 };
 
 // ================ SUBSYSTEMS ================
+vex::motor_group cata_motors{};
+CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors,
+                 intake_roller, intake_combine);
 
 CustomEncoder right_enc = CustomEncoder{Brain.ThreeWirePort.A, 90};
 CustomEncoder left_enc = CustomEncoder{Brain.ThreeWirePort.C, 90};
