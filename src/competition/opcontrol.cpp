@@ -5,7 +5,7 @@
 #include "vex.h"
 #include <atomic>
 
-#define Tank
+// #define Tank
 
 TankDrive::BrakeType brake_type = TankDrive::BrakeType::None;
 auto toggle_brake_mode = []() {
@@ -20,11 +20,12 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
-// con.ButtonRight.pressed([]() { screen::next_page(); });
-// con.ButtonLeft.pressed([]() { screen::prev_page(); });
-//
-// autonomous();
-// return;
+    con.ButtonRight.pressed([]() { screen::next_page(); });
+    con.ButtonLeft.pressed([]() { screen::prev_page(); });
+    //
+    autonomous();
+    // return;
+
 #ifdef COMP_BOT
     cata_sys.send_command(CataSys::Command::StartDropping);
 #endif
@@ -34,11 +35,9 @@ void opcontrol() {
     }
 
     static bool enable_matchload = false;
-
     static std::atomic<bool> disable_drive(false);
 
 #ifdef COMP_BOT
-    static std::atomic<bool> disable_drive(false);
 
     con.ButtonRight.pressed([]() {
         // Turn Right
@@ -69,10 +68,10 @@ void opcontrol() {
     });
     con.ButtonDown.pressed(
         []() { climb_solenoid.set(!climb_solenoid.value()); });
-    con.ButtonUp.pressed([]() {
-        CommandController cc{Climb()};
-        cc.run();
-    });
+    con.ButtonUp.pressed(
+        // CommandController cc{Climb()};
+        // cc.run();
+        []() { cata_sys.send_command(CataSys::Command::OuttakeJust); });
 
     con.ButtonA.pressed([]() { enable_matchload = !enable_matchload; });
 
@@ -99,7 +98,7 @@ void opcontrol() {
     while (true) {
 #ifdef COMP_BOT
         if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() &&
-            !con.ButtonY.pressing()) {
+            !con.ButtonY.pressing() && !con.ButtonUp.pressing()) {
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
 #endif

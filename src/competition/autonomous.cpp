@@ -39,20 +39,41 @@ class WingCmd : public AutoCommand {
  * Main entrypoint for the autonomous period
  */
 void only_shoot();
-void supportAuto();
+void supportMaximumTriballs();
 void autonomous() {
     cata_sys.send_command(CataSys::Command::StartDropping);
 
     while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
         vexDelay(20);
     }
+    supportMaximumTriballs();
     vexDelay(2000);
-
-    supportAuto();
 }
 
 pose_t gps_pose() {
-    printf("GPS Qual: %ld\n", gps_sensor.quality());
+    while (gps_sensor.xPosition() == 0.0 && gps_sensor.yPosition() == 0.0) {
+        vexDelay(20);
+    }
+
+    pose_t orig = odom.get_position();
+    static timer t;
+    t.reset();
+    double x = orig.x, y = orig.y, rot = orig.rot;
+    int itr = 0;
+    while (t.time(sec) < 1) {
+        if (gps_sensor.quality() > 99) {
+            x += gps_sensor.xPosition(distanceUnits::in) + 72;
+            y += gps_sensor.yPosition(distanceUnits::in) + 72;
+            rot = gps_sensor.heading();
+            itr++;
+        }
+    }
+
+    if (itr > 0) {
+        x = x / itr;
+        y = y / itr;
+    }
+
     pose_t pose;
     double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
     double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
@@ -70,7 +91,7 @@ pose_t gps_pose() {
     return pose;
 }
 
-void supportAuto() {
+void supportMaximumTriballs() {
 
     AutoCommand *printOdom = new FunctionCommand([]() {
         auto pose = odom.get_position();
@@ -91,6 +112,102 @@ void supportAuto() {
     odom.set_position({.x = 28, .y = 18, .rot = 180});
     CommandController cc{
         // new FunctionCommand([]() { return false; }),
+
+        // Drive to linup for alliance
+        // drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
+        drive_sys.TurnDegreesCmd(-35),
+        drive_sys.DriveForwardCmd(10, FWD)->withTimeout(2.0),
+        drive_sys.TurnDegreesCmd(70),
+        recal,
+        drive_sys.TurnToHeadingCmd(225),
+        printOdom,
+        recal,
+        // Pickup Alliance
+        cata_sys.IntakeToHold(),
+        drive_sys.DriveTankCmd(0.2, 0.2)
+            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
+            ->withTimeout(1.0),
+        cata_sys.WaitForHold()->withTimeout(2.0),
+        recal,
+        drive_sys.DriveForwardCmd(5.0, REV)->withTimeout(2.0),
+        // Turn to side
+        drive_sys.TurnToPointCmd(12.0, 36.0)->withTimeout(1.0),
+        drive_sys.DriveForwardCmd(8.5, FWD, 0.4)->withTimeout(2.0),
+        recal,
+        drive_sys.TurnToHeadingCmd(90.0)->withTimeout(1.0),
+        drive_sys.DriveForwardCmd(6.5, FWD, 0.4)->withTimeout(2.0),
+        // Dump in goal
+        cata_sys.Unintake(),
+        new DelayCommand(500),
+        drive_sys.DriveForwardCmd(8.0, REV)->withTimeout(2.0),
+        cata_sys.StopIntake(),
+
+        // drive_sys.DriveForwardCmd(3.0, FWD, 0.4)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
+
+        drive_sys.TurnToHeadingCmd(270)->withTimeout(2.0),
+
+        // Ram once
+        drive_sys.DriveForwardCmd(20, REV)
+            ->withTimeout(2.0)
+            ->withCancelCondition(drive_sys.DriveStalledCondition(0.25)),
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
+        // Ram Twice
+        drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(0.5),
+        recal,
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
+        // new FunctionCommand([]() {
+        //     printf("adfsghjkl\n");
+        //     fflush(stdout);
+        //     return true;
+        // }),
+
+        // Grab more of the fellas (all_my_fellas.mp5)
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(-90)->withTimeout(2.0),
+        recal,
+
+        drive_sys.TurnToPointCmd(22, 26),
+        drive_sys.DriveToPointCmd({22, 26}),
+        drive_sys.TurnToHeadingCmd(-135),
+        cata_sys.IntakeToHold(),
+        drive_sys.DriveTankCmd(0.2, 0.2)
+            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
+            ->withTimeout(1.0),
+        cata_sys.WaitForHold()->withTimeout(2.0),
+        // recal,
+        drive_sys.DriveForwardCmd(8, REV),
+        drive_sys.TurnToHeadingCmd(-30),
+        // recal,
+
+        drive_sys.TurnToPointCmd(12, 36),
+        drive_sys.DriveToPointCmd({12, 36}),
+        recal,
+    };
+    cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
+    cc.run();
+}
+
+void support_AWP() {
+
+    AutoCommand *printOdom = new FunctionCommand([]() {
+        auto pose = odom.get_position();
+        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
+        return true;
+    });
+    AutoCommand *recal = new FunctionCommand([]() {
+        if (gps_sensor.quality() > 98) {
+            odom.set_position(gps_pose());
+        }
+        return true;
+    });
+    con.ButtonDown.pressed([]() {
+        printf("GPSing\n");
+        odom.set_position(gps_pose());
+    });
+
+    odom.set_position({.x = 28, .y = 18, .rot = 180});
+    CommandController cc{
 
         // Drive to linup for alliance
         // drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),

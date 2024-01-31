@@ -96,6 +96,8 @@ void CommandController::run() {
         while (!next_cmd->run()) {
 
             if (!doTimeout) {
+                vexDelay(20);
+
                 continue;
             }
 

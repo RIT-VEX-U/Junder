@@ -3,6 +3,8 @@
 #include <functional>
 
 // ================ Autonomous Abstractions ================
+AutoCommand *WingSetCmd(bool val);
+
 // ================ Autonomous Abstractions ================
 struct vision_filter_s {
     int min_area;

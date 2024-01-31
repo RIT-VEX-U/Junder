@@ -18,12 +18,14 @@ class CataSys {
         IntakeOut,
         StartMatchLoad,
         StopMatchLoad,
-        StartDropping
+        StartDropping,
+        OuttakeJust
     };
     enum class IntakeType {
         In,
         Out,
         Hold,
+        JustOut,
     };
 
     enum CataState { CHARGING, READY, FIRING, UNFOLDING };

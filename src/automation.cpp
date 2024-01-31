@@ -36,6 +36,13 @@ bool VisionTrackTriballCommand::run() {
     static const double area_speed_scalar =
         50000; // Area at which speed is zero
 
+    auto dist_from_area = [](double area) -> double {
+        return 1284.0 * pow(area, -0.491);
+    };
+    auto ang_from_x = [](double x) -> double {
+        return 53.9 + 0.241 * x + -3.05e-05 * (x * x);
+    };
+
     std::vector<vision::object> sensed_obj = vision_run_filter(TRIBALL);
 
     if (sensed_obj.size() <= 0) {
@@ -68,11 +75,13 @@ bool VisionTrackTriballCommand::run() {
     // TODO test this
     // double speed = clamp(1-(area_speed_scalar * object_area), 0,
     // max_drive_speed);
-    double speed = clamp(lerp(1, 0, object_area / area_speed_scalar), 0, 1) *
+    double speed = clamp(lerp(1, 0.0, object_area / area_speed_scalar), 0, 1) *
                        max_drive_speed +
                    min_drive_speed;
     // double speed = max_drive_speed;
-    printf("x: %d\n", largest.centerX);
+    double heading = ang_from_x(largest.centerX);
+    double dist = dist_from_area(object_area);
+    printf("ang: %.2f  dist: %.2f\n", heading, dist);
     drive_sys.drive_tank_raw(speed + angle_fb.get(), speed - angle_fb.get());
 
     return false;

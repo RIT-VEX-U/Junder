@@ -113,6 +113,15 @@ int thread_func(void *void_cata) {
                                        vex::volt);
                 cata.intake_lower.spin(vex::fwd, -intake_lower_outer_volt,
                                        vex::volt);
+            } else if (intaking_requested &&
+                       intake_type == CataSys::IntakeType::JustOut) {
+                if (ball_in_intake) {
+                    cata.intake_upper.spin(vex::fwd, -6.0, vex::volt);
+                    cata.intake_lower.spin(vex::fwd, -6.0, vex::volt);
+                } else {
+                    cata.intake_upper.stop(brakeType::coast);
+                    cata.intake_lower.stop(brakeType::coast);
+                }
             } else {
                 cata.intake_upper.stop();
                 cata.intake_lower.stop();
@@ -226,6 +235,11 @@ void CataSys::send_command(Command next_cmd) {
         intaking_requested = true;
         intake_type = CataSys::IntakeType::Out;
         break;
+    case CataSys::Command::OuttakeJust:
+        intaking_requested = true;
+        intake_type = CataSys::IntakeType::JustOut;
+        break;
+
     case CataSys::Command::IntakeHold: // not handled
         intaking_requested = true;
         intake_type = CataSys::IntakeType::Hold;
@@ -303,6 +317,9 @@ class CataSysPage : public screen::Page {
                 break;
             case CataSys::IntakeType::Out:
                 intake_dir = "Out";
+                break;
+            case CataSys::IntakeType::JustOut:
+                intake_dir = "JustOut";
                 break;
             }
         }

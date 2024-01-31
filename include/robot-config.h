@@ -3,7 +3,7 @@
 #include "cata_system.h"
 #include "core.h"
 #include "vex.h"
-// #define COMP_BOT
+#define COMP_BOT
 
 using namespace vex;
 
