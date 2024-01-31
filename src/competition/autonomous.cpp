@@ -75,9 +75,9 @@ pose_t gps_pose() {
     }
 
     pose_t pose;
-    double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
-    double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
-    double rot = gps_sensor.heading();
+    // double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
+    // double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
+    // double rot = gps_sensor.heading();
     if (!red_side) {
         x = 144 - x;
         y = 144 - y;
