@@ -34,20 +34,31 @@ class WingCmd : public AutoCommand {
     Side s;
     bool deploy_down;
 };
-
+AutoCommand *printOdom = new FunctionCommand([]() {
+    auto pose = odom.get_position();
+    printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
+    return true;
+});
+pose_t gps_pose();
+AutoCommand *recal = new FunctionCommand([]() {
+    odom.set_position(gps_pose());
+    return true;
+});
 /**
  * Main entrypoint for the autonomous period
  */
 void only_shoot();
 void supportMaximumTriballs();
+void support_AWP();
 void autonomous() {
-    cata_sys.send_command(CataSys::Command::StartDropping);
 
+    cata_sys.send_command(CataSys::Command::StartDropping);
     while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
         vexDelay(20);
     }
-    supportMaximumTriballs();
-    vexDelay(2000);
+    // vexDelay(2000);
+    support_AWP();
+    // supportMaximumTriballs();
 }
 
 pose_t gps_pose() {
@@ -93,33 +104,15 @@ pose_t gps_pose() {
 
 void supportMaximumTriballs() {
 
-    AutoCommand *printOdom = new FunctionCommand([]() {
-        auto pose = odom.get_position();
-        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
-        return true;
-    });
-    AutoCommand *recal = new FunctionCommand([]() {
-        if (gps_sensor.quality() > 98) {
-            odom.set_position(gps_pose());
-        }
-        return true;
-    });
-    con.ButtonDown.pressed([]() {
-        printf("GPSing\n");
-        odom.set_position(gps_pose());
-    });
-
     odom.set_position({.x = 28, .y = 18, .rot = 180});
     CommandController cc{
-        // new FunctionCommand([]() { return false; }),
 
         // Drive to linup for alliance
-        // drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(-35),
         drive_sys.DriveForwardCmd(10, FWD)->withTimeout(2.0),
-        drive_sys.TurnDegreesCmd(70),
+        drive_sys.TurnDegreesCmd(70)->withTimeout(2.0),
         recal,
-        drive_sys.TurnToHeadingCmd(225),
+        drive_sys.TurnToHeadingCmd(225)->withTimeout(2.0),
         printOdom,
         recal,
         // Pickup Alliance
@@ -142,47 +135,33 @@ void supportMaximumTriballs() {
         drive_sys.DriveForwardCmd(8.0, REV)->withTimeout(2.0),
         cata_sys.StopIntake(),
 
-        // drive_sys.DriveForwardCmd(3.0, FWD, 0.4)->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
-
         drive_sys.TurnToHeadingCmd(270)->withTimeout(2.0),
 
         // Ram once
         drive_sys.DriveForwardCmd(20, REV)
             ->withTimeout(2.0)
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.25)),
-        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
         // Ram Twice
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
         drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(0.5),
-        recal,
+        // Evacuate
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-        // new FunctionCommand([]() {
-        //     printf("adfsghjkl\n");
-        //     fflush(stdout);
-        //     return true;
-        // }),
+        drive_sys.TurnToHeadingCmd(-90),
 
-        // Grab more of the fellas (all_my_fellas.mp5)
-        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(-90)->withTimeout(2.0),
         recal,
+        drive_sys.TurnToPointCmd(26, 26),
+        drive_sys.DriveToPointCmd({26, 26}),
 
-        drive_sys.TurnToPointCmd(22, 26),
-        drive_sys.DriveToPointCmd({22, 26}),
+        // Turn to pick up triball
         drive_sys.TurnToHeadingCmd(-135),
         cata_sys.IntakeToHold(),
-        drive_sys.DriveTankCmd(0.2, 0.2)
-            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
-            ->withTimeout(1.0),
+        drive_sys.DriveTankCmd(0.3, 0.3)->withTimeout(0.5),
         cata_sys.WaitForHold()->withTimeout(2.0),
-        // recal,
-        drive_sys.DriveForwardCmd(8, REV),
-        drive_sys.TurnToHeadingCmd(-30),
-        // recal,
 
-        drive_sys.TurnToPointCmd(12, 36),
-        drive_sys.DriveToPointCmd({12, 36}),
-        recal,
+        drive_sys.DriveForwardCmd(5, REV),
+        new FunctionCommand([]() { return false; }),
+
     };
     cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
     cc.run();
@@ -190,22 +169,6 @@ void supportMaximumTriballs() {
 
 void support_AWP() {
 
-    AutoCommand *printOdom = new FunctionCommand([]() {
-        auto pose = odom.get_position();
-        printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
-        return true;
-    });
-    AutoCommand *recal = new FunctionCommand([]() {
-        if (gps_sensor.quality() > 98) {
-            odom.set_position(gps_pose());
-        }
-        return true;
-    });
-    con.ButtonDown.pressed([]() {
-        printf("GPSing\n");
-        odom.set_position(gps_pose());
-    });
-
     odom.set_position({.x = 28, .y = 18, .rot = 180});
     CommandController cc{
 
@@ -238,11 +201,8 @@ void support_AWP() {
         drive_sys.DriveForwardCmd(8.0, REV)->withTimeout(2.0),
         cata_sys.StopIntake(),
 
-        // drive_sys.DriveForwardCmd(3.0, FWD, 0.4)->withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(270)->withTimeout(2.0),
-
-        // drive_sys.DriveForwardCmd(1.5, FWD, 0.4)->withTimeout(2.0),
-        // drive_sys.TurnDegreesCmd(-45.0),
+        drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(275)->withTimeout(2.0),
 
         // Ram once
         drive_sys.DriveForwardCmd(20, REV)
@@ -251,41 +211,21 @@ void support_AWP() {
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
         // Ram Twice
         drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(0.5),
+        // Evacuate
         recal,
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-
-        // new WingCmd(LEFT, false),
-        // Ram Thrice
-        // drive_sys.DriveTankCmd(-1.0, -1.0)->withTimeout(0.5),
-        // recal,
-        // drive_sys.DriveForwardCmd(6, FWD)->withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(320.0),
+        drive_sys.TurnToHeadingCmd(120),
+        // Wall align
+        drive_sys.DriveForwardCmd(24, REV)->withTimeout(2.0),
+        drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(1.5),
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
         recal,
-        drive_sys.DriveForwardCmd(5),
+        drive_sys.DriveToPointCmd({50, 12})->withTimeout(2.0),
+        // Turn to pole
+        drive_sys.TurnToPointCmd(72, 24),
         recal,
-        drive_sys.TurnToHeadingCmd(0),
-        drive_sys.DriveForwardCmd(30)->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(20, FWD, 0.3)->withTimeout(1.0),
-        recal,
-        drive_sys.DriveForwardCmd(8, REV),
-        drive_sys.TurnToPointCmd(72, 24)->withTimeout(2.0),
-        drive_sys.DriveTankCmd(0.3, 0.3)
-            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
-            ->withTimeout(2.0),
-
-        // Pickup My Preload
-        // cata_sys.IntakeToHold(),
-        // drive_sys.TurnToPointCmd(29.5, 23)->withTimeout(2.0),
-
-        // drive_sys.DriveToPointCmd({29.5, 23}, FWD, 0.2)->withTimeout(4.0),
-        // cata_sys.WaitForHold()->withTimeout(2.0),
-        // drive_sys.DriveForwardCmd(3, REV)->withTimeout(2.0),
-        // drive_sys.TurnToHeadingCmd(45)->withTimeout(2.0),
-        // drive_sys.DriveForwardCmd(14, FWD)->withTimeout(2.0),
-        // recal,
-        // drive_sys.TurnToHeadingCmd(0),
-        // drive_sys.DriveToPointCmd({65, 37.5}, FWD, 0.5)->withTimeout(4.0),
-
+        drive_sys.DriveToPointCmd({72, 24}, 0.4)->withTimeout(2.0),
         new FunctionCommand([]() { return false; }),
 
     };

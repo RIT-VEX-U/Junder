@@ -65,8 +65,10 @@ class TankDrive {
                                   double max_speed = 1.0,
                                   double end_speed = 0.0);
 
-    AutoCommand *TurnToPointCmd(double x, double y, double max_speed = 1.0,
-                                double end_speed = 0.0);
+    AutoCommand *
+    TurnToPointCmd(double x, double y,
+                   vex::directionType dir = vex::directionType::fwd,
+                   double max_speed = 1.0, double end_speed = 0.0);
 
     AutoCommand *TurnDegreesCmd(double degrees, double max_speed = 1.0,
                                 double start_speed = 0.0);
