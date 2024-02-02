@@ -57,8 +57,9 @@ void autonomous() {
         vexDelay(20);
     }
     // vexDelay(2000);
-    support_AWP();
+    // support_AWP();
     // supportMaximumTriballs();
+    only_shoot();
 }
 
 pose_t gps_pose() {
@@ -101,76 +102,13 @@ pose_t gps_pose() {
     printf("GPS: (%.2f, %.2f) %.2f\n", x, y, rot);
     return pose;
 }
-
-void supportMaximumTriballs() {
-
-    odom.set_position({.x = 28, .y = 18, .rot = 180});
-    CommandController cc{
-
-        // Drive to linup for alliance
-        drive_sys.TurnDegreesCmd(-35),
-        drive_sys.DriveForwardCmd(10, FWD)->withTimeout(2.0),
-        drive_sys.TurnDegreesCmd(70)->withTimeout(2.0),
-        recal,
-        drive_sys.TurnToHeadingCmd(225)->withTimeout(2.0),
-        printOdom,
-        recal,
-        // Pickup Alliance
-        cata_sys.IntakeToHold(),
-        drive_sys.DriveTankCmd(0.2, 0.2)
-            ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
-            ->withTimeout(1.0),
-        cata_sys.WaitForHold()->withTimeout(2.0),
-        recal,
-        drive_sys.DriveForwardCmd(5.0, REV)->withTimeout(2.0),
-        // Turn to side
-        drive_sys.TurnToPointCmd(12.0, 36.0)->withTimeout(1.0),
-        drive_sys.DriveForwardCmd(8.5, FWD, 0.4)->withTimeout(2.0),
-        recal,
-        drive_sys.TurnToHeadingCmd(90.0)->withTimeout(1.0),
-        drive_sys.DriveForwardCmd(6.5, FWD, 0.4)->withTimeout(2.0),
-        // Dump in goal
-        cata_sys.Unintake(),
-        new DelayCommand(500),
-        drive_sys.DriveForwardCmd(8.0, REV)->withTimeout(2.0),
-        cata_sys.StopIntake(),
-
-        drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(270)->withTimeout(2.0),
-
-        // Ram once
-        drive_sys.DriveForwardCmd(20, REV)
-            ->withTimeout(2.0)
-            ->withCancelCondition(drive_sys.DriveStalledCondition(0.25)),
-        // Ram Twice
-        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-        drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(0.5),
-        // Evacuate
-        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(-90),
-
-        recal,
-        drive_sys.TurnToPointCmd(26, 26),
-        drive_sys.DriveToPointCmd({26, 26}),
-
-        // Turn to pick up triball
-        drive_sys.TurnToHeadingCmd(-135),
-        cata_sys.IntakeToHold(),
-        drive_sys.DriveTankCmd(0.3, 0.3)->withTimeout(0.5),
-        cata_sys.WaitForHold()->withTimeout(2.0),
-
-        drive_sys.DriveForwardCmd(5, REV),
-        new FunctionCommand([]() { return false; }),
-
-    };
-    cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
-    cc.run();
-}
-
-void support_AWP() {
-
-    odom.set_position({.x = 28, .y = 18, .rot = 180});
-    CommandController cc{
+AutoCommand *get_and_score_alliance() {
+    return new InOrder{
+        // setup
+        new FunctionCommand([]() {
+            odom.set_position({.x = 28, .y = 18, .rot = 180});
+            return true;
+        }),
 
         // Drive to linup for alliance
         // drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
@@ -211,6 +149,55 @@ void support_AWP() {
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
         // Ram Twice
         drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(0.5),
+    };
+}
+
+void supportMaximumTriballs() {
+
+    odom.set_position({.x = 28, .y = 18, .rot = 180});
+    CommandController cc{
+
+        get_and_score_alliance(),
+        // Evacuate
+        recal,
+        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
+
+        recal,
+        // line up to load
+        drive_sys.TurnToPointCmd(24, 26)->withTimeout(2.0),
+        drive_sys.DriveToPointCmd({24, 26})->withTimeout(2.0),
+        recal,
+        // load
+        drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
+        cata_sys.IntakeToHold(),
+        drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
+        cata_sys.WaitForHold()->withTimeout(2.0),
+
+        drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
+        drive_sys.DriveToPointCmd({55, 12}, FWD, 0.75)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(0),
+        cata_sys.Unintake(),
+        drive_sys.DriveToPointCmd({22, 26}, REV, 0.6)->withTimeout(2.0),
+        cata_sys.StopIntake(),
+        // // Turn to pick up triball
+        // drive_sys.TurnToHeadingCmd(-135),
+        // cata_sys.IntakeToHold(),
+        // drive_sys.DriveTankCmd(0.3, 0.3)->withTimeout(0.5),
+        // cata_sys.WaitForHold()->withTimeout(2.0),
+
+        // drive_sys.DriveForwardCmd(5, REV),
+        new FunctionCommand([]() { return false; }),
+
+    };
+    cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
+    cc.run();
+}
+
+void support_AWP() {
+
+    CommandController cc{
+        get_and_score_alliance(),
         // Evacuate
         recal,
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
@@ -273,28 +260,41 @@ void only_shoot() {
         printOdom,
 
         // 1 - Turn and shoot preload
-        cata_sys.Fire(),
-        drive_sys.DriveForwardCmd(dist, REV),
-        new DelayCommand(300),
-        cata_sys.StopFiring(),
-        cata_sys.IntakeFully(),
+        // cata_sys.Fire(),
+        drive_sys.DriveForwardCmd(dist, FWD)->withTimeout(1.0),
+        cata_sys.IntakeFully()->withTimeout(2.0),
 
         // 2 - Turn to matchload zone & begin matchloading
-        drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5)->withTimeout(1.5),
 
         // Matchloading phase
         new RepeatUntil(
-            InOrder{odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+            InOrder{
+                odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
-                    intakeToCata->withTimeout(1.75), cata_sys.Fire(),
-                    drive_sys.DriveForwardCmd(dist, REV, 0.5),
-                    cata_sys.StopFiring(),
+                intakeToCata->withTimeout(1.75),
+                // new Parallel{
+                // new InOrder{
+                // new DelayCommand(100),
+                // }, // drive_sys.DriveForwardCmd(dist, REV, 0.5),
+                drive_sys.DriveToPointCmd({24, 22}, REV, 0.4)
+                    ->withTimeout(1.0)
+                    ->withCancelCondition(
+                        drive_sys.DriveStalledCondition(0.25)),
+                cata_sys.Fire(),
+                new DelayCommand(200),
+                // },
+                cata_sys.StopFiring()->withTimeout(0.5),
 
-                    cata_sys.IntakeFully(),
-                    drive_sys.TurnToHeadingCmd(load_angle, 0.5),
+                cata_sys.IntakeFully()->withTimeout(2.0),
+                drive_sys.TurnToHeadingCmd(load_angle, 0.5),
 
-                    drive_sys.DriveForwardCmd(dist + 2, FWD, 0.2)
-                        ->withTimeout(1.7)},
+                // drive_sys.DriveForwardCmd(dist + 2, FWD, 0.2)
+                // ->withTimeout(1.7)},
+                drive_sys.DriveToPointCmd({13, 14}, FWD, 0.4)
+                    ->withTimeout(1.0)
+                    ->withCancelCondition(
+                        drive_sys.DriveStalledCondition(0.25)),
+            },
             new IfTimePassed(45)),
 
         drive_sys.DriveForwardCmd(3, REV),
@@ -325,7 +325,6 @@ void only_shoot() {
         drive_sys.DriveForwardCmd(30.0, FWD)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(36.0, REV)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(30.0, FWD)->withTimeout(2.0),
-
     };
     cmd.run();
 }
@@ -393,10 +392,9 @@ void skills2() {
         // new DelayCommand(300),
 
         // 2 - Turn to matchload zone & begin matchloading
-        // drive_sys.TurnToHeadingCmd(load_angle, .5), cata_sys.IntakeFully(),
-        // drive_sys.DriveForwardCmd(dist + 2, vex::fwd, 0.5)->withTimeout(1.5),
-        // thingLeft,
-        // Matchloading phase
+        // drive_sys.TurnToHeadingCmd(load_angle, .5),
+        // cata_sys.IntakeFully(), drive_sys.DriveForwardCmd(dist + 2,
+        // vex::fwd, 0.5)->withTimeout(1.5), thingLeft, Matchloading phase
         new RepeatUntil(
             InOrder{
                 odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
