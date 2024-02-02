@@ -225,7 +225,7 @@ void support_AWP() {
         // Turn to pole
         drive_sys.TurnToPointCmd(72, 24),
         recal,
-        drive_sys.DriveToPointCmd({72, 24}, 0.4)->withTimeout(2.0),
+        drive_sys.DriveToPointCmd({72, 24}, FWD, 0.4)->withTimeout(2.0),
         new FunctionCommand([]() { return false; }),
 
     };
