@@ -66,6 +66,9 @@ pose_t gps_pose() {
     while (gps_sensor.xPosition() == 0.0 && gps_sensor.yPosition() == 0.0) {
         vexDelay(20);
     }
+    if (gps_sensor.quality() == 0) {
+        return odom.get_position();
+    }
 
     pose_t orig = odom.get_position();
     static timer t;
@@ -114,23 +117,23 @@ AutoCommand *get_and_score_alliance() {
         // drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(-35),
         drive_sys.DriveForwardCmd(10, FWD)->withTimeout(2.0),
-        drive_sys.TurnDegreesCmd(70),
-        recal,
-        drive_sys.TurnToHeadingCmd(225),
-        printOdom,
-        recal,
+        drive_sys.TurnDegreesCmd(75),
+        // recal,
+        // drive_sys.TurnToHeadingCmd(232)->withTimeout(2.0),
+        // printOdom,
+        // recal,
         // Pickup Alliance
         cata_sys.IntakeToHold(),
         drive_sys.DriveTankCmd(0.2, 0.2)
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
             ->withTimeout(1.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
-        recal,
+        // recal,
         drive_sys.DriveForwardCmd(5.0, REV)->withTimeout(2.0),
         // Turn to side
         drive_sys.TurnToPointCmd(12.0, 36.0)->withTimeout(1.0),
         drive_sys.DriveForwardCmd(8.5, FWD, 0.4)->withTimeout(2.0),
-        recal,
+        // recal,
         drive_sys.TurnToHeadingCmd(90.0)->withTimeout(1.0),
         drive_sys.DriveForwardCmd(6.5, FWD, 0.4)->withTimeout(2.0),
         // Dump in goal
@@ -140,7 +143,7 @@ AutoCommand *get_and_score_alliance() {
         cata_sys.StopIntake(),
 
         drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(275)->withTimeout(2.0),
+        drive_sys.TurnToHeadingCmd(282)->withTimeout(2.0),
 
         // Ram once
         drive_sys.DriveForwardCmd(20, REV)
@@ -256,13 +259,14 @@ void only_shoot() {
     printf("only shoot\n");
 
     CommandController cmd{
-        odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+        odom.SetPositionCmd({.x = 22.0, .y = 22.0, .rot = 225}),
+        new DelayCommand(300),
         printOdom,
 
         // 1 - Turn and shoot preload
         // cata_sys.Fire(),
-        drive_sys.DriveForwardCmd(dist, FWD)->withTimeout(1.0),
         cata_sys.IntakeFully()->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(dist, FWD, 0.3)->withTimeout(1.0),
 
         // 2 - Turn to matchload zone & begin matchloading
 
@@ -272,14 +276,10 @@ void only_shoot() {
                 odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
                 intakeToCata->withTimeout(1.75),
-                // new Parallel{
-                // new InOrder{
-                // new DelayCommand(100),
-                // }, // drive_sys.DriveForwardCmd(dist, REV, 0.5),
-                drive_sys.DriveToPointCmd({24, 22}, REV, 0.4)
-                    ->withTimeout(1.0)
-                    ->withCancelCondition(
-                        drive_sys.DriveStalledCondition(0.25)),
+
+                drive_sys.DriveToPointCmd({24, 22}, REV, 0.4)->withTimeout(1.0),
+                // ->withCancelCondition(
+                // drive_sys.DriveStalledCondition(0.25)),
                 cata_sys.Fire(),
                 new DelayCommand(200),
                 // },
@@ -295,36 +295,28 @@ void only_shoot() {
                     ->withCancelCondition(
                         drive_sys.DriveStalledCondition(0.25)),
             },
-            new IfTimePassed(45)),
+            new IfTimePassed(42)),
 
         drive_sys.DriveForwardCmd(3, REV),
         cata_sys.Fire(),
-        new DelayCommand(300),
+        new DelayCommand(200),
         cata_sys.StopIntake(),
         drive_sys.TurnToHeadingCmd(165)->withTimeout(2.0),
-        drive_sys
-            .DriveToPointCmd(
-                {
-                    50,
-                    10,
-                },
-                REV)
-            ->withTimeout(5.0),
+        drive_sys.DriveToPointCmd({50, 10}, REV)->withTimeout(5.0),
         printOdom,
         drive_sys.TurnToHeadingCmd(175)->withTimeout(2.0),
-        drive_sys
-            .DriveToPointCmd(
-                {
-                    100,
-                    15,
-                },
-                REV)
-            ->withTimeout(5.0),
+        drive_sys.DriveToPointCmd({100, 15}, REV)->withTimeout(5.0),
+        // new WingCmd(true),
         drive_sys.TurnToHeadingCmd(-125)->withTimeout(3.0),
+        // drive_sys.DriveForwardCmd(36.0, REV)->withTimeout(2.0),
+        // drive_sys.DriveForwardCmd(30.0, FWD, 0.5)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(36.0, REV)->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(30.0, FWD)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(18.0, FWD, 0.5)->withTimeout(2.0),
+        drive_sys.TurnDegreesCmd(65)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(24.0, REV)->withTimeout(2.0),
+        drive_sys.TurnDegreesCmd(-120)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(36.0, REV)->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(30.0, FWD)->withTimeout(2.0),
+        recal,
     };
     cmd.run();
 }

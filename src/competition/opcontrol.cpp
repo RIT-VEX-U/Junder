@@ -5,9 +5,10 @@
 #include "vex.h"
 #include <atomic>
 
-// #define Tank
+bool Tank = true;
 
-TankDrive::BrakeType brake_type = TankDrive::BrakeType::None;
+TankDrive::BrakeType brake_type = TankDrive::BrakeType::Smart;
+
 auto toggle_brake_mode = []() {
     if (brake_type == TankDrive::BrakeType::None) {
         brake_type = TankDrive::BrakeType::Smart;
@@ -20,11 +21,9 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
-    con.ButtonRight.pressed([]() { screen::next_page(); });
-    con.ButtonLeft.pressed([]() { screen::prev_page(); });
+    // con.ButtonRight.pressed([]() { screen::next_page(); });
+    // con.ButtonLeft.pressed([]() { screen::prev_page(); });
     //
-    autonomous();
-    // return;
 
 #ifdef COMP_BOT
     cata_sys.send_command(CataSys::Command::StartDropping);
@@ -84,8 +83,10 @@ void opcontrol() {
     con.ButtonR2.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
 
-    con.ButtonY.pressed(
-        []() { cata_sys.send_command(CataSys::Command::IntakeHold); });
+    con.ButtonY.pressed([]() {
+        // cata_sys.send_command(CataSys::Command::IntakeHold);
+        Tank = !Tank;
+    });
 
     con.ButtonL2.pressed([]() {
         left_wing.set(!left_wing.value());
@@ -102,19 +103,21 @@ void opcontrol() {
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
 #endif
-#ifdef Tank
-        double l = con.Axis3.position() / 100.0;
-        double r = con.Axis2.position() / 100.0;
-        if (!disable_drive) {
-            drive_sys.drive_tank(l, r, 1, brake_type);
+        if (Tank) {
+            double l = con.Axis3.position() / 100.0;
+            double r = con.Axis2.position() / 100.0;
+            if (!disable_drive) {
+                drive_sys.drive_tank(l, r, 1, brake_type);
+            }
+
+        } else {
+
+            double f = con.Axis3.position() / 100.0;
+            double s = con.Axis1.position() / 100.0;
+            if (!disable_drive) {
+                drive_sys.drive_arcade(f, s, 1, brake_type);
+            }
         }
-
-#else
-
-        double f = con.Axis3.position() / 100.0;
-        double s = con.Axis1.position() / 100.0;
-        drive_sys.drive_arcade(f, s, 1, brake_type);
-#endif
         static VisionTrackTriballCommand viscmd;
 
         if (con.ButtonX.pressing()) {

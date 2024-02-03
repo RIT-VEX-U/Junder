@@ -1,7 +1,7 @@
 {
-    "title": "2023-2024-1",
+    "title": "BrakeOn",
     "description": "The cool one",
-    "icon": "USER921x.bmp",
+    "icon": "USER010x.bmp",
     "version": "22.03.0110",
     "sdk": "20220215_18_00_00",
     "language": "cpp",
