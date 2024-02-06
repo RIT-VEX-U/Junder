@@ -1,7 +1,7 @@
 #include "competition/autonomous.h"
 #include "automation.h"
-
 #include <functional>
+#include <memory>
 
 #include "core.h"
 #include "robot-config.h"

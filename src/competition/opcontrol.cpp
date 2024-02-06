@@ -5,7 +5,7 @@
 #include "vex.h"
 #include <atomic>
 
-bool Tank = true;
+bool Tank = false;
 
 TankDrive::BrakeType brake_type = TankDrive::BrakeType::Smart;
 

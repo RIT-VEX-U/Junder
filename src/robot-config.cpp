@@ -97,6 +97,14 @@ vex::distance intake_watcher(vex::PORT3);
 vex::optical cata_watcher(vex::PORT15); // Final Port
 vex::pot cata_pot(Brain.ThreeWirePort.E);
 
+PID::pid_config_t pc = {.p = 1,
+                        // .i = 2,
+                        .deadband = 2,
+                        .on_target_time = 0.3};
+
+FeedForward::ff_config_t ffc = {.kG = -2};
+PIDFF cata_pid(pc, ffc);
+
 // VISION PORT 16 Final Port
 
 vex::pneumatics climb_solenoid(Brain.ThreeWirePort.A);
@@ -104,7 +112,7 @@ vex::digital_out left_wing(Brain.ThreeWirePort.G);
 vex::digital_out right_wing(Brain.ThreeWirePort.H);
 
 CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors,
-                 intake_roller, intake_combine);
+                 intake_roller, intake_combine, cata_pid);
 gps gps_sensor(PORT6, 0, 0, distanceUnits::in, 0, turnType::left);
 #else
 

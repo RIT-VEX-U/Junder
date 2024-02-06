@@ -26,6 +26,8 @@ extern motor intake_roller;
 
 extern motor_group cata_motors;
 
+extern PIDFF cata_pid;
+
 extern motor_group left_motors;
 
 extern motor_group right_motors;
