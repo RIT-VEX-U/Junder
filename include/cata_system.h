@@ -26,6 +26,42 @@ class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
     PIDFF &pid;
 };
 
+enum class IntakeMessage {
+    Intake,
+    Outtake,
+    IntakeHold,
+    Dropped,
+    StopIntake,
+    Drop
+};
+enum class IntakeState {
+    Stopped,
+    Intaking,
+    IntakingHold,
+    Outtaking,
+    Dropping,
+};
+class IntakeSys
+    : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, true> {
+  public:
+    friend struct Stopped;
+    friend struct Dropping;
+    friend struct Intaking;
+    friend struct IntakingHold;
+    friend struct Outtaking;
+    friend struct Waiting;
+
+    IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
+              vex::motor &intake_upper);
+    bool can_intake();
+    bool ball_in_intake();
+
+  private:
+    vex::distance &intake_watcher;
+    vex::motor &intake_lower;
+    vex::motor &intake_upper;
+};
+
 class CataSys {
   public:
     enum class Command {
@@ -36,10 +72,7 @@ class CataSys {
                      // cata
         StopIntake,
         IntakeOut,
-        StartMatchLoad,
-        StopMatchLoad,
-        StartDropping,
-        OuttakeJust
+        StartDropping
     };
     enum class IntakeType {
         In,
@@ -79,6 +112,6 @@ class CataSys {
     vex::motor &intake_upper;
     vex::motor &intake_lower;
     CataOnlySys cata_sys;
-
+    IntakeSys intake_sys;
     friend class CataSysPage;
 };

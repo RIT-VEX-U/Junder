@@ -67,10 +67,6 @@ void opcontrol() {
     });
     con.ButtonDown.pressed(
         []() { climb_solenoid.set(!climb_solenoid.value()); });
-    con.ButtonUp.pressed(
-        // CommandController cc{Climb()};
-        // cc.run();
-        []() { cata_sys.send_command(CataSys::Command::OuttakeJust); });
 
     con.ButtonA.pressed([]() { enable_matchload = !enable_matchload; });
 
@@ -84,8 +80,8 @@ void opcontrol() {
         []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
 
     con.ButtonY.pressed([]() {
-        // cata_sys.send_command(CataSys::Command::IntakeHold);
-        Tank = !Tank;
+        cata_sys.send_command(CataSys::Command::IntakeHold);
+        // Tank = !Tank;
     });
 
     con.ButtonL2.pressed([]() {

@@ -37,10 +37,10 @@ motor cata_l(PORT10, gearSetting::ratio36_1, false); // Final Port
 
 motor_group cata_motors(cata_l, cata_r);
 
-motor intake_combine(PORT1, gearSetting::ratio18_1, false); // Final Port
-motor intake_roller(PORT9, gearSetting::ratio18_1, false);  // Final Port
+motor intake_upper(PORT9, gearSetting::ratio18_1, false); // Final Port
+motor intake_lower(PORT1, gearSetting::ratio18_1, false); // Final Port
 
-motor_group intake_motors = {intake_combine, intake_roller};
+motor_group intake_motors = {intake_upper, intake_lower};
 
 std::map<std::string, motor &> motor_names = {
     {"left ff", left_front_front},
@@ -56,8 +56,8 @@ std::map<std::string, motor &> motor_names = {
     {"cata L", cata_l},
     {"cata R", cata_r},
 
-    {"intake H", intake_combine},
-    {"intake L", intake_roller},
+    {"intake H", intake_upper},
+    {"intake L", intake_lower},
 
 };
 
@@ -112,7 +112,7 @@ vex::digital_out left_wing(Brain.ThreeWirePort.G);
 vex::digital_out right_wing(Brain.ThreeWirePort.H);
 
 CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors,
-                 intake_roller, intake_combine, cata_pid);
+                 intake_lower, intake_upper, cata_pid);
 gps gps_sensor(PORT6, 0, 0, distanceUnits::in, 0, turnType::left);
 #else
 
@@ -137,8 +137,8 @@ motor right_back(PORT4);
 motor_group left_motors(left_front, left_back);
 motor_group right_motors(right_front, right_back);
 
-motor intake_combine(PORT11);
-motor intake_roller(PORT12);
+motor intake_upper(PORT11);
+motor intake_lower(PORT12);
 
 std::map<std::string, motor &> motor_names = {
     {"left f", left_front},
@@ -152,7 +152,7 @@ std::map<std::string, motor &> motor_names = {
 // ================ SUBSYSTEMS ================
 vex::motor_group cata_motors{};
 CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors,
-                 intake_roller, intake_combine);
+                 intake_lower, intake_upper);
 
 CustomEncoder right_enc = CustomEncoder{Brain.ThreeWirePort.A, 90};
 CustomEncoder left_enc = CustomEncoder{Brain.ThreeWirePort.C, 90};
@@ -188,17 +188,17 @@ std::vector<screen::Page *> pages;
  * are started.
  */
 void robot_init() {
-    // set_video("joe.mpeg");
+    set_video("joe.mpeg");
     pages = {
         new screen::StatsPage(motor_names),
         new screen::OdometryPage(odom, 12, 12, true),
-    // new VideoPlayer(),
+        new VideoPlayer(),
 #ifdef COMP_BOT
-    // cata_sys.Page(),
+        cata_sys.Page(),
 #endif
     };
 
-    screen::start_screen(Brain.Screen, pages, 2);
+    screen::start_screen(Brain.Screen, pages, 3);
 
     imu.calibrate();
     gps_sensor.calibrate();

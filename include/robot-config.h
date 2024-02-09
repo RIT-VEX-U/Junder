@@ -21,8 +21,8 @@ extern vex::distance intake_watcher;
 extern vex::gps gps_sensor;
 // ================ OUTPUTS ================
 // Motors
-extern motor intake_combine;
-extern motor intake_roller;
+extern motor intake_upper;
+extern motor intake_lower;
 
 extern motor_group cata_motors;
 

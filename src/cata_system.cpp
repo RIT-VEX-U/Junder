@@ -10,6 +10,7 @@ const double intake_upper_outer_volt = 12.0;
 const double intake_lower_outer_volt = 9.0;
 const double intake_upper_volt = 12;
 const double intake_upper_volt_hold = 6;
+const double intake_lower_volt_hold = 6;
 const double intake_lower_volt = 9.0;
 const double intake_sensor_dist_mm = 150;
 
@@ -24,6 +25,9 @@ bool intake_can_be_enabled(double cata_pos) {
     return (cata_pos == 0.0) || (cata_pos > inake_enable_lower_threshold &&
                                  cata_pos < intake_enable_upper_threshold);
 }
+
+// Cata
+// ==============================================================================================================================
 std::string to_string(CataOnlyState s) {
     switch (s) {
     // case CataOnlyState::Starting:
@@ -63,8 +67,6 @@ struct Reloading : public CataOnlySys::State {
         // work on motor
         double cata_deg = sys.pot.angle(vex::deg);
         if (cata_deg == 0.0) {
-            printf("no adc\n");
-            fflush(stdout);
             // adc hasnt warmed up yet
             return {};
         }
@@ -123,11 +125,7 @@ class ReadyToFire : public CataOnlySys::State {
         return {};
     }
     State *respond(CataOnlyMessage m) override;
-    CataOnlyState id() const override {
-
-        printf("ready to fire id\n");
-        return CataOnlyState::ReadyToFire;
-    }
+    CataOnlyState id() const override { return CataOnlyState::ReadyToFire; }
 };
 CataOnlySys::State *Reloading::respond(CataOnlyMessage m) {
     if (m == CataOnlyMessage::DoneReloading) {
@@ -135,19 +133,13 @@ CataOnlySys::State *Reloading::respond(CataOnlyMessage m) {
 
         return t;
     }
-    printf("Reloading chilling\n");
-    fflush(stdout);
     // Ignore other messages
     return this;
 }
 CataOnlySys::State *ReadyToFire::respond(CataOnlyMessage m) {
     if (m == CataOnlyMessage::Fire) {
-        printf("Now Firing\n");
-        fflush(stdout);
         return new Firing();
     } else if (m == CataOnlyMessage::Slipped) {
-        printf("Now reloading\n");
-        fflush(stdout);
         return new Reloading();
     }
 
@@ -162,6 +154,182 @@ CataOnlySys::State *Firing::respond(CataOnlyMessage m) {
     // Ignore other messages
     return this;
 }
+// INTAKE
+// ==============================================================================================================================
+bool IntakeSys::can_intake() { return true; }
+bool IntakeSys::ball_in_intake() {
+    return intake_watcher.objectDistance(distanceUnits::mm) <
+           intake_sensor_dist_mm;
+}
+std::string to_string(IntakeState s) {
+    switch (s) {
+    case IntakeState::Dropping:
+        return "Dropping";
+    case IntakeState::Intaking:
+        return "Intaking";
+    case IntakeState::IntakingHold:
+        return "Intaking to hold";
+    case IntakeState::Outtaking:
+        return "Outtaking";
+    case IntakeState::Stopped:
+        return "Stopped";
+    }
+    return "UNKNOWN INTAKE STATE";
+}
+
+std::string to_string(IntakeMessage m) {
+    switch (m) {
+    case IntakeMessage::Dropped:
+        return "Dropped";
+    case IntakeMessage::Intake:
+        return "Intake";
+    case IntakeMessage::IntakeHold:
+        return "IntakeToHold";
+    case IntakeMessage::Outtake:
+        return "Outtake";
+    case IntakeMessage::StopIntake:
+        return "Stop";
+    case IntakeMessage::Drop:
+        return "Drop";
+    }
+    return "UNKNOWN INTAKE MESSAGE";
+}
+
+struct Stopped : IntakeSys::State {
+    void entry(IntakeSys &sys) override {
+        sys.intake_lower.stop(vex::brakeType::brake);
+        sys.intake_upper.stop(vex::brakeType::brake);
+    }
+    void exit(IntakeSys &sys) override {
+        // cuz joe doesn't like his intake on brake mode
+        sys.intake_lower.setBrake(vex::brakeType::coast);
+        sys.intake_upper.setBrake(vex::brakeType::coast);
+    }
+    IntakeState id() const override { return IntakeState::Stopped; }
+    State *respond(IntakeMessage m) override;
+};
+
+struct Dropping : IntakeSys::State {
+    void entry(IntakeSys &sys) override {
+        tmr.reset();
+        sys.intake_upper.spin(vex::reverse, 12.0, vex::volt);
+    }
+    IntakeSys::MaybeMessage work(IntakeSys &sys) override {
+        if (tmr.value() > intake_drop_seconds) {
+            return IntakeMessage::Dropped;
+        }
+        return {};
+    }
+    void exit(IntakeSys &sys) override {
+        sys.intake_upper.stop(vex::brakeType::coast);
+    }
+    IntakeState id() const override { return IntakeState::Dropping; }
+    State *respond(IntakeMessage m) override;
+
+  private:
+    vex::timer tmr;
+};
+struct Intaking : IntakeSys::State {
+    void entry(IntakeSys &sys) override {
+        sys.intake_upper.spin(vex::fwd, intake_upper_volt, vex::volt);
+        sys.intake_lower.spin(vex::fwd, intake_lower_volt, vex::volt);
+    }
+    void exit(IntakeSys &sys) override {
+        sys.intake_upper.stop(vex::brakeType::coast);
+        sys.intake_lower.stop(vex::brakeType::coast);
+    }
+
+    IntakeState id() const override { return IntakeState::Intaking; }
+    State *respond(IntakeMessage m) override;
+};
+struct IntakingHold : IntakeSys::State {
+    void entry(IntakeSys &sys) override {
+        sys.intake_upper.spin(vex::fwd, intake_upper_volt_hold, vex::volt);
+        sys.intake_lower.spin(vex::fwd, intake_lower_volt_hold, vex::volt);
+    }
+    IntakeSys::MaybeMessage work(IntakeSys &sys) override {
+        if (sys.ball_in_intake()) {
+            return IntakeMessage::StopIntake;
+        }
+        return {};
+    }
+    void exit(IntakeSys &sys) override {
+        sys.intake_upper.stop(vex::brakeType::coast);
+        sys.intake_lower.stop(vex::brakeType::coast);
+    }
+
+    IntakeState id() const override { return IntakeState::IntakingHold; }
+    State *respond(IntakeMessage m) override;
+};
+struct Outtaking : IntakeSys::State {
+    void entry(IntakeSys &sys) override {
+        sys.intake_upper.spin(vex::reverse, intake_upper_outer_volt, vex::volt);
+        sys.intake_lower.spin(vex::reverse, intake_lower_outer_volt, vex::volt);
+    }
+    void exit(IntakeSys &sys) override {
+        sys.intake_upper.stop(vex::brakeType::coast);
+        sys.intake_lower.stop(vex::brakeType::coast);
+    }
+    IntakeState id() const override { return IntakeState::Outtaking; }
+    State *respond(IntakeMessage m) override;
+};
+
+IntakeSys::State *Dropping::respond(IntakeMessage m) {
+    if (m == IntakeMessage::Dropped) {
+        return new Stopped();
+    }
+    return this;
+}
+
+IntakeSys::State *Intaking::respond(IntakeMessage m) {
+    if (m == IntakeMessage::StopIntake) {
+        return new Stopped();
+    } else if (m == IntakeMessage::IntakeHold) {
+        return new IntakingHold();
+    } else if (m == IntakeMessage::Outtake) {
+        return new Outtaking;
+    }
+    return this;
+}
+
+IntakeSys::State *IntakingHold::respond(IntakeMessage m) {
+    if (m == IntakeMessage::StopIntake) {
+        return new Stopped();
+    } else if (m == IntakeMessage::Intake) {
+        return new Intaking();
+    } else if (m == IntakeMessage::Outtake) {
+        return new Outtaking;
+    }
+    return this;
+}
+
+IntakeSys::State *Stopped::respond(IntakeMessage m) {
+    if (m == IntakeMessage::Intake) {
+        return new Intaking();
+    } else if (m == IntakeMessage::Outtake) {
+        return new Outtaking();
+    } else if (m == IntakeMessage::IntakeHold) {
+        return new IntakingHold();
+    }
+    return this;
+}
+
+IntakeSys::State *Outtaking::respond(IntakeMessage m) {
+    if (m == IntakeMessage::StopIntake) {
+        return new Stopped();
+    } else if (m == IntakeMessage::IntakeHold) {
+        return new IntakingHold();
+    } else if (m == IntakeMessage::Intake) {
+        return new Intaking();
+    }
+    return this;
+}
+
+IntakeSys::IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
+                     vex::motor &intake_upper)
+    : intake_watcher(intake_watcher), intake_lower(intake_lower),
+      intake_upper(intake_upper), StateMachine(new Dropping()) {}
+
 CataOnlySys::CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
                          vex::motor_group &cata_motor, PIDFF &cata_pid)
     : StateMachine(new Reloading()), pot(cata_pot), cata_watcher(cata_watcher),
@@ -174,61 +342,37 @@ CataSys::CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
     : intake_watcher(intake_watcher), cata_pot(cata_pot),
       cata_watcher(cata_watcher), cata_motor(cata_motor),
       intake_upper(intake_upper), intake_lower(intake_lower),
-      cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback) {
-    printf("CataSys\n");
-    fflush(stdout);
-}
+      cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback),
+      intake_sys(intake_watcher, intake_lower, intake_upper) {}
 
 void CataSys::send_command(Command next_cmd) {
     switch (next_cmd) {
     case CataSys::Command::StartFiring:
-        // firing_requested = true;
         cata_sys.SendMessage(CataOnlyMessage::Fire);
         break;
     case CataSys::Command::IntakeIn:
-        // intaking_requested = true;
-        // intake_type = CataSys::IntakeType::In;
+        intake_sys.SendMessage(IntakeMessage::Intake);
         break;
     case CataSys::Command::IntakeOut:
-        // intaking_requested = true;
-        // intake_type = CataSys::IntakeType::Out;
+        intake_sys.SendMessage(IntakeMessage::Outtake);
         break;
-    case CataSys::Command::OuttakeJust:
-        // intaking_requested = true;
-        // intake_type = CataSys::IntakeType::JustOut;
-        break;
-    case CataSys::Command::IntakeHold: // not handled
-        // intaking_requested = true;
-        // intake_type = CataSys::IntakeType::Hold;
+    case CataSys::Command::IntakeHold:
+        intake_sys.SendMessage(IntakeMessage::IntakeHold);
         break;
     case CataSys::Command::StopIntake:
-        // intaking_requested = false;
-        break;
-    case CataSys::Command::StartMatchLoad:
-        // matchload_requested = true;
-        break;
-    case CataSys::Command::StopMatchLoad:
-        // matchload_requested = false;
+        intake_sys.SendMessage(IntakeMessage::StopIntake);
         break;
     case CataSys::Command::StartDropping:
-        // drop_timer.reset();
-        // state = CataState::UNFOLDING;
+        intake_sys.SendMessage(IntakeMessage::Drop);
         break;
     default:
         break;
     }
 }
 
-// CataSys::CataState CataSys::get_state() const {
-//     control_mut.lock();
-//     auto s = state;
-//     control_mut.unlock();
-//     return s;
-// }
-
-// bool CataSys::can_fire() const {
-//     return get_state() == CataState::READY; // cata_watcher.isNearObject() &&
-// }
+bool CataSys::can_fire() const {
+    return cata_sys.current_state() == CataOnlyState::ReadyToFire;
+}
 
 class CataSysPage : public screen::Page {
   public:
@@ -240,66 +384,26 @@ class CataSysPage : public screen::Page {
         CataOnlyState cata_state = cs.cata_sys.current_state();
         std::string cata_str = to_string(cata_state);
 
-        // CataSys::CataState state = cs.get_state();
-        // const char *state_str = "UNKNOWN STATE";
-        // switch (state) {
-        // case CataSys::CataState::CHARGING:
-        //     state_str = "CHARGING";
-        //     break;
-        // case CataSys::CataState::FIRING:
-        //     state_str = "FIRING";
-        //     break;
-        // case CataSys::CataState::READY:
-        //     state_str = "READY";
-        //     break;
-
-        // default:
-        //     break;
-        // }
+        IntakeState intake_state = cs.intake_sys.current_state();
+        std::string intake_str = to_string(intake_state);
 
         gd.add_samples(
             {cs.cata_sys.pid.get_sensor_val(), cs.cata_sys.pid.get_target()});
-        //
-        // const bool ball_in_intake =
-        //     cs.intake_watcher.objectDistance(distanceUnits::mm) <
-        //     intake_sensor_dist_mm;
+        const bool ball_in_intake =
+            cs.intake_watcher.objectDistance(distanceUnits::mm) <
+            intake_sensor_dist_mm;
 
-        // const bool ball_in_cata = cs.cata_watcher.isNearObject();
-
-        // const char *intake_dir = "";
-        // if (cs.intaking_requested) {
-        //     switch (cs.intake_type) {
-        //     case CataSys::IntakeType::Hold:
-        //         intake_dir = "Hold";
-        //         break;
-        //     case CataSys::IntakeType::In:
-        //         intake_dir = "In";
-        //         break;
-        //     case CataSys::IntakeType::Out:
-        //         intake_dir = "Out";
-        //         break;
-        //     case CataSys::IntakeType::JustOut:
-        //         intake_dir = "JustOut";
-        //         break;
-        //     }
-        // }
+        const bool ball_in_cata = cs.cata_watcher.isNearObject();
 
         scr.printAt(40, 20, true, "Cata: %s", cata_str.c_str());
         scr.printAt(40, 60, true, "pot: %.2f", cs.cata_pot.angle(vex::degrees));
-        // scr.printAt(40, 60, true, "MatchLoad Requested: %s",
-        //             cs.matchload_requested ? "yes" : "no");
-        // scr.printAt(40, 80, true, "Intake Requested: %s%s",
-        //             cs.intaking_requested ? "yes" : "no", intake_dir);
-        // scr.printAt(40, 100, true, "Fire Requested: %s",
-        //             cs.firing_requested ? "yes" : "no");
+        scr.printAt(40, 100, true, "Cata: %s", intake_str.c_str());
 
-        // scr.printAt(40, 140, true, "Ball in Cata: %s",
-        //             ball_in_cata ? "yes" : "no");
+        scr.printAt(40, 140, true, "Ball in Cata: %s",
+                    ball_in_cata ? "yes" : "no");
 
-        // scr.printAt(40, 160, true, "Ball in Intake: %s",
-        //             ball_in_intake ? "yes" : "no");
-        // scr.printAt(40, 180, true, "Can Fire: %s",
-        //             cs.can_fire() ? "yes" : "no");
+        scr.printAt(40, 160, true, "Ball in Intake: %s",
+                    ball_in_intake ? "yes" : "no");
 
         gd.draw(scr, 240, 0, 200, 200);
     }
