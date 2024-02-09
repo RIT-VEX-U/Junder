@@ -17,9 +17,8 @@ const double cata_target_charge = 179;
 const double cata_target_intake = 179; // LOWER IS CLOSER TO SLIPPPING
 
 const double intake_drop_seconds = 0.5;
-const double fire_time = 0.4;
+const double fire_time = 0.3;
 const double fire_voltage = 12.0;
-;
 
 bool intake_can_be_enabled(double cata_pos) {
     return (cata_pos == 0.0) || (cata_pos > inake_enable_lower_threshold &&
@@ -27,8 +26,8 @@ bool intake_can_be_enabled(double cata_pos) {
 }
 std::string to_string(CataOnlyState s) {
     switch (s) {
-    case CataOnlyState::Starting:
-        return "Starting";
+    // case CataOnlyState::Starting:
+    // return "Starting";
     case CataOnlyState::Firing:
         return "Firing";
     case CataOnlyState::Reloading:
@@ -41,6 +40,8 @@ std::string to_string(CataOnlyState s) {
 
 std::string to_string(CataOnlyMessage m) {
     switch (m) {
+    case CataOnlyMessage::Slipped:
+        return "Slipped";
     case CataOnlyMessage::DoneReloading:
         return "Done Reloading";
     case CataOnlyMessage::DoneFiring:
@@ -53,13 +54,16 @@ std::string to_string(CataOnlyMessage m) {
 
 struct Reloading : public CataOnlySys::State {
     void entry(CataOnlySys &sys) override {
+
         sys.pid.set_target(cata_target_charge);
     }
 
     CataOnlySys::MaybeMessage work(CataOnlySys &sys) override {
         // work on motor
-        double cata_deg = sys.pot.angle();
+        double cata_deg = sys.pot.angle(vex::deg);
+
         sys.pid.update(cata_deg);
+
         sys.mot.spin(vex::fwd, sys.pid.get(), vex::volt);
         // are we there yettt
         if (sys.pid.is_on_target()) {
@@ -79,7 +83,7 @@ class Firing : public CataOnlySys::State {
         tmr.reset();
         sys.mot.spin(vex::fwd, fire_voltage, vex::volt);
     }
-    CataOnlySys::MaybeMessage work(CataOnlySys &sys) {
+    CataOnlySys::MaybeMessage work(CataOnlySys &sys) override {
         if (tmr.value() > fire_time) {
             return CataOnlyMessage::DoneFiring;
         }
@@ -99,6 +103,11 @@ class ReadyToFire : public CataOnlySys::State {
         sys.pid.update(cata_deg);
         sys.mot.spin(vex::fwd, sys.pid.get(), vex::volt);
 
+        // If we slipped, send message to go back to reload
+        if (!intake_can_be_enabled(cata_deg)) {
+            return CataOnlyMessage::Slipped;
+        }
+
         // hold here until message comes from outside
         return {};
     }
@@ -115,9 +124,11 @@ CataOnlySys::State *Reloading::respond(CataOnlyMessage m) {
 CataOnlySys::State *ReadyToFire::respond(CataOnlyMessage m) {
     if (m == CataOnlyMessage::Fire) {
         return new Firing();
+    } else if (m == CataOnlyMessage::Slipped) {
+        return new Reloading();
     }
-    // Ignore other messages
 
+    // Ignore other messages
     return this;
 }
 
@@ -128,6 +139,11 @@ CataOnlySys::State *Firing::respond(CataOnlyMessage m) {
     // Ignore other messages
     return this;
 }
+CataOnlySys::CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
+                         vex::motor_group &cata_motor, PIDFF &cata_pid)
+    : StateMachine(new Reloading()), pot(cata_pot), cata_watcher(cata_watcher),
+      mot(cata_motor), pid(cata_pid) {}
+
 // int thread_func(void *void_cata) {
 //     CataSys &cata = *(CataSys *)void_cata;
 //     cata.state = CataSys::CataState::CHARGING;
@@ -311,20 +327,21 @@ CataOnlySys::State *Firing::respond(CataOnlyMessage m) {
 CataSys::CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
                  vex::optical &cata_watcher, vex::motor_group &cata_motor,
                  vex::motor &intake_upper, vex::motor &intake_lower,
-                 PIDFF cata_feedback)
+                 PIDFF &cata_feedback)
     : intake_watcher(intake_watcher), cata_pot(cata_pot),
       cata_watcher(cata_watcher), cata_motor(cata_motor),
       intake_upper(intake_upper), intake_lower(intake_lower),
-      cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback) {}
+      cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback) {
+    printf("CataSys\n");
+    fflush(stdout);
+}
 
 void CataSys::send_command(Command next_cmd) {
     // control_mut.lock();
     switch (next_cmd) {
     case CataSys::Command::StartFiring:
         // firing_requested = true;
-        break;
-    case CataSys::Command::StopFiring:
-        // firing_requested = false;
+        cata_sys.SendMessage(CataOnlyMessage::Fire);
         break;
     case CataSys::Command::IntakeIn:
         // intaking_requested = true;
@@ -380,6 +397,9 @@ class CataSysPage : public screen::Page {
     void update(bool, int, int) override {}
 
     void draw(vex::brain::lcd &scr, bool, unsigned int) override {
+        CataOnlyState cata_state = cs.cata_sys.current_state();
+        std::string cata_str = to_string(cata_state);
+
         // CataSys::CataState state = cs.get_state();
         // const char *state_str = "UNKNOWN STATE";
         // switch (state) {
@@ -397,8 +417,9 @@ class CataSysPage : public screen::Page {
         //     break;
         // }
 
-        // gd.add_samples({cata_pid.get_sensor_val(), cata_pid.get_target()});
-
+        gd.add_samples(
+            {cs.cata_sys.pid.get_sensor_val(), cs.cata_sys.pid.get_target()});
+        //
         // const bool ball_in_intake =
         //     cs.intake_watcher.objectDistance(distanceUnits::mm) <
         //     intake_sensor_dist_mm;
@@ -423,7 +444,8 @@ class CataSysPage : public screen::Page {
         //     }
         // }
 
-        // scr.printAt(40, 20, true, "Cata: %s", state_str);
+        scr.printAt(40, 20, true, "Cata: %s", cata_str.c_str());
+        scr.printAt(40, 60, true, "pot: %.2f", cs.cata_pot.angle(vex::degrees));
         // scr.printAt(40, 60, true, "MatchLoad Requested: %s",
         //             cs.matchload_requested ? "yes" : "no");
         // scr.printAt(40, 80, true, "Intake Requested: %s%s",
@@ -439,7 +461,7 @@ class CataSysPage : public screen::Page {
         // scr.printAt(40, 180, true, "Can Fire: %s",
         //             cs.can_fire() ? "yes" : "no");
 
-        // gd.draw(scr, 240, 0, 200, 200);
+        gd.draw(scr, 240, 0, 200, 200);
     }
 
   private:
@@ -484,12 +506,6 @@ AutoCommand *CataSys::WaitForIntake() {
 AutoCommand *CataSys::WaitForHold() {
     return new FunctionCommand([&]() {
         return intake_watcher.objectDistance(distanceUnits::mm) < 150;
-    });
-}
-AutoCommand *CataSys::StopFiring() {
-    return new FunctionCommand([&]() {
-        send_command(CataSys::Command::StopFiring);
-        return true;
     });
 }
 

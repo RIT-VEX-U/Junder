@@ -76,8 +76,8 @@ void opcontrol() {
 
     con.ButtonL1.pressed(
         []() { cata_sys.send_command(CataSys::Command::StartFiring); });
-    con.ButtonL1.released(
-        []() { cata_sys.send_command(CataSys::Command::StopFiring); });
+    // con.ButtonL1.released(
+    // []() { cata_sys.send_command(CataSys::Command::StopFiring); });
     con.ButtonR1.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeIn); });
     con.ButtonR2.pressed(

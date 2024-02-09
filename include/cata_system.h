@@ -6,19 +6,18 @@
 #include "../core/include/utils/state_machine.h"
 #include "vex.h"
 
-enum class CataOnlyMessage { DoneReloading, DoneFiring, Fire };
-enum class CataOnlyState { Starting, Firing, Reloading, ReadyToFire };
+enum class CataOnlyMessage { DoneReloading, DoneFiring, Fire, Slipped };
+enum class CataOnlyState { Firing, Reloading, ReadyToFire };
 
-class CataOnlySys
-    : public StateMachine<CataOnlySys, CataOnlyState, CataOnlyMessage> {
+class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
+                                        CataOnlyMessage, 5, true> {
   public:
     friend struct Reloading;
     friend class Firing;
     friend class ReadyToFire;
+    friend class CataSysPage;
     CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
-                vex::motor_group &cata_motor, PIDFF &cata_pid)
-        : pot(cata_pot), cata_watcher(cata_watcher), mot(cata_motor),
-          pid(cata_pid) {}
+                vex::motor_group &cata_motor, PIDFF &cata_pid);
 
   private:
     vex::pot &pot;
@@ -35,7 +34,6 @@ class CataSys {
                      // cata
         StartFiring, // all mutually exclusive or else we get DQed or jam the
                      // cata
-        StopFiring,
         StopIntake,
         IntakeOut,
         StartMatchLoad,
@@ -55,14 +53,13 @@ class CataSys {
     CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
             vex::optical &cata_watcher, vex::motor_group &cata_motor,
             vex::motor &intake_upper, vex::motor &intake_lower,
-            PIDFF cata_feedback);
+            PIDFF &cata_feedback);
     void send_command(Command cmd);
     CataState get_state() const;
     bool can_fire() const;
 
     // Autocommands
     AutoCommand *Fire();
-    AutoCommand *StopFiring();
     AutoCommand *StopIntake();
     AutoCommand *IntakeToHold();
     AutoCommand *IntakeFully();

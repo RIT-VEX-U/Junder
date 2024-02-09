@@ -1,6 +1,7 @@
 #include <type_traits>
+#include <utility>
 
-template <typename System, typename IDType, typename Message,
+template <typename System, typename IDType, typename Message, int32_t delay_ms,
           bool do_log = true>
 class StateMachine {
     static_assert(std::is_enum<Message>::value, "message should be an enum");
@@ -29,28 +30,76 @@ class StateMachine {
         // virtual destructor cuz c++
         virtual ~State() {}
     };
-    void run(State *initial) {
-        State *cur_state = initial;
-        System &sys = *static_cast<System *>(this);
-        while (true) {
-            while (true) {
-                if (do_log) {
-                    std::string str = to_string(cur_state->id());
-                    printf("state: %s", str.c_str());
-                }
+    using callback_data = std::pair<State *, StateMachine *>;
+    StateMachine(State *initial)
+        : runner(thread_runner,
+                 new std::pair<State *, StateMachine *>{initial, this}) {}
+    static int thread_runner(void *vptr) {
+        callback_data *ptr = static_cast<callback_data *>(vptr);
+        State *cur_state = ptr->first;
 
-                MaybeMessage gotten = cur_state->work(sys);
-                if (gotten.has_message()) {
-                    State *next_state = cur_state->respond(gotten.message());
-                    if (cur_state != next_state) {
-                        cur_state->exit(sys);
-                        next_state->entry(sys);
-                        delete cur_state;
-                        cur_state = next_state;
-                    }
-                }
+        StateMachine &sys = *ptr->second;
+        System &derived = *static_cast<System *>(&sys);
+
+        cur_state->entry(derived);
+
+        auto respond_to_message = [&](Message msg) {
+            printf("respinding to mesg: %s\n", to_string(msg));
+            fflush(stdout);
+            vexDelay(1000);
+            State *next_state = cur_state->respond(msg);
+            if (cur_state != next_state) {
+                cur_state->exit(derived);
+                next_state->entry(derived);
+                delete cur_state;
+                cur_state = next_state;
+                sys.mut.lock();
+                sys.cur_type = cur_state->id();
+                sys.mut.unlock();
+                printf("new state: %s", to_string(next_state->id()));
+                fflush(stdout);
+                vexDelay(1000);
             }
+        };
+
+        while (true) {
+            fflush(stdout);
+            if (do_log) {
+                std::string str = to_string(cur_state->id());
+                printf("state: %s\n", str.c_str());
+            }
+            MaybeMessage msg1 = cur_state->work(derived);
+
+            if (msg1.has_message()) {
+                respond_to_message(msg1.message());
+            }
+
+            sys.mut.lock();
+            auto incoming = sys.incoming_msg;
+            sys.mut.unlock();
+
+            if (incoming.has_message()) {
+                Message msg2 = incoming.message();
+                respond_to_message(msg2);
+            }
+            vexDelay(delay_ms);
         }
     }
-    IDType current_state() {}
+    IDType current_state() const {
+        mut.lock();
+        auto t = cur_type;
+        mut.unlock();
+        return t;
+    }
+    void SendMessage(Message msg) {
+        mut.lock();
+        incoming_msg = msg;
+        mut.unlock();
+    }
+
+  private:
+    vex::task runner;
+    mutable vex::mutex mut;
+    MaybeMessage incoming_msg;
+    IDType cur_type;
 };

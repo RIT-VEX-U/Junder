@@ -198,7 +198,7 @@ void robot_init() {
 #endif
     };
 
-    screen::start_screen(Brain.Screen, pages, 1);
+    screen::start_screen(Brain.Screen, pages, 2);
 
     imu.calibrate();
     gps_sensor.calibrate();
