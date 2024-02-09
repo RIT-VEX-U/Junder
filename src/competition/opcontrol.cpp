@@ -26,7 +26,7 @@ void opcontrol() {
     //
 
 #ifdef COMP_BOT
-    cata_sys.send_command(CataSys::Command::StartDropping);
+    // cata_sys.send_command(CataSys::Command::StartDropping);
 #endif
 
     while (imu.isCalibrating()) {

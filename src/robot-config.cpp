@@ -194,7 +194,7 @@ void robot_init() {
         new screen::OdometryPage(odom, 12, 12, true),
     // new VideoPlayer(),
 #ifdef COMP_BOT
-        cata_sys.Page(),
+    // cata_sys.Page(),
 #endif
     };
 

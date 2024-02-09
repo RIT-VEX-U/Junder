@@ -44,21 +44,20 @@ class StateMachine {
         cur_state->entry(derived);
 
         auto respond_to_message = [&](Message msg) {
-            printf("respinding to mesg: %s\n", to_string(msg));
+            printf("respinding to mesg: %s\n", to_string(msg).c_str());
             fflush(stdout);
-            vexDelay(1000);
             State *next_state = cur_state->respond(msg);
             if (cur_state != next_state) {
+                sys.mut.lock();
                 cur_state->exit(derived);
                 next_state->entry(derived);
                 delete cur_state;
                 cur_state = next_state;
-                sys.mut.lock();
-                sys.cur_type = cur_state->id();
+                auto id = cur_state->id();
+                sys.cur_type = id;
+                auto s = to_string(id);
                 sys.mut.unlock();
-                printf("new state: %s", to_string(next_state->id()));
-                fflush(stdout);
-                vexDelay(1000);
+                // printf("new state: %s", to_string(next_state->id()));
             }
         };
 
@@ -73,9 +72,20 @@ class StateMachine {
             if (msg1.has_message()) {
                 respond_to_message(msg1.message());
             }
-
+            printf("lock mut incoming message thread %u\n",
+                   this_thread::get_id());
+            fflush(stdout);
             sys.mut.lock();
+
             auto incoming = sys.incoming_msg;
+            if (incoming.has_message()) {
+                auto s = to_string(incoming.message());
+                printf("got message %s", s.c_str());
+            } else {
+                printf("no message\n");
+            }
+            sys.incoming_msg = {};
+
             sys.mut.unlock();
 
             if (incoming.has_message()) {
@@ -86,12 +96,16 @@ class StateMachine {
         }
     }
     IDType current_state() const {
+        printf("lock mut getting current state %u\n", this_thread::get_id());
+        fflush(stdout);
         mut.lock();
         auto t = cur_type;
         mut.unlock();
         return t;
     }
     void SendMessage(Message msg) {
+        printf("lock mut send message %u\n", this_thread::get_id());
+        fflush(stdout);
         mut.lock();
         incoming_msg = msg;
         mut.unlock();
