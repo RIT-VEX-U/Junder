@@ -405,33 +405,33 @@ CataSys::CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
 void CataSys::send_command(Command next_cmd) {
     switch (next_cmd) {
     case CataSys::Command::StartFiring:
-        cata_sys.SendMessage(CataOnlyMessage::Fire);
+        cata_sys.send_message(CataOnlyMessage::Fire);
         break;
     case CataSys::Command::IntakeIn:
         if (cata_sys.current_state() == CataOnlyState::CataOff) {
-            intake_sys.SendMessage(IntakeMessage::IntakeHold);
+            intake_sys.send_message(IntakeMessage::IntakeHold);
         } else if (cata_sys.intaking_allowed()) {
-            intake_sys.SendMessage(IntakeMessage::Intake);
+            intake_sys.send_message(IntakeMessage::Intake);
         }
         break;
     case CataSys::Command::IntakeOut:
-        intake_sys.SendMessage(IntakeMessage::Outtake);
+        intake_sys.send_message(IntakeMessage::Outtake);
         break;
     case CataSys::Command::IntakeHold:
-        intake_sys.SendMessage(IntakeMessage::IntakeHold);
+        intake_sys.send_message(IntakeMessage::IntakeHold);
         break;
     case CataSys::Command::StopIntake:
-        intake_sys.SendMessage(IntakeMessage::StopIntake);
+        intake_sys.send_message(IntakeMessage::StopIntake);
         break;
     case CataSys::Command::StartDropping:
-        intake_sys.SendMessage(IntakeMessage::Drop);
-        cata_sys.SendMessage(CataOnlyMessage::StartDrop);
+        intake_sys.send_message(IntakeMessage::Drop);
+        cata_sys.send_message(CataOnlyMessage::StartDrop);
         break;
     case CataSys::Command::ToggleCata:
         if (cata_sys.current_state() == CataOnlyState::CataOff) {
-            cata_sys.SendMessage(CataOnlyMessage::EnableCata);
+            cata_sys.send_message(CataOnlyMessage::EnableCata);
         } else {
-            cata_sys.SendMessage(CataOnlyMessage::DisableCata);
+            cata_sys.send_message(CataOnlyMessage::DisableCata);
         }
         break;
     default:
