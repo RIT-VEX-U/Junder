@@ -72,7 +72,7 @@ class IntakeSys
     friend struct WaitingForDrop;
 
     IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
-              vex::motor &intake_upper);
+              vex::motor &intake_upper, std::function<bool()> can_intake);
 
     bool ball_in_intake();
 
@@ -80,6 +80,7 @@ class IntakeSys
     vex::distance &intake_watcher;
     vex::motor &intake_lower;
     vex::motor &intake_upper;
+    std::function<bool()> can_intake;
 };
 
 class CataSys {

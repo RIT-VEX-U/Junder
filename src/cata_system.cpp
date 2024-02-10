@@ -16,10 +16,10 @@ const double intake_lower_volt_hold = 9.0;
 const double intake_sensor_dist_mm = 150;
 
 const double cata_target_charge = 182;
+const double done_firing_angle = 200;
 
 const double intake_drop_seconds = 0.5;
 const double intake_drop_seconds_until_enable = 0.25;
-const double fire_time = 0.2;
 const double fire_voltage = 12.0;
 
 bool intake_can_be_enabled(double cata_pos) {
@@ -85,20 +85,17 @@ struct Reloading : public CataOnlySys::State {
 class Firing : public CataOnlySys::State {
   public:
     void entry(CataOnlySys &sys) override {
-        fire_timer.reset();
         sys.mot.spin(vex::reverse, fire_voltage, vex::volt);
     }
     CataOnlySys::MaybeMessage work(CataOnlySys &sys) override {
-        if (fire_timer.value() > fire_time) {
+        // started goin up again
+        if (sys.pot.angle(vex::deg) > done_firing_angle) {
             return CataOnlyMessage::DoneFiring;
         }
         return {};
     }
     CataOnlyState id() const override { return CataOnlyState::Firing; }
     State *respond(CataOnlySys &sys, CataOnlyMessage m) override;
-
-  private:
-    vex::timer fire_timer;
 };
 
 class ReadyToFire : public CataOnlySys::State {
@@ -211,7 +208,8 @@ std::string to_string(CataOnlyMessage m) {
 // INTAKE
 // ==============================================================================================================================
 bool CataOnlySys::intaking_allowed() {
-    return current_state() == CataOnlyState::ReadyToFire;
+    return current_state() == CataOnlyState::ReadyToFire &&
+           !cata_watcher.isNearObject();
 }
 
 bool IntakeSys::ball_in_intake() {
@@ -383,9 +381,10 @@ IntakeSys::State *Outtaking::respond(IntakeSys &sys, IntakeMessage m) {
 }
 
 IntakeSys::IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
-                     vex::motor &intake_upper)
+                     vex::motor &intake_upper, std::function<bool()> can_intake)
     : StateMachine(new Dropping()), intake_watcher(intake_watcher),
-      intake_lower(intake_lower), intake_upper(intake_upper) {}
+      intake_lower(intake_lower), intake_upper(intake_upper),
+      can_intake(can_intake) {}
 
 CataOnlySys::CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
                          vex::motor_group &cata_motor, PIDFF &cata_pid)
@@ -400,7 +399,8 @@ CataSys::CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
       cata_watcher(cata_watcher), cata_motor(cata_motor),
       intake_upper(intake_upper), intake_lower(intake_lower),
       cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback),
-      intake_sys(intake_watcher, intake_lower, intake_upper) {}
+      intake_sys(intake_watcher, intake_lower, intake_upper,
+                 [&]() { return cata_sys.intaking_allowed(); }) {}
 
 void CataSys::send_command(Command next_cmd) {
     switch (next_cmd) {
@@ -410,7 +410,7 @@ void CataSys::send_command(Command next_cmd) {
     case CataSys::Command::IntakeIn:
         if (cata_sys.current_state() == CataOnlyState::CataOff) {
             intake_sys.SendMessage(IntakeMessage::IntakeHold);
-        } else {
+        } else if (cata_sys.intaking_allowed()) {
             intake_sys.SendMessage(IntakeMessage::Intake);
         }
         break;
