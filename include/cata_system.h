@@ -6,8 +6,23 @@
 #include "../core/include/utils/state_machine.h"
 #include "vex.h"
 
-enum class CataOnlyMessage { DoneReloading, DoneFiring, Fire, Slipped };
-enum class CataOnlyState { Firing, Reloading, ReadyToFire };
+enum class CataOnlyMessage {
+    DoneReloading,
+    DoneFiring,
+    Fire,
+    Slipped,
+    StartDrop,
+    EnableCata,
+    DisableCata,
+
+};
+enum class CataOnlyState {
+    CataOff,
+    WaitingForDrop,
+    Firing,
+    Reloading,
+    ReadyToFire
+};
 
 class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
                                         CataOnlyMessage, 5, true> {
@@ -15,9 +30,13 @@ class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
     friend struct Reloading;
     friend class Firing;
     friend class ReadyToFire;
+    friend class WaitingForDrop;
+    friend class CataOff;
+
     friend class CataSysPage;
     CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
                 vex::motor_group &cata_motor, PIDFF &cata_pid);
+    bool intaking_allowed();
 
   private:
     vex::pot &pot;
@@ -32,7 +51,8 @@ enum class IntakeMessage {
     IntakeHold,
     Dropped,
     StopIntake,
-    Drop
+    Drop,
+
 };
 enum class IntakeState {
     Stopped,
@@ -42,18 +62,18 @@ enum class IntakeState {
     Dropping,
 };
 class IntakeSys
-    : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, true> {
+    : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, false> {
   public:
     friend struct Stopped;
     friend struct Dropping;
     friend struct Intaking;
     friend struct IntakingHold;
     friend struct Outtaking;
-    friend struct Waiting;
+    friend struct WaitingForDrop;
 
     IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
               vex::motor &intake_upper);
-    bool can_intake();
+
     bool ball_in_intake();
 
   private:
@@ -65,30 +85,20 @@ class IntakeSys
 class CataSys {
   public:
     enum class Command {
-        IntakeIn, // all mutually exclusive or else we get DQed or jam the cata
-        IntakeHold,  // all mutually exclusive or else we get DQed or jam the
-                     // cata
-        StartFiring, // all mutually exclusive or else we get DQed or jam the
-                     // cata
+        IntakeIn,
+        IntakeHold,
         StopIntake,
         IntakeOut,
-        StartDropping
+        StartDropping,
+        StartFiring,
+        ToggleCata,
     };
-    enum class IntakeType {
-        In,
-        Out,
-        Hold,
-        JustOut,
-    };
-
-    enum CataState { CHARGING, READY, FIRING, UNFOLDING };
 
     CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
             vex::optical &cata_watcher, vex::motor_group &cata_motor,
             vex::motor &intake_upper, vex::motor &intake_lower,
             PIDFF &cata_feedback);
     void send_command(Command cmd);
-    CataState get_state() const;
     bool can_fire() const;
 
     // Autocommands
