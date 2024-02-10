@@ -38,17 +38,6 @@ class StateMachine {
                   "IDType should be an enum (it's easier that way)");
 
   public:
-    // Data that gets passed to the runner thread. Don't worry too much about
-    // this
-    using thread_data = std::pair<State *, StateMachine *>;
-
-    /**
-     * @brief Construct a state machine and immediatly start running it
-     * @param initial the state that the machine will begin in
-     */
-    StateMachine(State *initial)
-        : runner(thread_runner, new thread_data{initial, this}) {}
-
     /**
      * @brief MaybeMessage
      * a message of Message type or nothing
@@ -102,6 +91,18 @@ class StateMachine {
         // virtual destructor cuz c++
         virtual ~State() {}
     };
+
+    // Data that gets passed to the runner thread. Don't worry too much about
+    // this
+    using thread_data = std::pair<State *, StateMachine *>;
+
+    /**
+     * @brief Construct a state machine and immediatly start running it
+     * @param initial the state that the machine will begin in
+     */
+    StateMachine(State *initial)
+        : runner(thread_runner, new thread_data{initial, this}) {}
+
     /**
      * @brief retrieve the current state of the state machine. This is safe to
      * call from external threads
