@@ -32,15 +32,17 @@ bool intake_can_be_enabled(double cata_pos) {
 
 class CataOff : public CataOnlySys::State {
   public:
-    void entry(CataOnlySys &sys) { sys.mot.stop(vex::brakeType::coast); }
+    void entry(CataOnlySys &sys) override {
+        sys.mot.stop(vex::brakeType::coast);
+    }
     CataOnlyState id() const override { return CataOnlyState::CataOff; }
     State *respond(CataOnlySys &sys, CataOnlyMessage m) override;
 };
 
 class WaitingForDrop : public CataOnlySys::State {
   public:
-    void entry(CataOnlySys &sys) { drop_timer.reset(); }
-    CataOnlySys::MaybeMessage work(CataOnlySys &sys) {
+    void entry(CataOnlySys &sys) override { drop_timer.reset(); }
+    CataOnlySys::MaybeMessage work(CataOnlySys &sys) override {
         if (drop_timer.value() > intake_drop_seconds_until_enable) {
             return CataOnlyMessage::EnableCata;
         }
@@ -171,8 +173,6 @@ CataOnlySys::State *Firing::respond(CataOnlySys &sys, CataOnlyMessage m) {
 }
 std::string to_string(CataOnlyState s) {
     switch (s) {
-    // case CataOnlyState::Starting:
-    // return "Starting";
     case CataOnlyState::Firing:
         return "Firing";
     case CataOnlyState::Reloading:
@@ -199,6 +199,8 @@ std::string to_string(CataOnlyMessage m) {
         return "Fire";
     case CataOnlyMessage::EnableCata:
         return "EnableCata";
+    case CataOnlyMessage::DisableCata:
+        return "DisableCata";
     case CataOnlyMessage::StartDrop:
         return "StartDrop";
     }
