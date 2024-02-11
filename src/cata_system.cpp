@@ -15,7 +15,7 @@ const double intake_lower_volt_hold = 9.0;
 
 const double intake_sensor_dist_mm = 150;
 
-const double cata_target_charge = 182;
+const double cata_target_charge = 180;
 const double done_firing_angle = 200;
 
 const double intake_drop_seconds = 0.5;
@@ -420,7 +420,9 @@ void CataSys::send_command(Command next_cmd) {
         intake_sys.send_message(IntakeMessage::Outtake);
         break;
     case CataSys::Command::IntakeHold:
-        intake_sys.send_message(IntakeMessage::IntakeHold);
+        if (cata_sys.intaking_allowed()) {
+            intake_sys.send_message(IntakeMessage::IntakeHold);
+        }
         break;
     case CataSys::Command::StopIntake:
         intake_sys.send_message(IntakeMessage::StopIntake);
