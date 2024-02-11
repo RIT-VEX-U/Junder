@@ -6,19 +6,37 @@
 #include "../core/include/utils/state_machine.h"
 #include "vex.h"
 
-enum class CataOnlyMessage { DoneReloading, DoneFiring, Fire };
-enum class CataOnlyState { Starting, Firing, Reloading, ReadyToFire };
+enum class CataOnlyMessage {
+    DoneReloading,
+    DoneFiring,
+    Fire,
+    Slipped,
+    StartDrop,
+    EnableCata,
+    DisableCata,
 
-class CataOnlySys
-    : public StateMachine<CataOnlySys, CataOnlyState, CataOnlyMessage> {
+};
+enum class CataOnlyState {
+    CataOff,
+    WaitingForDrop,
+    Firing,
+    Reloading,
+    ReadyToFire
+};
+
+class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
+                                        CataOnlyMessage, 5, false> {
   public:
     friend struct Reloading;
     friend class Firing;
     friend class ReadyToFire;
+    friend class WaitingForDrop;
+    friend class CataOff;
+
+    friend class CataSysPage;
     CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
-                vex::motor_group &cata_motor, PIDFF &cata_pid)
-        : pot(cata_pot), cata_watcher(cata_watcher), mot(cata_motor),
-          pid(cata_pid) {}
+                vex::motor_group &cata_motor, PIDFF &cata_pid);
+    bool intaking_allowed();
 
   private:
     vex::pot &pot;
@@ -27,42 +45,65 @@ class CataOnlySys
     PIDFF &pid;
 };
 
+enum class IntakeMessage {
+    Intake,
+    Outtake,
+    IntakeHold,
+    Dropped,
+    StopIntake,
+    Drop,
+
+};
+enum class IntakeState {
+    Stopped,
+    Intaking,
+    IntakingHold,
+    Outtaking,
+    Dropping,
+};
+class IntakeSys
+    : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, false> {
+  public:
+    friend struct Stopped;
+    friend struct Dropping;
+    friend struct Intaking;
+    friend struct IntakingHold;
+    friend struct Outtaking;
+    friend struct WaitingForDrop;
+
+    IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
+              vex::motor &intake_upper, std::function<bool()> can_intake);
+
+    bool ball_in_intake();
+
+  private:
+    vex::distance &intake_watcher;
+    vex::motor &intake_lower;
+    vex::motor &intake_upper;
+    std::function<bool()> can_intake;
+};
+
 class CataSys {
   public:
     enum class Command {
-        IntakeIn, // all mutually exclusive or else we get DQed or jam the cata
-        IntakeHold,  // all mutually exclusive or else we get DQed or jam the
-                     // cata
-        StartFiring, // all mutually exclusive or else we get DQed or jam the
-                     // cata
-        StopFiring,
+        IntakeIn,
+        IntakeHold,
         StopIntake,
         IntakeOut,
-        StartMatchLoad,
-        StopMatchLoad,
         StartDropping,
-        OuttakeJust
+        StartFiring,
+        ToggleCata,
     };
-    enum class IntakeType {
-        In,
-        Out,
-        Hold,
-        JustOut,
-    };
-
-    enum CataState { CHARGING, READY, FIRING, UNFOLDING };
 
     CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
             vex::optical &cata_watcher, vex::motor_group &cata_motor,
             vex::motor &intake_upper, vex::motor &intake_lower,
-            PIDFF cata_feedback);
+            PIDFF &cata_feedback);
     void send_command(Command cmd);
-    CataState get_state() const;
     bool can_fire() const;
 
     // Autocommands
     AutoCommand *Fire();
-    AutoCommand *StopFiring();
     AutoCommand *StopIntake();
     AutoCommand *IntakeToHold();
     AutoCommand *IntakeFully();
@@ -82,6 +123,6 @@ class CataSys {
     vex::motor &intake_upper;
     vex::motor &intake_lower;
     CataOnlySys cata_sys;
-
+    IntakeSys intake_sys;
     friend class CataSysPage;
 };

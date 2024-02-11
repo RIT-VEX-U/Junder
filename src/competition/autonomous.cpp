@@ -283,7 +283,7 @@ void only_shoot() {
                 cata_sys.Fire(),
                 new DelayCommand(200),
                 // },
-                cata_sys.StopFiring()->withTimeout(0.5),
+                // cata_sys.StopFiring()->withTimeout(0.5),
 
                 cata_sys.IntakeFully()->withTimeout(2.0),
                 drive_sys.TurnToHeadingCmd(load_angle, 0.5),
@@ -396,7 +396,6 @@ void skills2() {
                 // drive_sys.TurnToHeadingCmd(shoot_angle, 0.5),
                 cata_sys.Fire(), new DelayCommand(300),
                 // drive_sys.TurnToHeadingCmd(load_angle, 0.5),
-                cata_sys.StopFiring(),
 
                 cata_sys.IntakeFully()->withTimeout(5.0),
                 // drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)
@@ -413,7 +412,7 @@ void skills2() {
         new DelayCommand(500), drive_sys.TurnToHeadingCmd(load_angle, 0.5),
         drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)->withTimeout(4.0),
 
-        cata_sys.StopFiring(),
+        // cata_sys.StopFiring(),
 
         printOdom, odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
         drive_sys.DriveToPointCmd({.x = 19, .y = 19}, REV, 0.5), printOdom,
@@ -491,7 +490,7 @@ void skills() {
         // 1 - Turn and shoot preload
         drive_sys.DriveForwardCmd(dist, REV),
         drive_sys.TurnToHeadingCmd(shoot_angle, .5), cata_sys.Fire(),
-        cata_sys.StopFiring(),
+        // cata_sys.StopFiring(),
 
         new DelayCommand(300),
 
@@ -510,7 +509,7 @@ void skills() {
                 cata_sys.Fire(),
                 new DelayCommand(300),
                 drive_sys.TurnToHeadingCmd(load_angle, 0.5),
-                cata_sys.StopFiring(),
+                // cata_sys.StopFiring(),
 
                 cata_sys.IntakeFully(),
                 drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)
@@ -527,7 +526,7 @@ void skills() {
         new DelayCommand(500), drive_sys.TurnToHeadingCmd(load_angle, 0.5),
         drive_sys.DriveForwardCmd(dist + 2, FWD, 0.5)->withTimeout(4.0),
 
-        cata_sys.StopFiring(),
+        // cata_sys.StopFiring(),
 
         printOdom, odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
         drive_sys.DriveToPointCmd({.x = 19, .y = 19}, REV, 0.5), printOdom,

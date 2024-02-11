@@ -21,12 +21,12 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
-    // con.ButtonRight.pressed([]() { screen::next_page(); });
-    // con.ButtonLeft.pressed([]() { screen::prev_page(); });
+    con.ButtonRight.pressed([]() { screen::next_page(); });
+    con.ButtonLeft.pressed([]() { screen::prev_page(); });
     //
+    cata_sys.send_command(CataSys::Command::StartDropping);
 
 #ifdef COMP_BOT
-    cata_sys.send_command(CataSys::Command::StartDropping);
 #endif
 
     while (imu.isCalibrating()) {
@@ -38,56 +38,53 @@ void opcontrol() {
 
 #ifdef COMP_BOT
 
-    con.ButtonRight.pressed([]() {
-        // Turn Right
-        disable_drive = true;
-        right_motors.spin(directionType::rev, 5, volt);
-        left_motors.spin(directionType::fwd, 3, volt);
-        vexDelay(150);
-        right_motors.stop(brakeType::hold);
-        left_motors.stop(brakeType::hold);
-        vexDelay(150);
-        right_motors.stop(brakeType::coast);
-        left_motors.stop(brakeType::coast);
-        disable_drive = false;
-    });
+    /*
+        con.ButtonRight.pressed([]() {
+            // Turn Right
+            disable_drive = true;
+            right_motors.spin(directionType::rev, 5, volt);
+            left_motors.spin(directionType::fwd, 3, volt);
+            vexDelay(150);
+            right_motors.stop(brakeType::hold);
+            left_motors.stop(brakeType::hold);
+            vexDelay(150);
+            right_motors.stop(brakeType::coast);
+            left_motors.stop(brakeType::coast);
+            disable_drive = false;
+        });
 
-    con.ButtonLeft.pressed([]() {
-        // Turn Left
-        disable_drive = true;
-        right_motors.spin(directionType::fwd, 3, volt);
-        left_motors.spin(directionType::rev, 5, volt);
-        vexDelay(150);
-        right_motors.stop(brakeType::hold);
-        left_motors.stop(brakeType::hold);
-        vexDelay(150);
-        right_motors.stop(brakeType::coast);
-        left_motors.stop(brakeType::coast);
-        disable_drive = false;
-    });
+        con.ButtonLeft.pressed([]() {
+            // Turn Left
+            disable_drive = true;
+            right_motors.spin(directionType::fwd, 3, volt);
+            left_motors.spin(directionType::rev, 5, volt);
+            vexDelay(150);
+            right_motors.stop(brakeType::hold);
+            left_motors.stop(brakeType::hold);
+            vexDelay(150);
+            right_motors.stop(brakeType::coast);
+            left_motors.stop(brakeType::coast);
+            disable_drive = false;
+        });
+        */
     con.ButtonDown.pressed(
         []() { climb_solenoid.set(!climb_solenoid.value()); });
-    con.ButtonUp.pressed(
-        // CommandController cc{Climb()};
-        // cc.run();
-        []() { cata_sys.send_command(CataSys::Command::OuttakeJust); });
 
     con.ButtonA.pressed([]() { enable_matchload = !enable_matchload; });
 
     con.ButtonL1.pressed(
         []() { cata_sys.send_command(CataSys::Command::StartFiring); });
-    con.ButtonL1.released(
-        []() { cata_sys.send_command(CataSys::Command::StopFiring); });
     con.ButtonR1.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeIn); });
     con.ButtonR2.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
 
     con.ButtonY.pressed([]() {
-        // cata_sys.send_command(CataSys::Command::IntakeHold);
-        Tank = !Tank;
+        cata_sys.send_command(CataSys::Command::IntakeHold);
+        // Tank = !Tank;
     });
-
+    con.ButtonUp.pressed(
+        []() { cata_sys.send_command(CataSys::Command::ToggleCata); });
     con.ButtonL2.pressed([]() {
         left_wing.set(!left_wing.value());
         right_wing.set(!right_wing.value());
@@ -99,7 +96,7 @@ void opcontrol() {
     while (true) {
 #ifdef COMP_BOT
         if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() &&
-            !con.ButtonY.pressing() && !con.ButtonUp.pressing()) {
+            !con.ButtonY.pressing()) {
             cata_sys.send_command(CataSys::Command::StopIntake);
         }
 #endif
@@ -136,8 +133,6 @@ void opcontrol() {
         } else {
             disable_drive = false;
         }
-        // matchload_1(enable_matchload); // Toggle
-        matchload_1([]() { return con.ButtonA.pressing(); }); // Hold
         // Controls
         // Intake
 
