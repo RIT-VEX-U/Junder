@@ -101,6 +101,8 @@ class CataSys {
             PIDFF &cata_feedback);
     void send_command(Command cmd);
     bool can_fire() const;
+    // Returns true when the cata system is finished dropping
+    bool still_dropping();
 
     // Autocommands
     AutoCommand *Fire();

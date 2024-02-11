@@ -53,7 +53,8 @@ void support_AWP();
 void autonomous() {
 
     cata_sys.send_command(CataSys::Command::StartDropping);
-    while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
+    while (imu.isCalibrating() || gps_sensor.isCalibrating() ||
+           cata_sys.still_dropping()) {
         vexDelay(20);
     }
     // vexDelay(2000);

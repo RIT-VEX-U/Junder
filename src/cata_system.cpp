@@ -442,7 +442,12 @@ void CataSys::send_command(Command next_cmd) {
         break;
     }
 }
-
+bool CataSys::still_dropping() {
+    bool still_dropping =
+        cata_sys.current_state() == CataOnlyState::WaitingForDrop ||
+        intake_sys.current_state() == IntakeState::Dropping;
+    return !still_dropping;
+}
 bool CataSys::can_fire() const {
     return cata_sys.current_state() == CataOnlyState::ReadyToFire;
 }
@@ -473,7 +478,7 @@ class CataSysPage : public screen::Page {
         // Show it all
         scr.printAt(40, 20, true, "Cata: %s", cata_str.c_str());
         scr.printAt(40, 60, true, "pot: %.2f", cs.cata_pot.angle(vex::degrees));
-        scr.printAt(40, 100, true, "Cata: %s", intake_str.c_str());
+        scr.printAt(40, 100, true, "Intake: %s", intake_str.c_str());
         scr.printAt(40, 120, true, "Cata Temp: %.0fC",
                     cs.cata_motor.temperature(vex::temperatureUnits::celsius));
 
