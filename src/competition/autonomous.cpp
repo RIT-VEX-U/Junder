@@ -159,7 +159,8 @@ void supportMaximumTriballs() {
         get_and_score_alliance(),
         // Evacuate
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-
+        new GPSLocalizeCommand(),
+        printOdom,
         // line up to load
         drive_sys.TurnToPointCmd(24, 26)->withTimeout(2.0),
         drive_sys.DriveToPointCmd({24, 26})->withTimeout(2.0),
@@ -183,8 +184,6 @@ void supportMaximumTriballs() {
                                              },
                                              4.0),
                                          FWD, 0.5),
-                drive_sys.DriveToPointCmd({55, 16}, FWD, 0.75)
-                    ->withTimeout(2.0),
 
                 drive_sys.TurnToHeadingCmd(0),
                 cata_sys.Unintake(),
@@ -194,14 +193,20 @@ void supportMaximumTriballs() {
             },
             new IfTimePassed(35)),
         drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
+        new GPSLocalizeCommand(),
         cata_sys.IntakeToHold(),
         drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
 
-        // PURE PURSUIT THIS
-        drive_sys.DriveToPointCmd({50, 15}, FWD, 0.75)->withTimeout(2.0),
+        drive_sys.PurePursuitCmd(PurePursuit::Path(
+                                     {
+                                         {36, 18},
+                                         {55, 16},
+                                     },
+                                     4.0),
+                                 FWD, 0.5),
 
         drive_sys.DriveForwardCmd(4.0, REV)->withTimeout(2.0),
         drive_sys.TurnToPointCmd(72, 24)->withTimeout(2.0),
