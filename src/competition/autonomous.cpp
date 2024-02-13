@@ -176,6 +176,13 @@ void supportMaximumTriballs() {
                 drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
 
                 // PURE PURSUIT THIS
+                drive_sys.PurePursuitCmd(PurePursuit::Path(
+                                             {
+                                                 {36, 18},
+                                                 {55, 16},
+                                             },
+                                             4.0),
+                                         FWD, 0.5),
                 drive_sys.DriveToPointCmd({55, 16}, FWD, 0.75)
                     ->withTimeout(2.0),
 
