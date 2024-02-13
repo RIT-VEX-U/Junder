@@ -262,3 +262,125 @@ AutoCommand *Climb() {
 
     };
 }
+
+// ================ GPS Localizing Functions ================
+
+#define NUM_DATAPOINTS 100
+#define GPS_GATHER_SEC 1.0
+
+std::vector<pose_t> gps_gather_data() {
+    std::vector<pose_t> pose_list;
+    vex::timer tmr;
+
+    // for(int i = 0; i < NUM_DATAPOINTS; i++)
+    while (tmr.time(sec) < GPS_GATHER_SEC) {
+        pose_t cur;
+        cur.x = gps_sensor.xPosition(distanceUnits::in) + 72;
+        cur.y = gps_sensor.yPosition(distanceUnits::in) + 72;
+        cur.rot = gps_sensor.heading(rotationUnits::deg);
+
+        pose_list.push_back(cur);
+        vexDelay(1);
+    }
+
+    return pose_list;
+}
+
+void sort_by_distance_to_origin(std::vector<pose_t> &pose_list) {
+    std::sort(pose_list.begin(), pose_list.end(), [](pose_t a, pose_t b) {
+        point_t origin = {0, 0};
+        return a.get_point().dist(origin) > b.get_point().dist(origin);
+    });
+}
+
+pose_t get_pose_avg(std::vector<pose_t> pose_list) {
+    // Get average point
+    point_t avg_filtered = {0, 0};
+    Vector2D heading_filtered(point_t{0, 0});
+    for (pose_t p : pose_list) {
+        avg_filtered.x += p.x;
+        avg_filtered.y += p.y;
+
+        heading_filtered = heading_filtered + Vector2D(deg2rad(p.rot), 1);
+    }
+
+    avg_filtered.x /= pose_list.size();
+    avg_filtered.y /= pose_list.size();
+
+    pose_t avg = {.x = avg_filtered.x,
+                  .y = avg_filtered.y,
+                  .rot = rad2deg(heading_filtered.get_dir())};
+
+    return avg;
+}
+
+void gps_localize_median() {
+    auto pose_list = gps_gather_data();
+    sort_by_distance_to_origin(pose_list);
+
+    pose_t median;
+    if (pose_list.size() > 0) {
+        median = pose_list[pose_list.size() / 2];
+        odom.set_position(median);
+    }
+
+    printf("MEDIAN {%.2f, %.2f, %.2f}\n", median.x, median.y, median.rot);
+}
+
+std::tuple<pose_t, double> gps_localize_stdev() {
+    auto pose_list = gps_gather_data();
+
+    pose_t avg_unfiltered = get_pose_avg(pose_list);
+
+    // Create a parallel list with corresponding distances
+    std::vector<double> dist_list;
+    for (pose_t p : pose_list)
+        dist_list.push_back(p.get_point().dist({0, 0}));
+
+    // Calculate standard deviation of distances to origin
+    double dist_mean = mean(dist_list);
+    double dist_stdev = sqrt(variance(dist_list, dist_mean));
+
+    // Filter out points that are greater than 3 standard deviations away from
+    // original mean
+    for (int i = 0; i < pose_list.size(); i++) {
+        if (fabs(dist_mean - dist_list[i]) > 1 * dist_stdev) {
+            pose_list[i] = {-1, -1, -1}; // Mark as bad
+        }
+    }
+
+    // Final removal of points
+    auto itr = std::remove_if(pose_list.begin(), pose_list.end(), [](pose_t p) {
+        return p.x == -1.0 && p.y == -1.0 && p.rot == -1.0;
+    });
+    // ACTUALLY remove it cause remove_if kinda sucks
+    pose_list.erase(itr, pose_list.end());
+
+    pose_t avg_filtered = get_pose_avg(pose_list);
+    printf("Stddev: %f Mean: %f #Unfiltered: %d #Filtered: %d\n", dist_stdev,
+           dist_mean, dist_list.size(), pose_list.size());
+    printf("Unfiltered X: %f, Y: %f, H: %f\n", avg_unfiltered.x,
+           avg_unfiltered.y, avg_unfiltered.rot);
+    printf("Filtered X: %f, Y: %f, H: %f\n", avg_filtered.x, avg_filtered.y,
+           avg_filtered.rot);
+
+    return std::tuple<pose_t, double>(avg_filtered, dist_stdev);
+}
+
+bool GPSLocalizeCommand::first_run = true;
+int GPSLocalizeCommand::rotation = 0;
+bool GPSLocalizeCommand::run() {
+    auto [new_pose, stddev] = gps_localize_stdev();
+    // On the first localize, decide if the orientation of the field is correct.
+    // If not, create a rotation to correct
+    if (first_run) {
+
+        first_run = false;
+        return true;
+    }
+
+    odom.set_position(new_pose);
+    printf("Localized with variance of %f, to {%f, %f, %f}\n", stddev,
+           new_pose.x, new_pose.y, new_pose.rot);
+    return true;
+}

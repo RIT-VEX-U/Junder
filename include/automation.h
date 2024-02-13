@@ -65,3 +65,16 @@ AutoCommand *ClimbBarDeploy();
 AutoCommand *WingSetCmd(bool val);
 
 AutoCommand *Climb();
+
+void gps_localize_median();
+std::tuple<pose_t, double> gps_localize_stdev();
+
+class GPSLocalizeCommand : public AutoCommand {
+  public:
+    bool run() override;
+
+  private:
+    static bool first_run;
+    static int rotation;
+    static const int min_rotation_radius = 36; // 1.5 tiles
+};
