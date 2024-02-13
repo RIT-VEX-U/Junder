@@ -4,12 +4,8 @@
 #include "../core/include/subsystems/screen.h"
 #include "../core/include/utils/command_structure/auto_command.h"
 #include "../core/include/utils/state_machine.h"
+#include "cata/intake.h"
 #include "vex.h"
-
-enum class DropMode {
-    Required,
-    Unnecessary,
-};
 
 enum class CataOnlyMessage {
     DoneReloading,
@@ -30,7 +26,7 @@ enum class CataOnlyState {
 };
 
 class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
-                                        CataOnlyMessage, 10, true> {
+                                        CataOnlyMessage, 1, false> {
   public:
     friend struct Reloading;
     friend class Firing;
@@ -48,46 +44,6 @@ class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
     vex::optical &cata_watcher;
     vex::motor_group &mot;
     PIDFF &pid;
-};
-
-enum class IntakeMessage {
-    Intake,
-    Outtake,
-    IntakeHold,
-    Dropped,
-    StopIntake,
-    Drop,
-
-};
-enum class IntakeState {
-    Stopped,
-    Intaking,
-    IntakingHold,
-    Outtaking,
-    Dropping,
-    IntakeWaitForDrop,
-};
-class IntakeSys
-    : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, false> {
-  public:
-    friend struct Stopped;
-    friend struct Dropping;
-    friend struct Intaking;
-    friend struct IntakingHold;
-    friend struct Outtaking;
-    friend struct IntakeWaitForDrop;
-
-    IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
-              vex::motor &intake_upper, std::function<bool()> can_intake,
-              DropMode drop);
-
-    bool ball_in_intake();
-
-  private:
-    vex::distance &intake_watcher;
-    vex::motor &intake_lower;
-    vex::motor &intake_upper;
-    std::function<bool()> can_intake;
 };
 
 class CataSys {

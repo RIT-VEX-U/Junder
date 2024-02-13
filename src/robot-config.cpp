@@ -105,7 +105,7 @@ PID::pid_config_t pc = {.p = 1,
                         .deadband = 2,
                         .on_target_time = 0.3};
 
-FeedForward::ff_config_t ffc = {.kG = -2};
+FeedForward::ff_config_t ffc = {.kG = -2.5};
 PIDFF cata_pid(pc, ffc);
 
 // VISION PORT 16 Final Port
@@ -115,7 +115,7 @@ vex::digital_out left_wing(Brain.ThreeWirePort.G);
 vex::digital_out right_wing(Brain.ThreeWirePort.H);
 
 CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors,
-                 intake_lower, intake_upper, cata_pid, DropMode::Unnecessary);
+                 intake_lower, intake_upper, cata_pid, DropMode::Required);
 gps gps_sensor(PORT6, 0, 0, distanceUnits::in, 0, turnType::left);
 #else
 
