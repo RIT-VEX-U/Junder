@@ -42,7 +42,12 @@
 		"numeric": "cpp",
 		"mutex": "cpp",
 		"system_error": "cpp",
-		"random": "cpp"
+		"random": "cpp",
+		"string": "cpp"
 	},
-	"ros.distro": "noetic"
+	"ros.distro": "noetic",
+	"C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+		"clang-diagnostic-c++17-extensions",
+		"clang-diagnostic-c++14-extensions",
+	]
 }

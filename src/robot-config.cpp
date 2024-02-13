@@ -56,8 +56,8 @@ std::map<std::string, motor &> motor_names = {
     {"cata L", cata_l},
     {"cata R", cata_r},
 
-    {"intake H", intake_upper},
-    {"intake L", intake_lower},
+    {"intakeH", intake_upper},
+    {"intakeL", intake_lower},
 
 };
 
@@ -68,16 +68,18 @@ PID::pid_config_t drive_pid_cfg = {
 PID::pid_config_t turn_pid_cfg = {
     .p = 0.05, .i = 0.00, .d = 0.0020, .deadband = 3, .on_target_time = 0.1};
 
-MotionController::m_profile_cfg_t drive_mc_cfg{.max_v = 72.50,
-                                               .accel = 190.225,
-                                               .pid_cfg = drive_pid_cfg,
-                                               .ff_cfg =
-                                                   FeedForward::ff_config_t{
-                                                       .kA = 0.0029,
-                                                       .kV = 0.0131,
-                                                       .kS = 0.05,
-                                                       .kG = 0,
-                                                   }};
+MotionController::m_profile_cfg_t drive_mc_cfg = {
+    .max_v = 72.50,
+    .accel = 190.225,
+    .pid_cfg = drive_pid_cfg,
+    .ff_cfg =
+        FeedForward::ff_config_t{
+            .kS = 0.05,
+            .kV = 0.0131,
+            .kA = 0.0029,
+            .kG = 0,
+        },
+};
 MotionController drive_mc{drive_mc_cfg};
 
 robot_specs_t robot_cfg = {
@@ -88,7 +90,8 @@ robot_specs_t robot_cfg = {
     .drive_correction_cutoff = 4,             // inches
     .drive_feedback = new PID(drive_pid_cfg), //&drive_mc,
     .turn_feedback = new PID(turn_pid_cfg),
-    .correction_pid = (PID::pid_config_t){.p = .03, .d = 0.004}};
+    .correction_pid = (PID::pid_config_t){.p = .03, .d = 0.004},
+};
 
 OdometryTank odom{left_motors, right_motors, robot_cfg, &imu};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);
@@ -164,16 +167,19 @@ PID::pid_config_t drive_pid_cfg = {
 PID::pid_config_t turn_pid_cfg = {
     .p = 0.014, .i = 0.01, .d = 0.0025, .deadband = 1, .on_target_time = 0.1};
 
-robot_specs_t robot_cfg = {.robot_radius = 12,            // inches
-                           .odom_wheel_diam = 2.84,       // inches
-                           .odom_gear_ratio = 1.03,       // inches
-                           .dist_between_wheels = 9.18,   // inches
-                           .drive_correction_cutoff = 12, // inches
-                           .drive_feedback = new PID(drive_pid_cfg),
-                           .turn_feedback = new PID(turn_pid_cfg),
-                           .correction_pid = (PID::pid_config_t){
-                               .p = .03,
-                           }};
+robot_specs_t robot_cfg = {
+    .robot_radius = 12,            // inches
+    .odom_wheel_diam = 2.84,       // inches
+    .odom_gear_ratio = 1.03,       // inches
+    .dist_between_wheels = 9.18,   // inches
+    .drive_correction_cutoff = 12, // inches
+    .drive_feedback = new PID(drive_pid_cfg),
+    .turn_feedback = new PID(turn_pid_cfg),
+    .correction_pid =
+        (PID::pid_config_t){
+            .p = .03,
+        },
+};
 
 OdometryTank odom{left_enc, right_enc, robot_cfg, &imu};
 TankDrive drive_sys(left_motors, right_motors, robot_cfg, &odom);

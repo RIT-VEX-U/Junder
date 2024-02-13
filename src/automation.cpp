@@ -357,7 +357,7 @@ std::tuple<pose_t, double> gps_localize_stdev() {
     pose_list.erase(itr, pose_list.end());
 
     pose_t avg_filtered = get_pose_avg(pose_list);
-    printf("Stddev: %f Mean: %f #Unfiltered: %d #Filtered: %d\n", dist_stdev,
+    printf("Stddev: %f Mean: %f #Unfiltered: %lu #Filtered: %lu\n", dist_stdev,
            dist_mean, dist_list.size(), pose_list.size());
     printf("Unfiltered X: %f, Y: %f, H: %f\n", avg_unfiltered.x,
            avg_unfiltered.y, avg_unfiltered.rot);

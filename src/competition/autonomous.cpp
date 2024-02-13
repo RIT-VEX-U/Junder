@@ -174,10 +174,14 @@ void supportMaximumTriballs() {
                 cata_sys.WaitForHold()->withTimeout(2.0),
 
                 drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
+
+                // PURE PURSUIT THIS
                 drive_sys.DriveToPointCmd({55, 16}, FWD, 0.75)
                     ->withTimeout(2.0),
+
                 drive_sys.TurnToHeadingCmd(0),
                 cata_sys.Unintake(),
+
                 drive_sys.DriveToPointCmd({22, 26}, REV, 0.6)->withTimeout(2.0),
                 cata_sys.StopIntake(),
             },
@@ -188,15 +192,13 @@ void supportMaximumTriballs() {
         drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
+
+        // PURE PURSUIT THIS
         drive_sys.DriveToPointCmd({50, 15}, FWD, 0.75)->withTimeout(2.0),
 
-        // // Turn to pick up triball
-        // drive_sys.TurnToHeadingCmd(-135),
-        // cata_sys.IntakeToHold(),
-        // drive_sys.DriveTankCmd(0.3, 0.3)->withTimeout(0.5),
-        // cata_sys.WaitForHold()->withTimeout(2.0),
-
-        // drive_sys.DriveForwardCmd(5, REV),
+        drive_sys.DriveForwardCmd(4.0, REV)->withTimeout(2.0),
+        drive_sys.TurnToPointCmd(72, 24)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(4.0),
         new FunctionCommand([]() { return false; }),
 
     };
