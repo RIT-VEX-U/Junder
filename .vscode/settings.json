@@ -48,6 +48,6 @@
 	"ros.distro": "noetic",
 	"C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
 		"clang-diagnostic-c++17-extensions",
-		"clang-diagnostic-c++14-extensions",
+		"clang-diagnostic-c++14-extensions"
 	]
 }
