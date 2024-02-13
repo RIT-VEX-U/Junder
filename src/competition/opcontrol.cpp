@@ -38,35 +38,6 @@ void opcontrol() {
 
 #ifdef COMP_BOT
 
-    /*
-        con.ButtonRight.pressed([]() {
-            // Turn Right
-            disable_drive = true;
-            right_motors.spin(directionType::rev, 5, volt);
-            left_motors.spin(directionType::fwd, 3, volt);
-            vexDelay(150);
-            right_motors.stop(brakeType::hold);
-            left_motors.stop(brakeType::hold);
-            vexDelay(150);
-            right_motors.stop(brakeType::coast);
-            left_motors.stop(brakeType::coast);
-            disable_drive = false;
-        });
-
-        con.ButtonLeft.pressed([]() {
-            // Turn Left
-            disable_drive = true;
-            right_motors.spin(directionType::fwd, 3, volt);
-            left_motors.spin(directionType::rev, 5, volt);
-            vexDelay(150);
-            right_motors.stop(brakeType::hold);
-            left_motors.stop(brakeType::hold);
-            vexDelay(150);
-            right_motors.stop(brakeType::coast);
-            left_motors.stop(brakeType::coast);
-            disable_drive = false;
-        });
-        */
     con.ButtonDown.pressed(
         []() { climb_solenoid.set(!climb_solenoid.value()); });
 

@@ -30,7 +30,7 @@ enum class CataOnlyState {
 };
 
 class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
-                                        CataOnlyMessage, 5, false> {
+                                        CataOnlyMessage, 10, true> {
   public:
     friend struct Reloading;
     friend class Firing;

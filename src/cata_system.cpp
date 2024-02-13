@@ -15,7 +15,7 @@ const double intake_lower_volt_hold = 9.0;
 
 const double intake_sensor_dist_mm = 150;
 
-const double cata_target_charge = 180;
+const double cata_target_charge = 140; // 180
 const double done_firing_angle = 200;
 
 const double intake_drop_seconds = 0.5;
@@ -183,6 +183,8 @@ std::string to_string(CataOnlyState s) {
         return "CataOff";
     case CataOnlyState::WaitingForDrop:
         return "WaitingForDrop";
+    default:
+        return "UNKNOWN CATA STATE";
     }
     return "UNHANDLED CATA STATE";
 }
@@ -232,6 +234,8 @@ std::string to_string(IntakeState s) {
         return "Stopped";
     case IntakeState::IntakeWaitForDrop:
         return "IntakeWaitForDrop";
+    default:
+        return "UNKNOWN INTAKE STATE";
     }
     return "UNKNOWN INTAKE STATE";
 }
@@ -492,7 +496,7 @@ class CataSysPage : public screen::Page {
         std::string intake_str = to_string(intake_state);
 
         gd.add_samples(
-            {cs.cata_sys.pid.get_sensor_val(), cs.cata_sys.pid.get_target()});
+            {cs.cata_pot.angle(vex::deg), cs.cata_sys.pid.get_target()});
         const bool ball_in_intake =
             cs.intake_watcher.objectDistance(distanceUnits::mm) <
             intake_sensor_dist_mm;

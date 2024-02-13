@@ -115,7 +115,7 @@ vex::digital_out left_wing(Brain.ThreeWirePort.G);
 vex::digital_out right_wing(Brain.ThreeWirePort.H);
 
 CataSys cata_sys(intake_watcher, cata_pot, cata_watcher, cata_motors,
-                 intake_lower, intake_upper, cata_pid, DropMode::Required);
+                 intake_lower, intake_upper, cata_pid, DropMode::Unnecessary);
 gps gps_sensor(PORT6, 0, 0, distanceUnits::in, 0, turnType::left);
 #else
 

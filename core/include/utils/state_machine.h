@@ -146,6 +146,8 @@ class StateMachine {
 
         cur_state->entry(derived);
 
+        sys.cur_type = cur_state->id();
+
         auto respond_to_message = [&](Message msg) {
             if (do_log) {
                 printf("responding to msg: %s\n", to_string(msg).c_str());
@@ -173,7 +175,9 @@ class StateMachine {
         while (true) {
             if (do_log) {
                 std::string str = to_string(cur_state->id());
-                printf("state: %s\n", str.c_str());
+                std::string str2 = to_string(sys.cur_type);
+
+                printf("state: %s %s\n", str.c_str(), str2.c_str());
             }
 
             // Internal Message passed
