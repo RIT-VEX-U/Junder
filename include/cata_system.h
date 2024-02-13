@@ -60,6 +60,7 @@ enum class IntakeState {
     IntakingHold,
     Outtaking,
     Dropping,
+    IntakeWaitForDrop,
 };
 class IntakeSys
     : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, false> {
@@ -69,7 +70,7 @@ class IntakeSys
     friend struct Intaking;
     friend struct IntakingHold;
     friend struct Outtaking;
-    friend struct WaitingForDrop;
+    friend struct IntakeWaitForDrop;
 
     IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
               vex::motor &intake_upper, std::function<bool()> can_intake);

@@ -63,7 +63,7 @@ std::map<std::string, motor &> motor_names = {
 
 // ================ SUBSYSTEMS ================
 PID::pid_config_t drive_pid_cfg = {
-    .p = .2, .i = 0.0, .d = .021, .deadband = 0.5, .on_target_time = .1};
+    .p = .2, .i = 0.0, .d = .015, .deadband = 0.5, .on_target_time = .1};
 
 PID::pid_config_t turn_pid_cfg = {
     .p = 0.05, .i = 0.00, .d = 0.0020, .deadband = 3, .on_target_time = 0.1};

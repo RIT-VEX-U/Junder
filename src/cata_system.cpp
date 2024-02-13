@@ -230,6 +230,8 @@ std::string to_string(IntakeState s) {
         return "Outtaking";
     case IntakeState::Stopped:
         return "Stopped";
+    case IntakeState::IntakeWaitForDrop:
+        return "IntakeWaitForDrop";
     }
     return "UNKNOWN INTAKE STATE";
 }
@@ -263,6 +265,11 @@ struct Stopped : IntakeSys::State {
         sys.intake_upper.setBrake(vex::brakeType::coast);
     }
     IntakeState id() const override { return IntakeState::Stopped; }
+    State *respond(IntakeSys &sys, IntakeMessage m) override;
+};
+
+struct IntakeWaitForDrop : IntakeSys::State {
+    IntakeState id() const override { return IntakeState::IntakeWaitForDrop; }
     State *respond(IntakeSys &sys, IntakeMessage m) override;
 };
 
@@ -331,6 +338,13 @@ struct Outtaking : IntakeSys::State {
     State *respond(IntakeSys &sys, IntakeMessage m) override;
 };
 
+IntakeSys::State *IntakeWaitForDrop::respond(IntakeSys &sys, IntakeMessage m) {
+    if (m == IntakeMessage::Drop) {
+        return new Dropping();
+    }
+    return this;
+}
+
 IntakeSys::State *Dropping::respond(IntakeSys &sys, IntakeMessage m) {
     if (m == IntakeMessage::Dropped) {
         return new Stopped();
@@ -384,7 +398,7 @@ IntakeSys::State *Outtaking::respond(IntakeSys &sys, IntakeMessage m) {
 
 IntakeSys::IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
                      vex::motor &intake_upper, std::function<bool()> can_intake)
-    : StateMachine(new Dropping()), intake_watcher(intake_watcher),
+    : StateMachine(new IntakeWaitForDrop()), intake_watcher(intake_watcher),
       intake_lower(intake_lower), intake_upper(intake_upper),
       can_intake(can_intake) {}
 

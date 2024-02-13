@@ -53,14 +53,13 @@ void support_AWP();
 void autonomous() {
 
     cata_sys.send_command(CataSys::Command::StartDropping);
-    while (imu.isCalibrating() || gps_sensor.isCalibrating() ||
-           cata_sys.still_dropping()) {
+    while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
         vexDelay(20);
     }
-    // vexDelay(2000);
+    vexDelay(2000);
     // support_AWP();
-    // supportMaximumTriballs();
-    only_shoot();
+    supportMaximumTriballs();
+    // only_shoot();
 }
 
 pose_t gps_pose() {
@@ -115,28 +114,24 @@ AutoCommand *get_and_score_alliance() {
         }),
 
         // Drive to linup for alliance
-        // drive_sys.DriveForwardCmd(5, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(-35),
         drive_sys.DriveForwardCmd(10, FWD)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(75),
-        // recal,
-        // drive_sys.TurnToHeadingCmd(232)->withTimeout(2.0),
-        // printOdom,
-        // recal,
+
         // Pickup Alliance
         cata_sys.IntakeToHold(),
         drive_sys.DriveTankCmd(0.2, 0.2)
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
             ->withTimeout(1.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
-        // recal,
         drive_sys.DriveForwardCmd(5.0, REV)->withTimeout(2.0),
+
         // Turn to side
-        drive_sys.TurnToPointCmd(12.0, 36.0)->withTimeout(1.0),
+        drive_sys.TurnToPointCmd(9.0, 36.0)->withTimeout(1.0),
         drive_sys.DriveForwardCmd(8.5, FWD, 0.4)->withTimeout(2.0),
-        // recal,
         drive_sys.TurnToHeadingCmd(90.0)->withTimeout(1.0),
         drive_sys.DriveForwardCmd(6.5, FWD, 0.4)->withTimeout(2.0),
+
         // Dump in goal
         cata_sys.Unintake(),
         new DelayCommand(500),
@@ -163,27 +158,38 @@ void supportMaximumTriballs() {
 
         get_and_score_alliance(),
         // Evacuate
-        recal,
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
 
-        recal,
         // line up to load
         drive_sys.TurnToPointCmd(24, 26)->withTimeout(2.0),
         drive_sys.DriveToPointCmd({24, 26})->withTimeout(2.0),
-        recal,
+
         // load
+        new RepeatUntil(
+            InOrder{
+                drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
+                cata_sys.IntakeToHold(),
+                drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
+                drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
+                cata_sys.WaitForHold()->withTimeout(2.0),
+
+                drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
+                drive_sys.DriveToPointCmd({55, 16}, FWD, 0.75)
+                    ->withTimeout(2.0),
+                drive_sys.TurnToHeadingCmd(0),
+                cata_sys.Unintake(),
+                drive_sys.DriveToPointCmd({22, 26}, REV, 0.6)->withTimeout(2.0),
+                cata_sys.StopIntake(),
+            },
+            new IfTimePassed(35)),
         drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
         cata_sys.IntakeToHold(),
         drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
-
         drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
-        drive_sys.DriveToPointCmd({55, 12}, FWD, 0.75)->withTimeout(2.0),
-        drive_sys.TurnToHeadingCmd(0),
-        cata_sys.Unintake(),
-        drive_sys.DriveToPointCmd({22, 26}, REV, 0.6)->withTimeout(2.0),
-        cata_sys.StopIntake(),
+        drive_sys.DriveToPointCmd({50, 15}, FWD, 0.75)->withTimeout(2.0),
+
         // // Turn to pick up triball
         // drive_sys.TurnToHeadingCmd(-135),
         // cata_sys.IntakeToHold(),
