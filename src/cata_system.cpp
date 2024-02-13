@@ -397,26 +397,34 @@ IntakeSys::State *Outtaking::respond(IntakeSys &sys, IntakeMessage m) {
 }
 
 IntakeSys::IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
-                     vex::motor &intake_upper, std::function<bool()> can_intake)
-    : StateMachine(new IntakeWaitForDrop()), intake_watcher(intake_watcher),
-      intake_lower(intake_lower), intake_upper(intake_upper),
-      can_intake(can_intake) {}
+                     vex::motor &intake_upper, std::function<bool()> can_intake,
+                     DropMode drop)
+    : StateMachine(drop == DropMode::Required
+                       ? (IntakeSys::State *)(new IntakeWaitForDrop())
+                       : (IntakeSys::State *)(new Stopped())),
+      intake_watcher(intake_watcher), intake_lower(intake_lower),
+      intake_upper(intake_upper), can_intake(can_intake) {}
 
 CataOnlySys::CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
-                         vex::motor_group &cata_motor, PIDFF &cata_pid)
-    : StateMachine(new CataOff()), pot(cata_pot), cata_watcher(cata_watcher),
-      mot(cata_motor), pid(cata_pid) {}
+                         vex::motor_group &cata_motor, PIDFF &cata_pid,
+                         DropMode drop)
+    : StateMachine((drop == DropMode::Required)
+                       ? (CataOnlySys::State *)(new CataOff())
+                       : (CataOnlySys::State *)(new Reloading())),
+      pot(cata_pot), cata_watcher(cata_watcher), mot(cata_motor),
+      pid(cata_pid) {}
 
 CataSys::CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
                  vex::optical &cata_watcher, vex::motor_group &cata_motor,
                  vex::motor &intake_upper, vex::motor &intake_lower,
-                 PIDFF &cata_feedback)
+                 PIDFF &cata_feedback, DropMode drop)
     : intake_watcher(intake_watcher), cata_pot(cata_pot),
       cata_watcher(cata_watcher), cata_motor(cata_motor),
       intake_upper(intake_upper), intake_lower(intake_lower),
-      cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback),
-      intake_sys(intake_watcher, intake_lower, intake_upper,
-                 [&]() { return cata_sys.intaking_allowed(); }) {}
+      cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback, drop),
+      intake_sys(
+          intake_watcher, intake_lower, intake_upper,
+          [&]() { return cata_sys.intaking_allowed(); }, drop) {}
 
 void CataSys::send_command(Command next_cmd) {
     switch (next_cmd) {
@@ -434,7 +442,9 @@ void CataSys::send_command(Command next_cmd) {
         intake_sys.send_message(IntakeMessage::Outtake);
         break;
     case CataSys::Command::IntakeHold:
-        if (cata_sys.intaking_allowed()) {
+        if (cata_sys.current_state() == CataOnlyState::CataOff) {
+            intake_sys.send_message(IntakeMessage::IntakeHold);
+        } else if (cata_sys.intaking_allowed()) {
             intake_sys.send_message(IntakeMessage::IntakeHold);
         }
         break;

@@ -6,6 +6,11 @@
 #include "../core/include/utils/state_machine.h"
 #include "vex.h"
 
+enum class DropMode {
+    Required,
+    Unnecessary,
+};
+
 enum class CataOnlyMessage {
     DoneReloading,
     DoneFiring,
@@ -35,7 +40,7 @@ class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
 
     friend class CataSysPage;
     CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
-                vex::motor_group &cata_motor, PIDFF &cata_pid);
+                vex::motor_group &cata_motor, PIDFF &cata_pid, DropMode drop);
     bool intaking_allowed();
 
   private:
@@ -73,7 +78,8 @@ class IntakeSys
     friend struct IntakeWaitForDrop;
 
     IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
-              vex::motor &intake_upper, std::function<bool()> can_intake);
+              vex::motor &intake_upper, std::function<bool()> can_intake,
+              DropMode drop);
 
     bool ball_in_intake();
 
@@ -99,7 +105,7 @@ class CataSys {
     CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
             vex::optical &cata_watcher, vex::motor_group &cata_motor,
             vex::motor &intake_upper, vex::motor &intake_lower,
-            PIDFF &cata_feedback);
+            PIDFF &cata_feedback, DropMode drop);
     void send_command(Command cmd);
     bool can_fire() const;
     // Returns true when the cata system is finished dropping
