@@ -146,7 +146,6 @@ void supportMaximumTriballs() {
         get_and_score_alliance(),
         // Evacuate
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-        new GPSLocalizeCommand(),
         printOdom,
         // line up to load
         drive_sys.TurnToPointCmd(24, 26)->withTimeout(2.0),
@@ -155,50 +154,49 @@ void supportMaximumTriballs() {
         // load
         new RepeatUntil(
             InOrder{
-                drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
+                drive_sys.TurnToPointCmd(0, 0)->withTimeout(2.0),
                 cata_sys.IntakeToHold(),
-                drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)
-                    ->withTimeout(2.0)
-                    ->withCancelCondition(drive_sys.DriveStalledCondition(0.2)),
+                drive_sys.DriveToPointCmd({0, 0}, FWD, 0.3)->withTimeout(1.0),
+                odom.SetPositionCmd({.x = 18, .y = 18, .rot = 225}),
+                // ->withCancelCondition(drive_sys.DriveStalledCondition(0.5)),
 
-                // new FunctionCommand([]() {
-                // odom.set_position();
-                // return true;
-                // }),
-                odom.SetPositionCmd({.x = 28, .y = 18, .rot = 225}),
                 drive_sys.DriveForwardCmd(4, REV)->withTimeout(1.0),
-                cata_sys.WaitForHold()->withTimeout(2.0),
+                cata_sys.WaitForHold()->withTimeout(1.0),
 
+                /// Deliver the deliverables
                 drive_sys.TurnToHeadingCmd(-35)->withTimeout(1.0),
 
-                // PURE PURSUIT THIS
-                drive_sys.PurePursuitCmd(PurePursuit::Path(
-                                             {
-                                                 {36, 20},
-                                                 {55, 18},
-                                             },
-                                             4.0),
-                                         FWD, 0.5),
-
-                drive_sys.TurnToHeadingCmd(0),
                 cata_sys.Unintake(),
+                drive_sys
+                    .PurePursuitCmd(PurePursuit::Path(
+                                        {
+                                            {36, 18},
+                                            {39, 16},
+                                        },
+                                        4.0),
+                                    FWD, 0.5)
+                    ->withTimeout(2.0),
 
-                drive_sys.PurePursuitCmd(PurePursuit::Path(
-                                             {
-                                                 {55, 18},
-                                                 {36, 20},
-                                                 {24, 24},
-                                             },
-                                             4.0),
-                                         REV, 0.5),
+                // drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
+
+                drive_sys
+                    .PurePursuitCmd(PurePursuit::Path(
+                                        {
+                                            {39, 16},
+                                            {36, 18},
+                                            {24, 24},
+                                        },
+                                        4.0),
+                                    REV, 0.5)
+                    ->withTimeout(2.0),
 
                 cata_sys.StopIntake(),
             },
-            new IfTimePassed(35)),
-        drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
+            new IfTimePassed(41)),
+        drive_sys.TurnToPointCmd(0, 0)->withTimeout(2.0),
         new GPSLocalizeCommand(),
         cata_sys.IntakeToHold(),
-        drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
+        drive_sys.DriveToPointCmd({0, 0}, FWD, 0.3)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
@@ -206,17 +204,18 @@ void supportMaximumTriballs() {
         cata_sys.Unintake(),
         drive_sys.PurePursuitCmd(PurePursuit::Path(
                                      {
-                                         {36, 20},
-                                         {55, 18},
+                                         {36, 14},
+                                         {55, 12},
                                      },
                                      4.0),
                                  FWD, 0.5),
         drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
 
-        drive_sys.DriveForwardCmd(24.0, FWD)->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(24.0, REV)->withTimeout(2.0),
-        drive_sys.TurnToPointCmd(72, 24)->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(4.0),
+        drive_sys.DriveForwardCmd(48.0, FWD)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(37.0, REV)->withTimeout(2.0),
+        cata_sys.StopIntake(),
+        drive_sys.TurnDegreesCmd(45),
+        drive_sys.DriveForwardCmd(12.0, FWD, 0.5)->withTimeout(5.0),
 
     };
     cc.add_cancel_func([]() { return con.ButtonA.pressing(); });

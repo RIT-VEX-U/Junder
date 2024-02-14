@@ -28,6 +28,7 @@ class CataSys {
     bool can_fire() const;
     // Returns true when the cata system is finished dropping
     bool still_dropping();
+    bool ball_in_intake();
 
     // Autocommands
     AutoCommand *Fire();
@@ -38,8 +39,8 @@ class CataSys {
     AutoCommand *WaitForHold();
     AutoCommand *Unintake();
 
-    // Page
     screen::Page *Page();
+    // Page
 
   private:
     // configuration

@@ -230,13 +230,12 @@ AutoCommand *Climb() {
 // ================ GPS Localizing Functions ================
 
 #define NUM_DATAPOINTS 100
-#define GPS_GATHER_SEC 1.0
+#define GPS_GATHER_SEC 0.75
 
 std::vector<pose_t> gps_gather_data() {
     std::vector<pose_t> pose_list;
     vex::timer tmr;
 
-    // for(int i = 0; i < NUM_DATAPOINTS; i++)
     while (tmr.time(sec) < GPS_GATHER_SEC) {
         pose_t cur;
         cur.x = gps_sensor.xPosition(distanceUnits::in) + 72;
@@ -295,34 +294,30 @@ std::tuple<pose_t, double> gps_localize_stdev() {
     auto pose_list = gps_gather_data();
 
     pose_t avg_unfiltered = get_pose_avg(pose_list);
+    point_t avg_point = avg_unfiltered.get_point();
 
     // Create a parallel list with corresponding distances
     std::vector<double> dist_list;
+
     for (pose_t p : pose_list)
-        dist_list.push_back(p.get_point().dist({0, 0}));
+        dist_list.push_back(p.get_point().dist(avg_point));
 
-    // Calculate standard deviation of distances to origin
-    double dist_mean = mean(dist_list);
-    double dist_stdev = sqrt(variance(dist_list, dist_mean));
+    // Calculate standard deviation of distances to the unfiltered mean point
+    double dist_stdev = sqrt(variance(dist_list, 0));
 
-    // Filter out points that are greater than 3 standard deviations away from
+    // Filter out points that are greater than 2 standard deviations away from
     // original mean
-    for (int i = 0; i < pose_list.size(); i++) {
-        if (fabs(dist_mean - dist_list[i]) > 1 * dist_stdev) {
-            pose_list[i] = {-1, -1, -1}; // Mark as bad
-        }
-    }
+    auto itr =
+        std::remove_if(pose_list.begin(), pose_list.end(), [=](pose_t p) {
+            return p.get_point().dist(avg_point) > dist_stdev;
+        });
 
-    // Final removal of points
-    auto itr = std::remove_if(pose_list.begin(), pose_list.end(), [](pose_t p) {
-        return p.x == -1.0 && p.y == -1.0 && p.rot == -1.0;
-    });
     // ACTUALLY remove it cause remove_if kinda sucks
     pose_list.erase(itr, pose_list.end());
 
     pose_t avg_filtered = get_pose_avg(pose_list);
-    printf("Stddev: %f Mean: %f #Unfiltered: %lu #Filtered: %lu\n", dist_stdev,
-           dist_mean, dist_list.size(), pose_list.size());
+    printf("Stddev: %f #Unfiltered: %lu #Filtered: %lu\n", dist_stdev,
+           dist_list.size(), pose_list.size());
     printf("Unfiltered X: %f, Y: %f, H: %f\n", avg_unfiltered.x,
            avg_unfiltered.y, avg_unfiltered.rot);
     printf("Filtered X: %f, Y: %f, H: %f\n", avg_filtered.x, avg_filtered.y,
@@ -336,52 +331,11 @@ int GPSLocalizeCommand::rotation = 0;
 const int GPSLocalizeCommand::min_rotation_radius = 48;
 bool GPSLocalizeCommand::run() {
     // pose_t odom_pose = odom.get_position();
+    vexDelay(500); // Let GPS settle
     auto [new_pose, stddev] = gps_localize_stdev();
-
-    if (!red_side) {
-        new_pose.x = 144 - new_pose.x;
-        new_pose.y = 144 - new_pose.y;
-        new_pose.rot += 180;
-    }
-
     odom.set_position(new_pose);
 
-    // Vector2D centrefield_gps(point_t{new_pose.x - 72, new_pose.y - 72});
-    // Vector2D centerfield_odom(point_t{.x=odom_pose.x - 72, .y=odom_pose.y -
-    // 72});
-
-    // On the first localize, decide if the orientation of the field is correct.
-    // If not, create a rotation to correct
-    // if(first_run)
-    // {
-
-    //     for(int i = 0; i < 4; i++)
-    //     {
-    //         Vector2D rot(centrefield_gps.get_dir() + deg2rad(i * 90),
-    //         centrefield_gps.get_mag()); printf("dist: %f\n",
-    //         centerfield_odom.point().dist(rot.point())); printf("{%f, %f}\n",
-    //         rot.get_x(), rot.get_y());
-    //         // Test if the rotated vector is within an acceptable distance
-    //         // to what odometry is reporting
-    //         if (centerfield_odom.point().dist(rot.point()) <
-    //         min_rotation_radius)
-    //         {
-    //             rotation = i * 90;
-    //             break;
-    //         }
-    //     }
-
-    //     printf("Localize init complete: Detected field rotated by %d
-    //     degrees\n", rotation); first_run = false;
-    // }
-
-    // Vector2D rot(centrefield_gps.get_dir() + deg2rad(rotation),
-    // centrefield_gps.get_mag()); odom.set_position(pose_t{
-    //     .x = rot.get_x() + 72,
-    //     .y = rot.get_y() + 72,
-    //     .rot = new_pose.rot
-    // });
-    printf("Localized with variance of %f to {%f, %f, %f}\n", stddev,
+    printf("Localized with max variation of %f to {%f, %f, %f}\n", stddev,
            new_pose.x, new_pose.y, new_pose.rot);
     return true;
 }

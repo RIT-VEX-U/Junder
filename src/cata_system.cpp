@@ -59,6 +59,8 @@ bool CataSys::still_dropping() {
         intake_sys.current_state() == IntakeState::Dropping;
     return !still_dropping;
 }
+bool CataSys::ball_in_intake() { return intake_sys.ball_in_intake(); }
+
 bool CataSys::can_fire() const {
     return cata_sys.current_state() == CataOnlyState::ReadyToFire;
 }
@@ -142,9 +144,8 @@ AutoCommand *CataSys::WaitForIntake() {
 }
 
 AutoCommand *CataSys::WaitForHold() {
-    return new FunctionCommand([&]() {
-        return intake_watcher.objectDistance(distanceUnits::mm) < 150;
-    });
+    return new FunctionCommand(
+        [&]() { return intake_sys.current_state() == IntakeState::Stopped; });
 }
 
 AutoCommand *CataSys::Unintake() {
