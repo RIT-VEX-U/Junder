@@ -39,11 +39,7 @@ AutoCommand *printOdom = new FunctionCommand([]() {
     printf("(%.2f, %.2f) - %.2fdeg\n", pose.x, pose.y, pose.rot);
     return true;
 });
-pose_t gps_pose();
-AutoCommand *recal = new FunctionCommand([]() {
-    odom.set_position(gps_pose());
-    return true;
-});
+
 /**
  * Main entrypoint for the autonomous period
  */
@@ -92,11 +88,6 @@ pose_t gps_pose() {
     // double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
     // double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
     // double rot = gps_sensor.heading();
-    if (!red_side) {
-        x = 144 - x;
-        y = 144 - y;
-        rot += 180;
-    }
 
     pose.x = x;
     pose.y = y;
@@ -113,9 +104,9 @@ AutoCommand *get_and_score_alliance() {
         }),
 
         // Drive to linup for alliance
-        drive_sys.TurnDegreesCmd(-35),
-        drive_sys.DriveForwardCmd(10, FWD)->withTimeout(2.0),
-        drive_sys.TurnDegreesCmd(75),
+        drive_sys.TurnDegreesCmd(-35)->withTimeout(1.0),
+        drive_sys.DriveForwardCmd(10, FWD)->withTimeout(1.0),
+        drive_sys.TurnDegreesCmd(75)->withTimeout(1.0),
 
         // Pickup Alliance
         cata_sys.IntakeToHold(),
@@ -123,18 +114,18 @@ AutoCommand *get_and_score_alliance() {
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.5))
             ->withTimeout(1.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(5.0, REV)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(5.0, REV)->withTimeout(1.0),
 
         // Turn to side
         drive_sys.TurnToPointCmd(9.0, 36.0)->withTimeout(1.0),
         drive_sys.DriveForwardCmd(8.5, FWD, 0.4)->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(90.0)->withTimeout(1.0),
-        drive_sys.DriveForwardCmd(6.5, FWD, 0.4)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(7.0, FWD, 0.4)->withTimeout(2.0),
 
         // Dump in goal
         cata_sys.Unintake(),
-        new DelayCommand(500),
-        drive_sys.DriveForwardCmd(8.0, REV)->withTimeout(2.0),
+        new DelayCommand(200),
+        drive_sys.DriveForwardCmd(6.0, REV)->withTimeout(2.0),
         cata_sys.StopIntake(),
 
         drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
@@ -169,6 +160,12 @@ void supportMaximumTriballs() {
                 drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)
                     ->withTimeout(2.0)
                     ->withCancelCondition(drive_sys.DriveStalledCondition(0.2)),
+
+                // new FunctionCommand([]() {
+                // odom.set_position();
+                // return true;
+                // }),
+                odom.SetPositionCmd({.x = 28, .y = 18, .rot = 225}),
                 drive_sys.DriveForwardCmd(4, REV)->withTimeout(1.0),
                 cata_sys.WaitForHold()->withTimeout(2.0),
 
@@ -186,12 +183,20 @@ void supportMaximumTriballs() {
                 drive_sys.TurnToHeadingCmd(0),
                 cata_sys.Unintake(),
 
-                drive_sys.DriveToPointCmd({22, 26}, REV, 0.6)->withTimeout(2.0),
+                drive_sys.PurePursuitCmd(PurePursuit::Path(
+                                             {
+                                                 {55, 18},
+                                                 {36, 20},
+                                                 {24, 24},
+                                             },
+                                             4.0),
+                                         REV, 0.5),
+
                 cata_sys.StopIntake(),
             },
             new IfTimePassed(35)),
         drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
-        // new GPSLocalizeCommand(),
+        new GPSLocalizeCommand(),
         cata_sys.IntakeToHold(),
         drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
@@ -223,7 +228,6 @@ void support_AWP() {
     CommandController cc{
         get_and_score_alliance(),
         // Evacuate
-        recal,
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(120),
         // Wall align
@@ -231,11 +235,9 @@ void support_AWP() {
         drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(1.5),
         drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
-        recal,
         drive_sys.DriveToPointCmd({50, 12})->withTimeout(2.0),
         // Turn to pole
         drive_sys.TurnToPointCmd(72, 24),
-        recal,
         drive_sys.DriveToPointCmd({72, 24}, FWD, 0.4)->withTimeout(2.0),
         new FunctionCommand([]() { return false; }),
 
@@ -294,7 +296,7 @@ void only_shoot() {
         // Matchloading phase
         new RepeatUntil(
             InOrder{
-                odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
+                // odom.SetPositionCmd({.x = 16.0, .y = 16.0, .rot = 225}),
 
                 intakeToCata->withTimeout(1.75),
 
@@ -337,7 +339,6 @@ void only_shoot() {
         drive_sys.DriveForwardCmd(24.0, REV)->withTimeout(2.0),
         drive_sys.TurnDegreesCmd(-120)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(36.0, REV)->withTimeout(2.0),
-        recal,
     };
     cmd.run();
 }

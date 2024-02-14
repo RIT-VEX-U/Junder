@@ -58,8 +58,6 @@ class IsTriballInArea : public Condition {
 };
 
 // ================ Driver Assist Automations ================
-// void matchload_1(bool &enable);
-void matchload_1(std::function<bool()> enable);
 
 AutoCommand *ClimbBarDeploy();
 AutoCommand *WingSetCmd(bool val);
@@ -72,9 +70,10 @@ std::tuple<pose_t, double> gps_localize_stdev();
 class GPSLocalizeCommand : public AutoCommand {
   public:
     bool run() override;
+    static pose_t get_pose_rotated();
 
   private:
     static bool first_run;
     static int rotation;
-    static const int min_rotation_radius = 36; // 1.5 tiles
+    static const int min_rotation_radius;
 };

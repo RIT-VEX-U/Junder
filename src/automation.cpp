@@ -161,42 +161,6 @@ bool IsTriballInArea::test() {
     return false;
 }
 
-// ================ Driver Assist Automations ================
-
-void matchload_1(std::function<bool()> enable) {
-#ifdef COMP_BOT
-    if (!enable())
-        return;
-
-    FunctionCommand *intakeToCata = new FunctionCommand([]() {
-        drive_sys.drive_tank(0.15, 0.15);
-        // Only return when the ball is in the bot
-        return cata_watcher.isNearObject();
-    });
-
-    static timer drive_tmr;
-    drive_tmr.reset();
-    double rot = odom.get_position().rot;
-    CommandController cmd{
-        cata_sys.IntakeFully(),
-        intakeToCata->withTimeout(3),
-        new Async{new InOrder{
-            new DelayCommand(100),
-            cata_sys.Fire(),
-        }},
-        drive_sys.DriveForwardCmd(10, REV, 0.8)->withTimeout(1),
-        drive_sys.TurnToHeadingCmd(rot - 2),
-        cata_sys.IntakeFully(),
-        drive_sys.DriveForwardCmd(14, FWD, 0.2)->withTimeout(1),
-    };
-
-    // Cancel the operation if the button is ever released
-    cmd.add_cancel_func([&]() { return !enable(); });
-    cmd.run();
-    cata_sys.send_command(CataSys::Command::StopIntake);
-#endif
-}
-
 AutoCommand *ClimbBarDeploy() {
 #ifdef COMP_BOT
     return new BasicSolenoidSet(climb_solenoid, true);
@@ -369,18 +333,67 @@ std::tuple<pose_t, double> gps_localize_stdev() {
 
 bool GPSLocalizeCommand::first_run = true;
 int GPSLocalizeCommand::rotation = 0;
+const int GPSLocalizeCommand::min_rotation_radius = 48;
 bool GPSLocalizeCommand::run() {
+    // pose_t odom_pose = odom.get_position();
     auto [new_pose, stddev] = gps_localize_stdev();
-    // On the first localize, decide if the orientation of the field is correct.
-    // If not, create a rotation to correct
-    if (first_run) {
 
-        first_run = false;
-        return true;
+    if (!red_side) {
+        new_pose.x = 144 - new_pose.x;
+        new_pose.y = 144 - new_pose.y;
+        new_pose.rot += 180;
     }
 
     odom.set_position(new_pose);
-    printf("Localized with variance of %f, to {%f, %f, %f}\n", stddev,
+
+    // Vector2D centrefield_gps(point_t{new_pose.x - 72, new_pose.y - 72});
+    // Vector2D centerfield_odom(point_t{.x=odom_pose.x - 72, .y=odom_pose.y -
+    // 72});
+
+    // On the first localize, decide if the orientation of the field is correct.
+    // If not, create a rotation to correct
+    // if(first_run)
+    // {
+
+    //     for(int i = 0; i < 4; i++)
+    //     {
+    //         Vector2D rot(centrefield_gps.get_dir() + deg2rad(i * 90),
+    //         centrefield_gps.get_mag()); printf("dist: %f\n",
+    //         centerfield_odom.point().dist(rot.point())); printf("{%f, %f}\n",
+    //         rot.get_x(), rot.get_y());
+    //         // Test if the rotated vector is within an acceptable distance
+    //         // to what odometry is reporting
+    //         if (centerfield_odom.point().dist(rot.point()) <
+    //         min_rotation_radius)
+    //         {
+    //             rotation = i * 90;
+    //             break;
+    //         }
+    //     }
+
+    //     printf("Localize init complete: Detected field rotated by %d
+    //     degrees\n", rotation); first_run = false;
+    // }
+
+    // Vector2D rot(centrefield_gps.get_dir() + deg2rad(rotation),
+    // centrefield_gps.get_mag()); odom.set_position(pose_t{
+    //     .x = rot.get_x() + 72,
+    //     .y = rot.get_y() + 72,
+    //     .rot = new_pose.rot
+    // });
+    printf("Localized with variance of %f to {%f, %f, %f}\n", stddev,
            new_pose.x, new_pose.y, new_pose.rot);
     return true;
+}
+
+pose_t GPSLocalizeCommand::get_pose_rotated() {
+    Vector2D new_pose_vec(
+        point_t{.x = gps_sensor.xPosition(distanceUnits::in) + 72,
+                .y = gps_sensor.yPosition(distanceUnits::in) + 72});
+    Vector2D rot(new_pose_vec.get_dir() + deg2rad(rotation),
+                 new_pose_vec.get_mag());
+
+    return pose_t{.x = rot.get_x(),
+                  .y = rot.get_y(),
+                  .rot = gps_sensor.heading(rotationUnits::deg)};
 }
