@@ -56,7 +56,6 @@ void autonomous() {
     while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
         vexDelay(20);
     }
-    vexDelay(2000);
     // support_AWP();
     supportMaximumTriballs();
     // only_shoot();
@@ -145,9 +144,6 @@ AutoCommand *get_and_score_alliance() {
         drive_sys.DriveForwardCmd(20, REV)
             ->withTimeout(2.0)
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.25)),
-        drive_sys.DriveForwardCmd(4, FWD)->withTimeout(2.0),
-        // Ram Twice
-        drive_sys.DriveTankCmd(-0.5, -0.5)->withTimeout(0.5),
     };
 }
 
@@ -170,17 +166,19 @@ void supportMaximumTriballs() {
             InOrder{
                 drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
                 cata_sys.IntakeToHold(),
-                drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
-                drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
+                drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)
+                    ->withTimeout(2.0)
+                    ->withCancelCondition(drive_sys.DriveStalledCondition(0.2)),
+                drive_sys.DriveForwardCmd(4, REV)->withTimeout(1.0),
                 cata_sys.WaitForHold()->withTimeout(2.0),
 
-                drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
+                drive_sys.TurnToHeadingCmd(-35)->withTimeout(1.0),
 
                 // PURE PURSUIT THIS
                 drive_sys.PurePursuitCmd(PurePursuit::Path(
                                              {
-                                                 {36, 18},
-                                                 {55, 16},
+                                                 {36, 20},
+                                                 {55, 18},
                                              },
                                              4.0),
                                          FWD, 0.5),
@@ -193,25 +191,27 @@ void supportMaximumTriballs() {
             },
             new IfTimePassed(35)),
         drive_sys.TurnToPointCmd(0, 2)->withTimeout(2.0),
-        new GPSLocalizeCommand(),
+        // new GPSLocalizeCommand(),
         cata_sys.IntakeToHold(),
         drive_sys.DriveToPointCmd({0, 2}, FWD, 0.3)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),
         cata_sys.WaitForHold()->withTimeout(2.0),
         drive_sys.TurnToHeadingCmd(-35)->withTimeout(2.0),
 
+        cata_sys.Unintake(),
         drive_sys.PurePursuitCmd(PurePursuit::Path(
                                      {
-                                         {36, 18},
-                                         {55, 16},
+                                         {36, 20},
+                                         {55, 18},
                                      },
                                      4.0),
                                  FWD, 0.5),
+        drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
 
-        drive_sys.DriveForwardCmd(4.0, REV)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(24.0, FWD)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(24.0, REV)->withTimeout(2.0),
         drive_sys.TurnToPointCmd(72, 24)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(4.0),
-        new FunctionCommand([]() { return false; }),
 
     };
     cc.add_cancel_func([]() { return con.ButtonA.pressing(); });
