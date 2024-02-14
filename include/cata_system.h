@@ -4,47 +4,9 @@
 #include "../core/include/subsystems/screen.h"
 #include "../core/include/utils/command_structure/auto_command.h"
 #include "../core/include/utils/state_machine.h"
+#include "cata/cata.h"
 #include "cata/intake.h"
 #include "vex.h"
-
-enum class CataOnlyMessage {
-    DoneReloading,
-    DoneFiring,
-    Fire,
-    Slipped,
-    StartDrop,
-    EnableCata,
-    DisableCata,
-
-};
-enum class CataOnlyState {
-    CataOff,
-    WaitingForDrop,
-    Firing,
-    Reloading,
-    ReadyToFire
-};
-
-class CataOnlySys : public StateMachine<CataOnlySys, CataOnlyState,
-                                        CataOnlyMessage, 5, false> {
-  public:
-    friend struct Reloading;
-    friend class Firing;
-    friend class ReadyToFire;
-    friend class WaitingForDrop;
-    friend class CataOff;
-
-    friend class CataSysPage;
-    CataOnlySys(vex::pot &cata_pot, vex::optical &cata_watcher,
-                vex::motor_group &cata_motor, PIDFF &cata_pid, DropMode drop);
-    bool intaking_allowed();
-
-  private:
-    vex::pot &pot;
-    vex::optical &cata_watcher;
-    vex::motor_group &mot;
-    PIDFF &pid;
-};
 
 class CataSys {
   public:
