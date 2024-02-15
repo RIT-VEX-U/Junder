@@ -24,7 +24,7 @@ std::string to_string(IntakeState s);
 std::string to_string(IntakeMessage s);
 
 class IntakeSys
-    : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, true> {
+    : public StateMachine<IntakeSys, IntakeState, IntakeMessage, 5, false> {
   public:
     friend struct Stopped;
     friend struct Dropping;

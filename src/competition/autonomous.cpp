@@ -54,9 +54,9 @@ void autonomous() {
            cata_sys.still_dropping()) {
         vexDelay(20);
     }
-    printf("DRopping %d\n", (int)cata_sys.still_dropping());
-    // supportMaximumTriballs();
-    only_shoot();
+
+    supportMaximumTriballs();
+    // only_shoot();
 }
 
 AutoCommand *get_and_score_alliance() {
@@ -180,8 +180,8 @@ void supportMaximumTriballs() {
                                  FWD, 0.5),
         drive_sys.TurnToHeadingCmd(0)->withTimeout(2.0),
 
-        drive_sys.DriveForwardCmd(48.0, FWD)->withTimeout(2.0),
-        drive_sys.DriveForwardCmd(37.0, REV)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(48.0, FWD, 0.5)->withTimeout(2.0),
+        drive_sys.DriveForwardCmd(37.0, REV, 0.5)->withTimeout(2.0),
         cata_sys.StopIntake(),
         drive_sys.TurnDegreesCmd(45),
         drive_sys.DriveForwardCmd(12.0, FWD, 0.5)->withTimeout(5.0),
@@ -251,11 +251,9 @@ void only_shoot() {
 
     CommandController cmd{
         odom.SetPositionCmd({.x = 22.0, .y = 22.0, .rot = 225}),
-        new DelayCommand(3000),
         printOdom,
 
         // 1 - Turn and shoot preload
-        // cata_sys.Fire(),
         cata_sys.IntakeFully()->withTimeout(2.0),
         drive_sys.DriveForwardCmd(dist, FWD, 0.3)->withTimeout(1.0),
 

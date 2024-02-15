@@ -100,8 +100,8 @@ vex::distance intake_watcher(vex::PORT3);
 vex::optical cata_watcher(vex::PORT15); // Final Port
 vex::pot cata_pot(Brain.ThreeWirePort.E);
 
-PID::pid_config_t pc = {.p = 1.75,
-                        .d = 0.05,
+PID::pid_config_t pc = {.p = 1.05,
+                        .d = 0.005,
                         // .i = 2,
                         .deadband = 3.0,
                         .on_target_time = 0.3};
