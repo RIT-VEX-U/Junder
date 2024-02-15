@@ -91,6 +91,13 @@ struct Intaking : IntakeSys::State {
         sys.intake_upper.spin(vex::fwd, intake_upper_volt, vex::volt);
         sys.intake_lower.spin(vex::fwd, intake_lower_volt, vex::volt);
     }
+    IntakeSys::MaybeMessage work(IntakeSys &sys) override {
+        if (sys.ball_in_cata()) {
+            return IntakeMessage::StopIntake;
+        }
+
+        return {};
+    }
     void exit(IntakeSys &sys) override {
         sys.intake_upper.stop(vex::brakeType::coast);
         sys.intake_lower.stop(vex::brakeType::coast);
@@ -195,9 +202,10 @@ IntakeSys::State *Outtaking::respond(IntakeSys &sys, IntakeMessage m) {
 
 IntakeSys::IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
                      vex::motor &intake_upper, std::function<bool()> can_intake,
-                     DropMode drop)
+                     std::function<bool()> ball_in_cata, DropMode drop)
     : StateMachine(drop == DropMode::Required
                        ? (IntakeSys::State *)(new IntakeWaitForDrop())
                        : (IntakeSys::State *)(new Stopped())),
       intake_watcher(intake_watcher), intake_lower(intake_lower),
-      intake_upper(intake_upper), can_intake(can_intake) {}
+      intake_upper(intake_upper), can_intake(can_intake),
+      ball_in_cata(ball_in_cata) {}

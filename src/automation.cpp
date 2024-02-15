@@ -230,12 +230,13 @@ AutoCommand *Climb() {
 // ================ GPS Localizing Functions ================
 
 #define NUM_DATAPOINTS 100
-#define GPS_GATHER_SEC 0.75
+#define GPS_GATHER_SEC 1.0
 
 std::vector<pose_t> gps_gather_data() {
     std::vector<pose_t> pose_list;
     vex::timer tmr;
 
+    // for(int i = 0; i < NUM_DATAPOINTS; i++)
     while (tmr.time(sec) < GPS_GATHER_SEC) {
         pose_t cur;
         cur.x = gps_sensor.xPosition(distanceUnits::in) + 72;
@@ -316,7 +317,7 @@ std::tuple<pose_t, double> gps_localize_stdev() {
     pose_list.erase(itr, pose_list.end());
 
     pose_t avg_filtered = get_pose_avg(pose_list);
-    printf("Stddev: %f #Unfiltered: %lu #Filtered: %lu\n", dist_stdev,
+    printf("Stddev: %f #Unfiltered: %d #Filtered: %d\n", dist_stdev,
            dist_list.size(), pose_list.size());
     printf("Unfiltered X: %f, Y: %f, H: %f\n", avg_unfiltered.x,
            avg_unfiltered.y, avg_unfiltered.rot);
@@ -326,6 +327,8 @@ std::tuple<pose_t, double> gps_localize_stdev() {
     return std::tuple<pose_t, double>(avg_filtered, dist_stdev);
 }
 
+GPSLocalizeCommand::GPSLocalizeCommand(FieldSide s) : side(s) {}
+
 bool GPSLocalizeCommand::first_run = true;
 int GPSLocalizeCommand::rotation = 0;
 const int GPSLocalizeCommand::min_rotation_radius = 48;
@@ -333,6 +336,13 @@ bool GPSLocalizeCommand::run() {
     // pose_t odom_pose = odom.get_position();
     vexDelay(500); // Let GPS settle
     auto [new_pose, stddev] = gps_localize_stdev();
+
+    if (side == BLUE) {
+        new_pose.x = 144 - new_pose.x;
+        new_pose.y = 144 - new_pose.y;
+        new_pose.rot = new_pose.rot + 180;
+    }
+
     odom.set_position(new_pose);
 
     printf("Localized with max variation of %f to {%f, %f, %f}\n", stddev,

@@ -140,6 +140,11 @@ AutoCommand *get_and_score_alliance() {
 
 void supportMaximumTriballs() {
 
+    FieldSide fs = FieldSide::BLUE;
+    if (red_side) {
+        fs = FieldSide::RED;
+    }
+
     odom.set_position({.x = 28, .y = 18, .rot = 180});
     CommandController cc{
 
@@ -192,9 +197,9 @@ void supportMaximumTriballs() {
 
                 cata_sys.StopIntake(),
             },
-            new IfTimePassed(41)),
+            new IfTimePassed(31)),
         drive_sys.TurnToPointCmd(0, 0)->withTimeout(2.0),
-        new GPSLocalizeCommand(),
+        new GPSLocalizeCommand(fs),
         cata_sys.IntakeToHold(),
         drive_sys.DriveToPointCmd({0, 0}, FWD, 0.3)->withTimeout(2.0),
         drive_sys.DriveForwardCmd(4, REV)->withTimeout(2.0),

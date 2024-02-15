@@ -11,7 +11,8 @@ CataSys::CataSys(vex::distance &intake_watcher, vex::pot &cata_pot,
       cata_sys(cata_pot, cata_watcher, cata_motor, cata_feedback, drop),
       intake_sys(
           intake_watcher, intake_lower, intake_upper,
-          [&]() { return cata_sys.intaking_allowed(); }, drop) {}
+          [&]() { return cata_sys.intaking_allowed(); },
+          [&]() { return cata_watcher.isNearObject(); }, drop) {}
 
 void CataSys::send_command(Command next_cmd) {
     switch (next_cmd) {
@@ -53,6 +54,11 @@ void CataSys::send_command(Command next_cmd) {
         break;
     }
 }
+
+bool CataSys::intake_running() {
+    return !(intake_sys.current_state() == IntakeState::Stopped);
+}
+
 bool CataSys::still_dropping() {
     bool still_dropping =
         cata_sys.current_state() == CataOnlyState::WaitingForDrop ||

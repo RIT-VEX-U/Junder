@@ -42,10 +42,6 @@ void opcontrol() {
 
     con.ButtonL1.pressed(
         []() { cata_sys.send_command(CataSys::Command::StartFiring); });
-    con.ButtonR1.pressed(
-        []() { cata_sys.send_command(CataSys::Command::IntakeIn); });
-    con.ButtonR2.pressed(
-        []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
 
     con.ButtonY.pressed([]() { Tank = !Tank; });
     con.ButtonUp.pressed(
@@ -55,15 +51,17 @@ void opcontrol() {
         right_wing.set(!right_wing.value());
     });
 
+    con.ButtonR1.pressed(
+        []() { cata_sys.send_command(CataSys::Command::IntakeIn); });
+    con.ButtonR2.pressed(
+        []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
+    con.ButtonRight.pressed(
+        []() { cata_sys.send_command(CataSys::Command::StopIntake); });
+
 #endif
     con.ButtonB.pressed([]() { toggle_brake_mode(); });
     // ================ INIT ================
     while (true) {
-        if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing()) {
-            if (!cata_sys.still_dropping()) {
-                cata_sys.send_command(CataSys::Command::StopIntake);
-            }
-        }
 
         if (Tank) {
             double l = con.Axis3.position() / 100.0;
@@ -82,22 +80,6 @@ void opcontrol() {
         }
         static VisionTrackTriballCommand viscmd;
 
-        if (con.ButtonX.pressing()) {
-            disable_drive = true;
-            bool override_watch = false;
-#ifndef COMP_BOT
-            override_watch = true;
-#endif
-            if (override_watch ||
-                intake_watcher.objectDistance(distanceUnits::mm) > 100.0) {
-                viscmd.run();
-            } else {
-                drive_sys.stop();
-                cata_sys.send_command(CataSys::Command::StopIntake);
-            }
-        } else {
-            disable_drive = false;
-        }
         // Controls
         // Intake
 

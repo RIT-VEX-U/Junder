@@ -29,6 +29,7 @@ class CataSys {
     // Returns true when the cata system is finished dropping
     bool still_dropping();
     bool ball_in_intake();
+    bool intake_running();
 
     // Autocommands
     AutoCommand *Fire();

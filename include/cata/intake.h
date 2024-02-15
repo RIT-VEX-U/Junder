@@ -35,7 +35,7 @@ class IntakeSys
 
     IntakeSys(vex::distance &intake_watcher, vex::motor &intake_lower,
               vex::motor &intake_upper, std::function<bool()> can_intake,
-              DropMode drop);
+              std::function<bool()> ball_in_cata, DropMode drop);
 
     bool ball_in_intake();
 
@@ -44,4 +44,5 @@ class IntakeSys
     vex::motor &intake_lower;
     vex::motor &intake_upper;
     std::function<bool()> can_intake;
+    std::function<bool()> ball_in_cata;
 };
