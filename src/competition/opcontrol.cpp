@@ -59,14 +59,12 @@ void opcontrol() {
     con.ButtonB.pressed([]() { toggle_brake_mode(); });
     // ================ INIT ================
     while (true) {
-#ifdef COMP_BOT
-        if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() &&
-            !con.ButtonY.pressing()) {
+        if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing()) {
             if (!cata_sys.still_dropping()) {
                 cata_sys.send_command(CataSys::Command::StopIntake);
             }
         }
-#endif
+
         if (Tank) {
             double l = con.Axis3.position() / 100.0;
             double r = con.Axis2.position() / 100.0;

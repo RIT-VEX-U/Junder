@@ -56,7 +56,8 @@ void CataSys::send_command(Command next_cmd) {
 bool CataSys::still_dropping() {
     bool still_dropping =
         cata_sys.current_state() == CataOnlyState::WaitingForDrop ||
-        intake_sys.current_state() == IntakeState::Dropping;
+        (intake_sys.current_state() == IntakeState::Dropping ||
+         intake_sys.current_state() == IntakeState::IntakeWaitForDrop);
     return !still_dropping;
 }
 bool CataSys::ball_in_intake() { return intake_sys.ball_in_intake(); }
