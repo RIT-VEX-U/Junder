@@ -22,7 +22,7 @@ void CataSys::send_command(Command next_cmd) {
     case CataSys::Command::IntakeIn:
         if (cata_sys.current_state() == CataOnlyState::CataOff) {
             intake_sys.send_message(IntakeMessage::IntakeHold);
-        } else if (cata_sys.intaking_allowed()) {
+        } else {
             intake_sys.send_message(IntakeMessage::Intake);
         }
         break;
