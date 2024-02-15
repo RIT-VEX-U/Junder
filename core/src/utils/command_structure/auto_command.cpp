@@ -1,76 +1,56 @@
 #include "../core/include/utils/command_structure/auto_command.h"
 
-class OrCondition : public Condition
-{
-public:
+class OrCondition : public Condition {
+  public:
     OrCondition(Condition *A, Condition *B) : A(A), B(B) {}
-    bool test() override
-    {
+    bool test() override {
         bool a = A->test();
         bool b = B->test();
         return a | b;
     }
 
-private:
+  private:
     Condition *A;
     Condition *B;
 };
 
-class AndCondition : public Condition
-{
-public:
+class AndCondition : public Condition {
+  public:
     AndCondition(Condition *A, Condition *B) : A(A), B(B) {}
-    bool test() override
-    {
+    bool test() override {
         bool a = A->test();
         bool b = B->test();
         return a & b;
     }
 
-private:
+  private:
     Condition *A;
     Condition *B;
 };
 
-Condition *Condition::Or(Condition *b)
-{
-    return new OrCondition(this, b);
-}
+Condition *Condition::Or(Condition *b) { return new OrCondition(this, b); }
 
-Condition *Condition::And(Condition *b)
-{
-    return new AndCondition(this, b);
-}
+Condition *Condition::And(Condition *b) { return new AndCondition(this, b); }
 
-bool FunctionCondition::test()
-{
-    return cond();
-}
+bool FunctionCondition::test() { return cond(); }
 IfTimePassed::IfTimePassed(double time_s) : time_s(time_s), tmr() {}
-bool IfTimePassed::test()
-{
-    return tmr.value() > time_s;
-}
+bool IfTimePassed::test() { return tmr.value() > time_s; }
 
-InOrder::InOrder(std::queue<AutoCommand *> cmds) : cmds(cmds)
-{
-    timeout_seconds = -1.0; // never timeout unless with_timeout is explicitly called
+InOrder::InOrder(std::queue<AutoCommand *> cmds) : cmds(cmds) {
+    timeout_seconds =
+        -1.0; // never timeout unless with_timeout is explicitly called
 }
-InOrder::InOrder(std::initializer_list<AutoCommand *> cmds) : cmds(cmds)
-{
+InOrder::InOrder(std::initializer_list<AutoCommand *> cmds) : cmds(cmds) {
     timeout_seconds = -1.0;
 }
 
-bool InOrder::run()
-{
+bool InOrder::run() {
     // outer loop finished
-    if (cmds.size() == 0 && current_command == nullptr)
-    {
+    if (cmds.size() == 0 && current_command == nullptr) {
         return true;
     }
     // retrieve and remove command at the front of the queue
-    if (current_command == nullptr)
-    {
+    if (current_command == nullptr) {
         printf("TAKING INORDER: len =  %d\n", cmds.size());
         current_command = cmds.front();
         cmds.pop();
@@ -79,8 +59,7 @@ bool InOrder::run()
 
     // run command
     bool cmd_finished = current_command->run();
-    if (cmd_finished)
-    {
+    if (cmd_finished) {
         printf("InOrder Cmd finished\n");
         current_command = nullptr;
         return false; // continue onto next command
@@ -89,15 +68,14 @@ bool InOrder::run()
     double seconds = tmr.value();
 
     bool should_timeout = current_command->timeout_seconds > 0.0;
-    bool doTimeout = should_timeout && seconds > current_command->timeout_seconds;
-    if (current_command->true_to_end != nullptr)
-    {
+    bool doTimeout =
+        should_timeout && seconds > current_command->timeout_seconds;
+    if (current_command->true_to_end != nullptr) {
         doTimeout = doTimeout || current_command->true_to_end->test();
     }
 
     // timeout
-    if (doTimeout)
-    {
+    if (doTimeout) {
         printf("InOrder timed out\n");
         current_command->on_timeout();
         current_command = nullptr;
@@ -106,47 +84,38 @@ bool InOrder::run()
     return false;
 }
 
-void InOrder::on_timeout()
-{
-    if (current_command != nullptr)
-    {
+void InOrder::on_timeout() {
+    if (current_command != nullptr) {
         current_command->on_timeout();
     }
 }
 
-struct parallel_runner_info
-{
+struct parallel_runner_info {
     int index;
     std::vector<vex::task *> *runners;
     AutoCommand *cmd;
 };
-static int parallel_runner(void *arg)
-{
+static int parallel_runner(void *arg) {
     parallel_runner_info *ri = (parallel_runner_info *)arg;
     vex::timer tmr;
-    while (1)
-    {
+    while (1) {
         bool finished = ri->cmd->run();
-        if (finished)
-        {
+        if (finished) {
             break;
         }
         double t = (double)(tmr.time()) / 1000.0;
         bool timed_out = t > ri->cmd->timeout_seconds;
         bool doTimeout = timed_out && (ri->cmd->timeout_seconds > 0);
-        if (ri->cmd->true_to_end != nullptr)
-        {
+        if (ri->cmd->true_to_end != nullptr) {
             doTimeout = doTimeout || ri->cmd->true_to_end->test();
         }
-        if (doTimeout)
-        {
+        if (doTimeout) {
             ri->cmd->on_timeout();
         }
         vexDelay(20);
     }
 
-    if ((*ri->runners)[ri->index] != nullptr)
-    {
+    if ((*ri->runners)[ri->index] != nullptr) {
         delete (*ri->runners)[ri->index];
         (*ri->runners)[ri->index] = nullptr;
     }
@@ -154,15 +123,13 @@ static int parallel_runner(void *arg)
 }
 
 // wait for all to finish
-Parallel::Parallel(std::initializer_list<AutoCommand *> cmds) : cmds(cmds), runners(0) {}
+Parallel::Parallel(std::initializer_list<AutoCommand *> cmds)
+    : cmds(cmds), runners(0) {}
 
-bool Parallel::run()
-{
-    if (runners.size() == 0)
-    {
+bool Parallel::run() {
+    if (runners.size() == 0) {
         // not initialized yet
-        for (int i = 0; i < cmds.size(); i++)
-        {
+        for (int i = 0; i < cmds.size(); i++) {
             parallel_runner_info *ri = new parallel_runner_info{
                 .index = i,
                 .runners = &runners,
@@ -174,31 +141,24 @@ bool Parallel::run()
 
     bool all_finished = true;
 
-    for (int i = 0; i < cmds.size(); i++)
-    {
-        if (runners[i] != nullptr)
-        {
+    for (int i = 0; i < cmds.size(); i++) {
+        if (runners[i] != nullptr) {
             all_finished = false;
         }
     }
     return all_finished;
 }
-void Parallel::on_timeout()
-{
-    for (int i = 0; i < runners.size(); i++)
-    {
+void Parallel::on_timeout() {
+    for (int i = 0; i < runners.size(); i++) {
 
-        if (runners[i] != nullptr)
-        {
+        if (runners[i] != nullptr) {
             runners[i]->stop();
-            if (cmds[i] != nullptr)
-            {
+            if (cmds[i] != nullptr) {
                 cmds[i]->on_timeout();
             }
             delete runners[i];
             runners[i] = nullptr;
-            if (cmds[i] != nullptr)
-            {
+            if (cmds[i] != nullptr) {
                 delete cmds[i];
                 cmds[i] = nullptr;
             }
@@ -206,77 +166,80 @@ void Parallel::on_timeout()
     }
 }
 
-Branch::Branch(Condition *cond, AutoCommand *false_choice, AutoCommand *true_choice) : false_choice(false_choice), true_choice(true_choice), cond(cond), choice(false), chosen(false), tmr() {}
+Branch::Branch(Condition *cond, AutoCommand *false_choice,
+               AutoCommand *true_choice)
+    : false_choice(false_choice), true_choice(true_choice), cond(cond),
+      choice(false), chosen(false), tmr() {
+    this->timeout_seconds = -1;
+}
 
-Branch::~Branch()
-{
+Branch::~Branch() {
     delete false_choice;
     delete true_choice;
 };
-bool Branch::run()
-{
-    if (!chosen)
-    {
+bool Branch::run() {
+    if (!chosen) {
         choice = cond->test();
         chosen = true;
     }
 
     double seconds = static_cast<double>(tmr.time()) / 1000.0;
-    if (choice == false)
-    {
-        if (seconds > false_choice->timeout_seconds && false_choice->timeout_seconds != -1)
-        {
+    if (choice == false) {
+        if (seconds > false_choice->timeout_seconds &&
+            false_choice->timeout_seconds != -1) {
             false_choice->on_timeout();
+            chosen = false;
+            return true;
         }
-        return false_choice->run();
-    }
-    else
-    {
-        if (seconds > true_choice->timeout_seconds && true_choice->timeout_seconds != -1)
-        {
+        bool finished = false_choice->run();
+        if (finished) {
+            chosen = false;
+            return finished;
+        }
+    } else {
+        if (seconds > true_choice->timeout_seconds &&
+            true_choice->timeout_seconds != -1) {
             true_choice->on_timeout();
+            chosen = false;
+            return true;
         }
-        return true_choice->run();
+        bool finished = true_choice->run();
+        if (finished) {
+            chosen = false;
+            return finished;
+        }
     }
+    return false;
 }
-void Branch::on_timeout()
-{
-    if (!chosen)
-    {
+void Branch::on_timeout() {
+    if (!chosen) {
         // dont need to do anything
         return;
     }
 
-    if (choice == false)
-    {
+    if (choice == false) {
         false_choice->on_timeout();
-    }
-    else
-    {
+    } else {
         true_choice->on_timeout();
     }
+    chosen = false;
 }
 
-static int async_runner(void *arg)
-{
+static int async_runner(void *arg) {
     AutoCommand *cmd = (AutoCommand *)arg;
     vex::timer tmr;
-    while (1)
-    {
+    while (1) {
         bool finished = cmd->run();
-        if (finished)
-        {
+        if (finished) {
             break;
         }
         double t = (double)(tmr.time()) / 1000.0;
         bool timed_out = t > cmd->timeout_seconds;
         bool doTimeout = timed_out && cmd->timeout_seconds > 0;
-        if (cmd->true_to_end != nullptr)
-        {
+        if (cmd->true_to_end != nullptr) {
             doTimeout = doTimeout || cmd->true_to_end->test();
         }
-        if (doTimeout)
-        {
+        if (doTimeout) {
             cmd->on_timeout();
             break;
         }
@@ -286,31 +249,26 @@ static int async_runner(void *arg)
 
     return 0;
 }
-bool Async::run()
-{
+bool Async::run() {
     vex::task *t = new vex::task(async_runner, (void *)cmd);
     (void)t;
     // lmao get memory leaked
     return true;
 }
 
-RepeatUntil::RepeatUntil(InOrder cmds, size_t times) : RepeatUntil(cmds, new TimesTestedCondition(times))
-{
+RepeatUntil::RepeatUntil(InOrder cmds, size_t times)
+    : RepeatUntil(cmds, new TimesTestedCondition(times)) {
     timeout_seconds = -1.0;
 }
 
-RepeatUntil::RepeatUntil(InOrder cmds, Condition *cond) : cmds(cmds), working_cmds(new InOrder(cmds)), cond(cond)
-{
+RepeatUntil::RepeatUntil(InOrder cmds, Condition *cond)
+    : cmds(cmds), working_cmds(new InOrder(cmds)), cond(cond) {
     timeout_seconds = -1.0;
 }
 
-
-
-bool RepeatUntil::run()
-{
+bool RepeatUntil::run() {
     bool finished = working_cmds->run();
-    if (!finished)
-    {
+    if (!finished) {
         // return if we're not done yet
         return false;
     }
@@ -318,17 +276,12 @@ bool RepeatUntil::run()
 
     bool res = cond->test();
     // we should finish
-    if (res)
-    {
+    if (res) {
         return true;
     }
     working_cmds = new InOrder(cmds);
 
-
     return false;
 }
 
-void RepeatUntil::on_timeout()
-{
-    working_cmds->on_timeout();
-}
+void RepeatUntil::on_timeout() { working_cmds->on_timeout(); }

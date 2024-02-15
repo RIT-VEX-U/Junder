@@ -49,52 +49,16 @@ void support_AWP();
 void autonomous() {
 
     cata_sys.send_command(CataSys::Command::StartDropping);
-    while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
+
+    while (imu.isCalibrating() || gps_sensor.isCalibrating() ||
+           cata_sys.still_dropping()) {
         vexDelay(20);
     }
-    // support_AWP();
-    supportMaximumTriballs();
-    // only_shoot();
+    printf("DRopping %d\n", (int)cata_sys.still_dropping());
+    // supportMaximumTriballs();
+    only_shoot();
 }
 
-pose_t gps_pose() {
-    while (gps_sensor.xPosition() == 0.0 && gps_sensor.yPosition() == 0.0) {
-        vexDelay(20);
-    }
-    if (gps_sensor.quality() == 0) {
-        return odom.get_position();
-    }
-
-    pose_t orig = odom.get_position();
-    static timer t;
-    t.reset();
-    double x = orig.x, y = orig.y, rot = orig.rot;
-    int itr = 0;
-    while (t.time(sec) < 1) {
-        if (gps_sensor.quality() > 99) {
-            x += gps_sensor.xPosition(distanceUnits::in) + 72;
-            y += gps_sensor.yPosition(distanceUnits::in) + 72;
-            rot = gps_sensor.heading();
-            itr++;
-        }
-    }
-
-    if (itr > 0) {
-        x = x / itr;
-        y = y / itr;
-    }
-
-    pose_t pose;
-    // double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
-    // double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
-    // double rot = gps_sensor.heading();
-
-    pose.x = x;
-    pose.y = y;
-    pose.rot = rot;
-    printf("GPS: (%.2f, %.2f) %.2f\n", x, y, rot);
-    return pose;
-}
 AutoCommand *get_and_score_alliance() {
     return new InOrder{
         // setup
@@ -287,7 +251,7 @@ void only_shoot() {
 
     CommandController cmd{
         odom.SetPositionCmd({.x = 22.0, .y = 22.0, .rot = 225}),
-        new DelayCommand(300),
+        new DelayCommand(3000),
         printOdom,
 
         // 1 - Turn and shoot preload
@@ -305,8 +269,6 @@ void only_shoot() {
                 intakeToCata->withTimeout(1.75),
 
                 drive_sys.DriveToPointCmd({24, 22}, REV, 0.4)->withTimeout(1.0),
-                // ->withCancelCondition(
-                // drive_sys.DriveStalledCondition(0.25)),
                 cata_sys.Fire(),
                 new DelayCommand(200),
                 // },
@@ -597,6 +559,45 @@ void skills() {
     cmd.run();
 
     drive_sys.stop();
+}
+
+pose_t gps_pose() {
+    while (gps_sensor.xPosition() == 0.0 && gps_sensor.yPosition() == 0.0) {
+        vexDelay(20);
+    }
+    if (gps_sensor.quality() == 0) {
+        return odom.get_position();
+    }
+
+    pose_t orig = odom.get_position();
+    static timer t;
+    t.reset();
+    double x = orig.x, y = orig.y, rot = orig.rot;
+    int itr = 0;
+    while (t.time(sec) < 1) {
+        if (gps_sensor.quality() > 99) {
+            x += gps_sensor.xPosition(distanceUnits::in) + 72;
+            y += gps_sensor.yPosition(distanceUnits::in) + 72;
+            rot = gps_sensor.heading();
+            itr++;
+        }
+    }
+
+    if (itr > 0) {
+        x = x / itr;
+        y = y / itr;
+    }
+
+    pose_t pose;
+    // double x = gps_sensor.xPosition(vex::distanceUnits::in) + 72.0;
+    // double y = gps_sensor.yPosition(vex::distanceUnits::in) + 72.0;
+    // double rot = gps_sensor.heading();
+
+    pose.x = x;
+    pose.y = y;
+    pose.rot = rot;
+    printf("GPS: (%.2f, %.2f) %.2f\n", x, y, rot);
+    return pose;
 }
 
 #else

@@ -5,8 +5,11 @@ bool intake_can_be_enabled(double cata_pos) {
                                  cata_pos < intake_enable_upper_threshold);
 }
 bool CataOnlySys::intaking_allowed() {
-    return current_state() == CataOnlyState::ReadyToFire &&
-           !cata_watcher.isNearObject();
+    double cata_pos = pot.angle(vex::deg);
+
+    return ((cata_pos == 0.0) || (cata_pos > inake_enable_lower_threshold &&
+                                  cata_pos < intake_enable_upper_threshold) &&
+                                     !cata_watcher.isNearObject());
 }
 
 class CataOff : public CataOnlySys::State {

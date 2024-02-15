@@ -87,13 +87,15 @@ struct Dropping : IntakeSys::State {
     vex::timer drop_timer;
 };
 struct Intaking : IntakeSys::State {
-    void entry(IntakeSys &sys) override {
-        sys.intake_upper.spin(vex::fwd, intake_upper_volt, vex::volt);
-        sys.intake_lower.spin(vex::fwd, intake_lower_volt, vex::volt);
-    }
+    void entry(IntakeSys &sys) override {}
     IntakeSys::MaybeMessage work(IntakeSys &sys) override {
-        if (sys.ball_in_cata()) {
-            return IntakeMessage::StopIntake;
+        if (!sys.can_intake()) {
+            sys.intake_upper.spin(vex::fwd, 0, vex::volt);
+            sys.intake_lower.spin(vex::fwd, 0, vex::volt);
+            return {};
+        } else {
+            sys.intake_upper.spin(vex::fwd, intake_upper_volt, vex::volt);
+            sys.intake_lower.spin(vex::fwd, intake_lower_volt, vex::volt);
         }
 
         return {};
