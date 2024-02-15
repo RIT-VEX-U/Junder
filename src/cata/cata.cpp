@@ -124,6 +124,8 @@ CataOnlySys::State *Reloading::respond(CataOnlySys &sys, CataOnlyMessage m) {
         return new ReadyToFire();
     } else if (m == CataOnlyMessage::DisableCata) {
         return new CataOff();
+    } else if (m == CataOnlyMessage::Fire) {
+        return new Firing();
     }
     // Ignore other messages
     return this;

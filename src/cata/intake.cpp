@@ -71,6 +71,7 @@ struct Dropping : IntakeSys::State {
         sys.intake_upper.spin(vex::reverse, 12.0, vex::volt);
     }
     IntakeSys::MaybeMessage work(IntakeSys &sys) override {
+        sys.intake_upper.spin(vex::reverse, 12.0, vex::volt);
         if (drop_timer.value() > intake_drop_seconds) {
             return IntakeMessage::Dropped;
         }
@@ -133,6 +134,10 @@ struct Outtaking : IntakeSys::State {
 IntakeSys::State *IntakeWaitForDrop::respond(IntakeSys &sys, IntakeMessage m) {
     if (m == IntakeMessage::Drop) {
         return new Dropping();
+    } else if (m == IntakeMessage::Outtake) {
+        return new Outtaking();
+    } else if (m == IntakeMessage::Intake) {
+        return new Intaking();
     }
     return this;
 }

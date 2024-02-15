@@ -26,9 +26,6 @@ void opcontrol() {
     //
     cata_sys.send_command(CataSys::Command::StartDropping);
 
-#ifdef COMP_BOT
-#endif
-
     while (imu.isCalibrating()) {
         vexDelay(20);
     }
@@ -50,10 +47,7 @@ void opcontrol() {
     con.ButtonR2.pressed(
         []() { cata_sys.send_command(CataSys::Command::IntakeOut); });
 
-    con.ButtonY.pressed([]() {
-        cata_sys.send_command(CataSys::Command::IntakeHold);
-        // Tank = !Tank;
-    });
+    con.ButtonY.pressed([]() { Tank = !Tank; });
     con.ButtonUp.pressed(
         []() { cata_sys.send_command(CataSys::Command::ToggleCata); });
     con.ButtonL2.pressed([]() {
@@ -68,7 +62,9 @@ void opcontrol() {
 #ifdef COMP_BOT
         if (!con.ButtonR1.pressing() && !con.ButtonR2.pressing() &&
             !con.ButtonY.pressing()) {
-            cata_sys.send_command(CataSys::Command::StopIntake);
+            if (!cata_sys.still_dropping()) {
+                cata_sys.send_command(CataSys::Command::StopIntake);
+            }
         }
 #endif
         if (Tank) {
