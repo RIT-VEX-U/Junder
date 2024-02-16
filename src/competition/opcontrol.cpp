@@ -21,6 +21,7 @@ auto toggle_brake_mode = []() {
  * Main entrypoint for the driver control period
  */
 void opcontrol() {
+    autonomous();
     con.ButtonRight.pressed([]() { screen::next_page(); });
     con.ButtonLeft.pressed([]() { screen::prev_page(); });
     //
