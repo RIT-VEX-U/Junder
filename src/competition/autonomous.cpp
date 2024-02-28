@@ -50,7 +50,7 @@ void autonomous() {
 
     cata_sys.send_command(CataSys::Command::StartDropping);
 
-    while (imu.isCalibrating() || gps_sensor.isCalibrating()) {
+    while (imu.isCalibrating() || gps_sensor.isCalibrating() || cata_sys.still_dropping()) {
         vexDelay(20);
     }
 
@@ -248,48 +248,86 @@ void newMaxSkills() {
 
         // backup into match loading
         cata_sys.IntakeFully()->withTimeout(1.0),
-        drive_sys.DriveForwardCmd(10.0, FWD, 0.25)
+        drive_sys.DriveForwardCmd(10.0, FWD, 0.5)
             ->withCancelCondition(drive_sys.DriveStalledCondition(0.2))
             ->withTimeout(1.0),
 
         // match load for 42 seconds
         new RepeatUntil(
             InOrder{
+                // odom.SetPositionCmd({.x = 17.0, .y = 17.0, .rot = 225}),
+
+                // cata_sys.IntakeFully(),
+                // intakeToCata->withTimeout(1.0),
+
+                // // cata_sys.StopIntake()->withTimeout(2.0),
+
+                // drive_sys.DriveForwardCmd(7.0, REV, 0.5),
+
+                // // drive_sys.TurnToHeadingCmd()
+
+                // drive_sys.TurnToHeadingCmd(190)->withTimeout(1.0),
+
+                // // drive_sys.DriveForwardCmd(4.0, REV, 0.3)->withTimeout(1.0),
+
+                // cata_sys.Fire()->withTimeout(1.5),
+
+                // new DelayCommand(200),
+
+                // // cata_sys.StopFiring(),
+
+                // // cata_sys.IntakeFully()->withTimeout(0.5),
+
+                // // drive_sys.DriveForwardCmd(4.0, FWD, 0.3)->withTimeout(1.0),
+
+                // drive_sys.TurnToHeadingCmd(225)->withTimeout(1.0),
+
+                // drive_sys.DriveForwardCmd(10.0, FWD, 0.25)
+                //     ->withCancelCondition(drive_sys.DriveStalledCondition(0.25))
+                //     ->withTimeout(1.0),
+
+
+
+                // Matchloading!
+                cata_sys.IntakeFully(),
+                // Push against bar slowly & wait for triball to load
+                new FunctionCommand([]() {
+                    drive_sys.drive_tank(0.1, 0.1);
+                    return true;
+                }),
+
+                // Up against the wall, reset odometry
+                cata_sys.WaitForIntake()->withTimeout(2),
                 odom.SetPositionCmd({.x = 17.0, .y = 17.0, .rot = 225}),
 
+                new FunctionCommand([]() {
+                    vex::task([]() {
+                        vexDelay(600);
+                        cata_sys.send_command(CataSys::Command::StartFiring);
+                        return 0;
+                    });
+
+                    return true;
+                }),
+
+                // Drive to firing position
+                drive_sys.PurePursuitCmd(PurePursuit::Path({
+                    {.x = 17, .y = 23},
+                    {.x = 19, .y = 24},
+                    {.x = 21, .y = 24},
+                    {.x = 30, .y = 20},
+                }, 4), REV, 0.3),
+
+                drive_sys.DriveForwardCmd(10, FWD)->withTimeout(3),
+                drive_sys.TurnToHeadingCmd(225)->withTimeout(3),
+                drive_sys.DriveForwardCmd(6, FWD)->withTimeout(3),
+
                 cata_sys.IntakeFully(),
-                intakeToCata->withTimeout(1.0),
-
-                // cata_sys.StopIntake()->withTimeout(2.0),
-
-                drive_sys.DriveForwardCmd(7.0, REV, 0.5),
-
-                // drive_sys.TurnToHeadingCmd()
-
-                drive_sys.TurnToHeadingCmd(190)->withTimeout(1.0),
-
-                // drive_sys.DriveForwardCmd(4.0, REV, 0.3)->withTimeout(1.0),
-
-                cata_sys.Fire()->withTimeout(1.5),
-
-                new DelayCommand(200),
-
-                // cata_sys.StopFiring(),
-
-                // cata_sys.IntakeFully()->withTimeout(0.5),
-
-                // drive_sys.DriveForwardCmd(4.0, FWD, 0.3)->withTimeout(1.0),
-
-                drive_sys.TurnToHeadingCmd(225)->withTimeout(1.0),
-
-                drive_sys.DriveForwardCmd(10.0, FWD, 0.25)
-                    ->withCancelCondition(drive_sys.DriveStalledCondition(0.25))
-                    ->withTimeout(1.0),
 
             },
-            new IfTimePassed(10)),
+            new IfTimePassed(42)),
 
-        // cata_sys.Fire()->withTimeout(1.0),
+        cata_sys.Fire()->withTimeout(1.0),
 
         // new DelayCommand(200),
 
